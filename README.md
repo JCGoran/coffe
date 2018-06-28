@@ -5,7 +5,7 @@ This is the public repository for the code COFFE (COrrelation Function Full-sky 
 There are a couple of ways to install the code:
 
 ### 1. Docker version
-Go [here][https://github.com/JCGoran/coffe/releases] and download the latest release that has "Docker" in the title.
+Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that has "Docker" in the title.
 Then install the downloaded image using
 ```
 docker load -i [FILENAME]
@@ -17,13 +17,13 @@ docker run -ti coffe-docker:[VERSION]
 where `[VERSION]` indicates the version of the image you have downloaded. COFFE and all the necessary configuration files are located in the `/build/` directory.
 
 ### 2. From the tarball
-Go [here][https://github.com/JCGoran/coffe/releases] and download the late
+Go [here](https://github.com/JCGoran/coffe/releases) and download the late
 st release that doesn't have "Docker" in the title.
 Make sure you have the following libraries installed:
-* [FFTW][http://www.fftw.org/download.html]
-* [libconfig][https://hyperrealm.github.io/libconfig/]
+* [FFTW](http://www.fftw.org/download.html)
+* [libconfig](https://hyperrealm.github.io/libconfig/)
 * GSL
-* [CUBA][http://www.feynarts.de/cuba/] (optional)
+* [CUBA](http://www.feynarts.de/cuba/) (optional)
 
 Once you have installed the dependencies, you can run 
 ```
@@ -48,7 +48,7 @@ where `[SETTINGSFILE]` is the name of the settings file, and `[NUMTHREADS]` is t
 The `settings.cfg` file contains explanations about the possible input and output. For more details, please consult the manual located in the `manual` subdirectory.
 
 ## Bug reports and feature requests
-Please use the [issue tracker][https://github.com/JCGoran/coffe/issues] to submit any bug reports and feature requests. For bug reports, if you are running something other than the Docker version, please specify your platform and library versions.
+Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests. For bug reports, if you are running something other than the Docker version, please specify your platform and library versions.
 
 ## License and usage conditions
 COFFE is licensed under the GNU GPL 3.0 license. See the `LICENSE` file for more information.
