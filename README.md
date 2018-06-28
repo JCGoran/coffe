@@ -17,8 +17,7 @@ docker run -ti coffe-docker:[VERSION]
 where `[VERSION]` indicates the version of the image you have downloaded. COFFE and all the necessary configuration files are located in the `/build/` directory.
 
 ### 2. From the tarball
-Go [here](https://github.com/JCGoran/coffe/releases) and download the late
-st release that doesn't have "Docker" in the title.
+Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that doesn't have "Docker" in the title.
 Make sure you have the following libraries installed:
 * [FFTW](http://www.fftw.org/download.html)
 * [libconfig](https://hyperrealm.github.io/libconfig/)
