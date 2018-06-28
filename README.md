@@ -18,7 +18,7 @@ where `[VERSION]` indicates the version of the image you have downloaded. COFFE 
 
 ### 2. From the tarball
 Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that doesn't have "Docker" in the title.
-Make sure you have the following libraries installed:
+Extract the contents of the tarball somewhere. Make sure you have the following libraries installed:
 * [FFTW](http://www.fftw.org/download.html)
 * [libconfig](https://hyperrealm.github.io/libconfig/)
 * GSL
@@ -28,7 +28,7 @@ Once you have installed the dependencies, you can run
 ```
 ./configure && make
 ```
-If you wish to enable the CUBA library, you can specify the flag `--enable-cuba` for the `configure` script.
+from the directory in which COFFE was extracted. If you wish to enable the CUBA library, you can specify the flag `--enable-cuba` for the `configure` script.
 
 ### 3. From source
 After making sure you have the adequate versions of `autotools` installed on your machine, clone this repository and run
