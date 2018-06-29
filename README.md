@@ -1,5 +1,6 @@
 # COFFE
 This is the public repository for the code COFFE (COrrelation Function Full-sky Estimator).
+The relevant theoretical papers are [arXiv:1708.00492](https://arxiv.org/abs/1708.00492) and [arXiv:1806.11090](https://arxiv.org/abs/1806.11090).
 
 ## Installation
 There are a couple of ways to install the code:
@@ -18,7 +19,7 @@ where `[VERSION]` indicates the version of the image you have downloaded. COFFE 
 
 ### 2. From the tarball
 Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that doesn't have "Docker" in the title.
-Extract the contents of the tarball somewhere. Make sure you have the following libraries installed:
+Extract the contents of the tarball somewhere. Make sure you have a C compiler (compatible with the C99 standard) and the following libraries installed:
 * [FFTW](http://www.fftw.org/download.html)
 * [libconfig](https://hyperrealm.github.io/libconfig/)
 * GSL
@@ -47,7 +48,20 @@ where `[SETTINGSFILE]` is the name of the settings file, and `[NUMTHREADS]` is t
 The `settings.cfg` file contains explanations about the possible input and output. For more details, please consult the manual located in the `manual` subdirectory.
 
 ## Bug reports and feature requests
-Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests. For bug reports, if you are running something other than the Docker version, please specify your platform and library versions.
+Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests. For bug reports, if you are running something other than the Docker version, please specify your platform as well as library versions.
 
 ## License and usage conditions
-COFFE is licensed under the GNU GPL 3.0 license. See the `LICENSE` file for more information.
+COFFE is licensed under the GNU GPL 3.0. See the `LICENSE` file for more information. If you use COFFE in a publication, we kindly ask that you cite the original paper describing the code, located at [arXiv:1806.11090](https://arxiv.org/abs/1806.11090). A `bibTeX` entry is provided below for convenience.
+```
+@article{coffe:v1,
+      author         = "Tansella, Vittorio and Jelic-Cizmek, Goran and Bonvin,
+                        Camille and Durrer, Ruth",
+      title          = "{COFFE: a code for the full-sky relativistic galaxy
+                        correlation function}",
+      year           = "2018",
+      eprint         = "1806.11090",
+      archivePrefix  = "arXiv",
+      primaryClass   = "astro-ph.CO",
+      SLACcitation   = "%%CITATION = ARXIV:1806.11090;%%"
+}
+```
