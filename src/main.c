@@ -122,11 +122,7 @@ int main(int argc, char *argv[])
 
     coffe_background_init(&par, &bg);
 
-    for (int i = 0; i<450; ++i){
-        coffe_integrals_init(&par, &bg, integral);
-        coffe_integrals_free(integral);
-    }
-    return EXIT_SUCCESS;
+    coffe_integrals_init(&par, &bg, integral);
 
     coffe_corrfunc_init(&par, &bg, integral, &cf_ang, &cf, &cf2d);
 
