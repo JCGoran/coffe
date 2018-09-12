@@ -68,6 +68,18 @@ double functions_nonintegrated(
         if (strcmp(par->corr_terms[i], "00") == 0){
             result += b1*b2
                *interp_spline(&integral[0].result, sep);
+#ifdef HAVE_NONLINEAR
+            result += (
+                -1./3*interp_spline(&integral[9].result, 0)*interp_spline(&integral[5].result, sep)/sep/sep
+                +1./3*interp_spline(&integral[9].result, sep)*interp_spline(&integral[5].result, sep)/sep/sep
+                +19./15*pow(interp_spline(&integral[0].result, sep), 2)
+                +34./21*pow(interp_spline(&integral[1].result, sep), 2)
+                +4./35*pow(interp_spline(&integral[2].result, sep), 2)
+                -16./5*interp_spline(&integral[3].result, sep)*interp_spline(&integral[10].result, sep)
+                -4./5*interp_spline(&integral[4].result, sep)*interp_spline(&integral[11].result, sep)
+                +2./3*interp_spline(&integral[6].result, sep)*interp_spline(&integral[12].result, sep)
+            )*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z1)/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+#endif
         }
         /* rsd-rsd term */
         else if (strcmp(par->corr_terms[i], "11") == 0){

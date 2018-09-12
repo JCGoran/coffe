@@ -401,7 +401,14 @@ int coffe_output_init(
 
 
 #ifdef HAVE_INTEGRALS
+#ifdef HAVE_NONLINEAR
+    for (int i = 0; i<13; ++i){
+#else
     for (int i = 0; i<8; ++i){
+#endif
+#ifdef HAVE_NONLINEAR
+        if (i != 8){
+#endif
         snprintf(
             header, COFFE_MAX_STRLEN,
             "# n = %d, l = %d\n",
@@ -416,6 +423,9 @@ int coffe_output_init(
             integral[i].result.spline->y,
             NULL
         );
+#ifdef HAVE_NONLINEAR
+        }
+#endif
     }
 #endif
 

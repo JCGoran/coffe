@@ -41,7 +41,11 @@ int main(int argc, char *argv[])
 {
     struct coffe_parameters_t par;
     struct coffe_background_t bg;
+#ifdef HAVE_NONLINEAR
+    struct coffe_integrals_t integral[13];
+#else
     struct coffe_integrals_t integral[9];
+#endif
     struct coffe_corrfunc_ang_t cf_ang;
     struct coffe_corrfunc_t cf;
     struct coffe_multipoles_t mp;

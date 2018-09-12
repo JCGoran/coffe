@@ -89,6 +89,7 @@ static double twofast_window(
     https://en.wikipedia.org/wiki/Lanczos_approximation
 **/
 // TODO check if this lgamma has the same accuracy as ac_lgamma
+#ifndef HAVE_ARB
 static double complex twofast_lgamma(double complex z)
 {
     static const double gamma_coeff[] = {
@@ -139,9 +140,13 @@ static double complex twofast_lgamma(double complex z)
         exit(EXIT_FAILURE);
     }
 }
+#endif
 
 static double complex twofast_mql(double t, double q, int l, double alpha)
 {
+#ifdef HAVE_ARB
+#define twofast_lgamma ac_lgamma
+#endif
     const double complex n = q - 1 - t*I;
     double complex unl =
         cpow(2, n - 1)*SQRT_PI

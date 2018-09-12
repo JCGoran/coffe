@@ -807,7 +807,11 @@ int coffe_parser_init(
         );
     }
 
+#ifdef HAVE_NONLINEAR
+    for (int i = 0; i<13; ++i){
+#else
     for (int i = 0; i<9; ++i){
+#endif
         par->nonzero_terms[i].l = -1, par->nonzero_terms[i].n = -1;
     }
 
@@ -858,6 +862,13 @@ int coffe_parser_init(
         par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
         par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
         par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
+
+#ifdef HAVE_NONLINEAR
+        par->nonzero_terms[9].n = -2, par->nonzero_terms[9].l = 0;
+        par->nonzero_terms[10].n = -1, par->nonzero_terms[10].l = 1;
+        par->nonzero_terms[11].n = -1, par->nonzero_terms[11].l = 3;
+        par->nonzero_terms[12].n = -2, par->nonzero_terms[12].l = 2;
+#endif
 
         /* isolating the term requiring renormalization */
         for (int i = 0; i<counter; ++i){

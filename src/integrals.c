@@ -329,8 +329,12 @@ int coffe_integrals_init(
         gsl_set_error_handler_off();
     double r0_sep, r0_result;
 
+#ifdef HAVE_NONLINEAR
+    for (int j = 0; j<13; ++j){
+#else
     for (int j = 0; j<9; ++j){
-        if (par->nonzero_terms[j].n != -1 && par->nonzero_terms[j].l != -1){
+#endif
+        if (!((par->nonzero_terms[j].n == -1) && (par->nonzero_terms[j].l == -1))){
             const int n = par->nonzero_terms[j].n;
             const int l = par->nonzero_terms[j].l;
             if (n == 4 && l == 0){
@@ -456,6 +460,7 @@ int coffe_integrals_init(
                     }
                     double result_limit, error_limit;
                     {
+                        /* evaluating the integral at r = 0 */
                         struct integrals_params test;
                         test.result.spline = par->power_spectrum_norm.spline;
                         test.result.accel = par->power_spectrum_norm.accel;
@@ -577,9 +582,17 @@ int coffe_integrals_free(
     struct coffe_integrals_t integral[]
 )
 {
+#ifdef HAVE_NONLINEAR
+    for (size_t i = 0; i<13; ++i){
+        if (i != 8){
+            free_spline(&integral[i].result);
+        }
+    }
+#else
     for (size_t i = 0; i<8; ++i){
         free_spline(&integral[i].result);
     }
+#endif
     if (integral[8].n == 4 && integral[8].l == 0){
         free_spline(&integral[8].result);
         free_spline(&integral[8].renormalization0);

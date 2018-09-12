@@ -137,7 +137,11 @@ struct coffe_parameters_t
     cross terms are of the form "MN",
     with M and N one of the above numbers */
 
+#ifdef HAVE_NONLINEAR
+    struct nl_terms nonzero_terms[13];
+#else
     struct nl_terms nonzero_terms[9];
+#endif
 
     char **type_bg; /* background values to output */
 
