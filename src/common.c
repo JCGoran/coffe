@@ -34,6 +34,10 @@
 
 void *coffe_malloc(size_t len)
 {
+    if (!len){
+        print_error(PROG_ALLOC_ERROR);
+        exit(EXIT_FAILURE);
+    }
     void *values = malloc(len);
     if (values == NULL){
         print_error(PROG_ALLOC_ERROR);
@@ -591,3 +595,32 @@ double interp_spline(
     return gsl_spline_eval(interp->spline, value, interp->accel);
 }
 
+int coffe_parameters_free(
+    struct coffe_parameters_t *par
+)
+{
+    config_destroy(par->conf);
+    par->conf = NULL;
+    for (size_t i = 0; i<(size_t)par->correlation_sources_len; ++i){
+        free(par->correlation_sources[i]);
+    }
+    free(par->correlation_sources);
+    free(par->mu);
+    for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
+        free(par->type_bg[i]);
+    }
+    free(par->type_bg);
+    free(par->sep);
+    if (par->output_type == 2){
+        free(par->multipole_values);
+    }
+    if (par->output_type == 5 || par->output_type == 6){
+        free(par->covariance_z_mean);
+        free(par->covariance_deltaz);
+        free(par->covariance_zmin);
+        free(par->covariance_zmax);
+        free(par->covariance_fsky);
+        free(par->covariance_density);
+    }
+    return EXIT_SUCCESS;
+}

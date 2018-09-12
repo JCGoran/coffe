@@ -35,6 +35,10 @@
 #define COFFE_VERSION_MINOR 0
 #endif
 
+#ifndef COFFE_VERSION_PATCH
+#define COFFE_VERSION_PATCH 0
+#endif
+
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
                         "Copyright (C) 2018 Goran Jelic-Cizmek\n" \
@@ -270,6 +274,8 @@ struct coffe_parameters_t
 
     double k_pivot; /* for CLASS */
 
+    int nonlinear; /* do we want halofit or not? */
+
 #endif
 
 };
@@ -388,6 +394,10 @@ int coffe_compare_descending(
 double common_wfunction(
     struct coffe_parameters_t *par,
     double z
+);
+
+int coffe_parameters_free(
+    struct coffe_parameters_t *par
 );
 
 #endif

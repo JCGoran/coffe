@@ -122,7 +122,11 @@ int main(int argc, char *argv[])
 
     coffe_background_init(&par, &bg);
 
-    coffe_integrals_init(&par, &bg, integral);
+    for (int i = 0; i<450; ++i){
+        coffe_integrals_init(&par, &bg, integral);
+        coffe_integrals_free(integral);
+    }
+    return EXIT_SUCCESS;
 
     coffe_corrfunc_init(&par, &bg, integral, &cf_ang, &cf, &cf2d);
 
@@ -162,6 +166,8 @@ int main(int argc, char *argv[])
     coffe_covariance_free(&cov_mp);
 
     coffe_covariance_free(&cov_ramp);
+
+    coffe_parameters_free(&par);
 
     end = clock();
     printf("Total program runtime is: %.2f s\n",
