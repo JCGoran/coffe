@@ -78,7 +78,7 @@ double functions_nonintegrated(
                 -16./5*interp_spline(&integral[3].result, sep)*interp_spline(&integral[10].result, sep)
                 -4./5*interp_spline(&integral[4].result, sep)*interp_spline(&integral[11].result, sep)
                 +2./3*interp_spline(&integral[6].result, sep)*interp_spline(&integral[12].result, sep)
-            )*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z1)/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            );
 #endif
         }
         /* rsd-rsd term */
