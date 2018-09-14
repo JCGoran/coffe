@@ -699,7 +699,12 @@ int coffe_parser_init(
 
         for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
             k[i] = exp(psp.ln_k[i])/par->h;
-            pk[i] = exp(psp.ln_pk_l[i])*pow(par->h, 3);
+            if (par->nonlinear){
+                pk[i] = exp(psp.ln_pk_nl[i])*pow(par->h, 3);
+            }
+            else{
+                pk[i] = exp(psp.ln_pk_l[i])*pow(par->h, 3);
+            }
         }
         init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
