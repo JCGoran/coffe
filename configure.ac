@@ -87,7 +87,7 @@ AC_CHECK_HEADERS([stdlib.h stdarg.h complex.h math.h string.h], [], [
     AC_MSG_ERROR([Certain standard headers not found.])
     ])
 
-dnl AC_ARG_ENABLE(class, [  --enable-class      Automatically includes CLASS library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CLASS", [])
+AC_ARG_ENABLE(class, [  --enable-class      Automatically includes CLASS library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CLASS", [])
 dnl AC_ARG_ENABLE(covariance, [--enable-covariance Automatically includes the covariance calculation if required libraries found], CPPFLAGS="$CPPFLAGS -DHAVE_COVARIANCE", [])
 AC_ARG_ENABLE(cuba, [  --enable-cuba    Automatically includes the CUBA library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CUBA", [])
 
