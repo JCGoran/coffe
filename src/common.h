@@ -255,6 +255,8 @@ struct coffe_parameters_t
 
     int theta_len;
 
+    int flatsky;
+
 #ifdef HAVE_CLASS
     /* stuff for CLASS only */
 

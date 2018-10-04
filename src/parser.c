@@ -894,6 +894,9 @@ int coffe_parser_init(
     /* the prefix for the output files */
     parse_string(conf, "output_prefix", par->output_prefix, COFFE_TRUE);
 
+    /* flatsky parameter */
+    parse_int(conf, "flatsky", &par->flatsky, COFFE_TRUE);
+
     /* saving the timestamp */
     sprintf(par->timestamp, "%s", coffe_get_time());
 

@@ -19,6 +19,7 @@
 #include <math.h>
 #include <string.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 
 #include "common.h"
 #include "background.h"
@@ -51,10 +52,13 @@ double functions_nonintegrated(
     double z2 = interp_spline(&bg->z_as_chi, chi2);
     double f1 = interp_spline(&bg->f, z1);
     double f2 = interp_spline(&bg->f, z2);
+    double fmean = interp_spline(&bg->f, z_mean);
     double curlyH1 = interp_spline(&bg->conformal_Hz, z1); // dimensionless
     double curlyH2 = interp_spline(&bg->conformal_Hz, z2); // dimensionless
     double b1 = interp_spline(&par->matter_bias1, z1);
     double b2 = interp_spline(&par->matter_bias2, z2);
+    double bz_mean1 = interp_spline(&par->matter_bias1, z_mean);
+    double bz_mean2 = interp_spline(&par->matter_bias2, z_mean);
     double G1 = interp_spline(&bg->G1, z1);
     double G2 = interp_spline(&bg->G2, z2);
     double s1 = interp_spline(&par->magnification_bias1, z1);
@@ -66,11 +70,30 @@ double functions_nonintegrated(
     for (int i = 0; i<len; ++i){
         /* den-den term */
         if (strcmp(par->corr_terms[i], "00") == 0){
+            /* den-den modified by flatsky */
+            if (par->flatsky){
+                result += bz_mean1*bz_mean2
+                   *interp_spline(&integral[0].result, sep);
+            }
+            else{
             result += b1*b2
                *interp_spline(&integral[0].result, sep);
+            }
         }
         /* rsd-rsd term */
         else if (strcmp(par->corr_terms[i], "11") == 0){
+            /* rsd-rsd modified by flatsky */
+            if (par->flatsky){
+                result +=
+                    fmean*fmean*interp_spline(&integral[0].result, sep)/5.
+                    -
+                    4*fmean*fmean*interp_spline(&integral[1].result, sep)/7.
+                   *gsl_sf_legendre_P2(mu)
+                    +
+                    8*fmean*fmean*interp_spline(&integral[2].result, sep)/35.
+                   *gsl_sf_legendre_Pl(4, mu);
+            }
+            else{
             result +=
                 f1*f2*(1 + 2*pow(costheta, 2))/15
                *interp_spline(&integral[0].result, sep)
@@ -88,6 +111,7 @@ double functions_nonintegrated(
                     )/35./pow(sep, 4)
                 )
                *interp_spline(&integral[2].result, sep);
+            }
         }
         /* d1-d1 term */
         else if (strcmp(par->corr_terms[i], "22") == 0){
@@ -171,6 +195,17 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "01") == 0 ||
             strcmp(par->corr_terms[i], "10") == 0
         ){
+            /* den-rsd modified by flatsky */
+            if (par->flatsky){
+                result +=
+                    (bz_mean1*fmean/3. + bz_mean2*fmean/3.)
+                   *interp_spline(&integral[0].result, sep)
+                   -
+                    (2*bz_mean1*fmean/3. + 2*bz_mean2*fmean/3.)
+                   *interp_spline(&integral[1].result, sep)
+                   *gsl_sf_legendre_P2(mu);
+            }
+            else{
             result += (b1*f2/3. + b2*f1/3.)
                *interp_spline(&integral[0].result, sep)
                -
@@ -180,6 +215,7 @@ double functions_nonintegrated(
                     b2*f1*(2./3. - (1. - pow(costheta, 2))*pow(chi2/sep, 2))
                 )
                *interp_spline(&integral[1].result, sep);
+            }
         }
         /* den-d1 + d1-den term */
         else if (
