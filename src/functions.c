@@ -1538,6 +1538,8 @@ double functions_double_integrated(
 
     double s1 = interp_spline(&par->magnification_bias1, z1_const);
     double s2 = interp_spline(&par->magnification_bias2, z2_const);
+    double sz_mean1 = interp_spline(&par->magnification_bias1, z_mean);
+    double sz_mean2 = interp_spline(&par->magnification_bias2, z_mean);
 
     double ren = 0;
     if (par->divergent){
@@ -1559,6 +1561,23 @@ double functions_double_integrated(
     for (int i = 0; i<len; ++i){
         /* len-len term */
         if (strcmp(par->corr_terms[i], "99") == 0){
+            if (par->flatsky){
+                double temp_sep = chi_mean*sqrt(2.*(1. - costheta));
+                /* len-len modified by flatsky */
+                result +=
+                /* constant in front */
+                9*par->Omega0_m*par->Omega0_m*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)*(par->k_max_norm - par->k_min_norm)
+                /* integrand */
+               *((par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm) // k
+               *interp_spline(&par->power_spectrum_norm, (par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm) // P(k)
+               *gsl_sf_bessel_J0(
+                    x1*((par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm)*temp_sep*sqrt(1 - mu*mu)
+                ) // J_0(k * r * sqrt(1 - mu^2))
+               *pow(interp_spline(&bg->D1, interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
+               *pow(1 + interp_spline(&bg->z_as_chi, x1*chi_mean), 2) // (1 + z(lambda))^2
+               *pow(x1*(1 - x1), 2);
+            }
+            else{
             if (r2 > 1e-20){
                 result +=
                 /* constant in front */
@@ -1610,6 +1629,7 @@ double functions_double_integrated(
                     24.*lambda1*lambda2
                    *interp_spline(&integral[3].result, 0.0)/15.
                 );
+            }
             }
         }
         /* g4-g4 term */
