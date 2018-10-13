@@ -137,7 +137,7 @@ struct coffe_parameters_t
     cross terms are of the form "MN",
     with M and N one of the above numbers */
 
-    struct nl_terms nonzero_terms[9];
+    struct nl_terms nonzero_terms[10];
 
     char **type_bg; /* background values to output */
 

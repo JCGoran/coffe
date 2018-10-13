@@ -897,6 +897,10 @@ int coffe_parser_init(
     /* flatsky parameter */
     parse_int(conf, "flatsky", &par->flatsky, COFFE_TRUE);
 
+    if (par->flatsky){
+        par->nonzero_terms[9].n = -10, par->nonzero_terms[9].l = -10;
+    }
+
     /* saving the timestamp */
     sprintf(par->timestamp, "%s", coffe_get_time());
 

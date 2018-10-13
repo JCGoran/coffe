@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 {
     struct coffe_parameters_t par;
     struct coffe_background_t bg;
-    struct coffe_integrals_t integral[9];
+    struct coffe_integrals_t integral[10];
     struct coffe_corrfunc_ang_t cf_ang;
     struct coffe_corrfunc_t cf;
     struct coffe_multipoles_t mp;

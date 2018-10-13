@@ -1566,13 +1566,9 @@ double functions_double_integrated(
                 /* len-len modified by flatsky */
                 result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)*(par->k_max_norm - par->k_min_norm)
+                9*par->Omega0_m*par->Omega0_m*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)
                 /* integrand */
-               *((par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm) // k
-               *interp_spline(&par->power_spectrum_norm, (par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm) // P(k)
-               *gsl_sf_bessel_J0(
-                    x1*((par->k_max_norm - par->k_min_norm)*x2 + par->k_min_norm)*temp_sep*sqrt(1 - mu*mu)
-                ) // J_0(k * r * sqrt(1 - mu^2))
+               *interp_spline(&integral[9].result, x1*temp_sep*sqrt(1 - mu*mu))
                *pow(interp_spline(&bg->D1, interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
                *pow(1 + interp_spline(&bg->z_as_chi, x1*chi_mean), 2) // (1 + z(lambda))^2
                *pow(x1*(1 - x1), 2);
