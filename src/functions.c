@@ -617,8 +617,12 @@ double functions_single_integrated(
 
     double s1 = interp_spline(&par->magnification_bias1, z1_const);
     double s2 = interp_spline(&par->magnification_bias2, z2_const);
+    double sz_mean1 = interp_spline(&par->magnification_bias1, z_mean);
+    double sz_mean2 = interp_spline(&par->magnification_bias2, z_mean);
     double b1 = interp_spline(&par->matter_bias1, z1_const);
     double b2 = interp_spline(&par->matter_bias2, z2_const);
+    double bz_mean1 = interp_spline(&par->matter_bias1, z_mean);
+    double bz_mean2 = interp_spline(&par->matter_bias2, z_mean);
 
     double ren1 = 0, ren2 = 0;
     if (par->divergent){
@@ -648,6 +652,15 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "09") == 0 ||
             strcmp(par->corr_terms[i], "90") == 0
         ){
+            /* den-len + len-den modified in flatsky */
+            if (par->flatsky){
+                result +=
+                   -3*par->Omega0_m/M_PI/4
+                   *interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
+                   *((2 - 5*sz_mean1)*bz_mean1 + (2 - 5*sz_mean2)*bz_mean2)
+                   *interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
+            }
+            else{
             if (r21 != 0.0 && r22 != 0.0){
                 result +=
                    -3*par->Omega0_m/2.
@@ -735,6 +748,7 @@ double functions_single_integrated(
                             2*chi2*chi1*interp_spline(&integral[3].result, 0.0)
                         )
                     );
+            }
             }
         }
         /* rsd-len + len-rsd term */
