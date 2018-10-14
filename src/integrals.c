@@ -611,7 +611,6 @@ int coffe_integrals_init(
         }
     }
     if (par->flatsky){
-#if 0
         size_t npoints = (size_t)par->bessel_bins;
         double *sep =
             (double *)coffe_malloc(sizeof(double)*npoints);
@@ -625,17 +624,17 @@ int coffe_integrals_init(
             COFFE_H0, par->k_min_norm,
             par->k_min_norm, par->k_max_norm, 0
         );
-#endif
 
         double min_sep[] = {0};
         const size_t min_sep_len = sizeof(min_sep)/sizeof(min_sep[0]);
 
         double *final_sep =
-            (double *)coffe_malloc(sizeof(double)*(coffe_sep_len + min_sep_len));
+            (double *)coffe_malloc(sizeof(double)*(npoints + min_sep_len));
 
         double *final_result =
-            (double *)coffe_malloc(sizeof(double)*(coffe_sep_len + min_sep_len));
+            (double *)coffe_malloc(sizeof(double)*(npoints + min_sep_len));
 
+        #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i<min_sep_len; ++i){
             final_sep[i] = NORM(min_sep[i]);
             final_result[i] = integrals_flatsky(
@@ -643,28 +642,23 @@ int coffe_integrals_init(
                 final_sep[i],
                 par->k_min_norm, par->k_max_norm
             );
-            printf("sep = %.2e, result = %.2e\n", final_sep[i], final_result[i]);
         }
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = min_sep_len; i<min_sep_len + coffe_sep_len; ++i){
-            final_sep[i] = NORM(coffe_sep[i - min_sep_len]);
-            final_result[i] = integrals_flatsky(
-                par->power_spectrum_norm,
-                final_sep[i],
-                par->k_min_norm, par->k_max_norm
-            );
-            printf("sep = %.2e, result = %.2e\n", final_sep[i], final_result[i]);
+        for (size_t i = min_sep_len; i<min_sep_len + npoints; ++i){
+            final_sep[i] = sep[i - min_sep_len];
+            final_result[i] = result[i - min_sep_len];
         }
         init_spline(
             &(integral[9].result),
             final_sep,
             final_result,
-            coffe_sep_len + min_sep_len,
+            npoints + min_sep_len,
             par->interp_method
         );
         free(final_sep);
         free(final_result);
+        free(sep);
+        free(result);
     }
 
     gsl_set_error_handler(default_handler);

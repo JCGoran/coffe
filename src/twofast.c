@@ -161,7 +161,7 @@ static double complex twofast_mq(double t, double q, double alpha)
     const double complex n = q - 1 - t*I;
     double complex unl =
         cpow(2, n)
-       *cexp(twofast_lgamma((1 + n)/2) - twofast_lgamma((1 - n)/2));
+       *cexp(ac_lgamma((1 + n)/2) - ac_lgamma((1 - n)/2));
     if (gsl_finite(unl)) return cpow(alpha, t*I - q)*unl;
     else{
         fprintf(stderr, "ERROR: file %s, function %s\n", __FILE__, __func__);
@@ -453,7 +453,7 @@ void twofast_1bessel_flatsky(
             break;
     }
     const size_t N2 = output_len/2 + 1;
-    const double qnu = twofast_selectqnu(0, 0);
+    const double qnu = 1.1;
     const double G = log(kmax/kmin);
 
     gsl_spline *input_spline = gsl_spline_alloc(gsl_interp_cspline, input_len);
@@ -464,7 +464,7 @@ void twofast_1bessel_flatsky(
     twofast_fft_input_flatsky(
         input_y_fft, output_len,
         input_spline, input_accel,
-        qnu + 1, k0, kmin, kmax,
+        qnu, k0, kmin, kmax,
         flag
     );
     gsl_spline_free(input_spline);
