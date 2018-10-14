@@ -657,7 +657,7 @@ double functions_single_integrated(
                 result +=
                    -3*par->Omega0_m/M_PI/4
                    *interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
-                   *((2 - 5*sz_mean1)*bz_mean1 + (2 - 5*sz_mean2)*bz_mean2)
+                   *((2 - 5*sz_mean1)*bz_mean2 + (2 - 5*sz_mean2)*bz_mean1)
                    *interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
             }
             else{
