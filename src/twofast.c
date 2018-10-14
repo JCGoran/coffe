@@ -453,7 +453,7 @@ void twofast_1bessel_flatsky(
             break;
     }
     const size_t N2 = output_len/2 + 1;
-    const double qnu = 1.1;
+    const double qnu = 0.9;
     const double G = log(kmax/kmin);
 
     gsl_spline *input_spline = gsl_spline_alloc(gsl_interp_cspline, input_len);
