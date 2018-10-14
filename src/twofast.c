@@ -42,6 +42,10 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef M_PIl
+#define M_PIl 3.141592653589793238462643383279502884L
+#endif
+
 #ifndef SQRT_PI
 #define SQRT_PI 1.7724538509055160272981674833411451827975494561224
 #endif
@@ -89,9 +93,9 @@ static double twofast_window(
     https://en.wikipedia.org/wiki/Lanczos_approximation
 **/
 // TODO check if this lgamma has the same accuracy as ac_lgamma
-static double complex twofast_lgamma(double complex z)
+static double complex twofast_lgamma(long double complex z)
 {
-    static const double gamma_coeff[] = {
+    static const long double gamma_coeff[] = {
         676.5203681218851,
         -1259.1392167224028,
         771.32342877765313,
@@ -103,32 +107,32 @@ static double complex twofast_lgamma(double complex z)
     };
     static const int gamma_coeff_len =
         sizeof(gamma_coeff)/sizeof(gamma_coeff[0]);
-    double complex result;
-    if (creal(z) < 0.5){
-        result = log(M_PI) - clog(csin(M_PI*z)) - twofast_lgamma(1 - z);
+    long double complex result;
+    if (creall(z) < 0.5){
+        result = logl(M_PIl) - clogl(csinl(M_PIl*z)) - twofast_lgamma(1 - z);
         if (!gsl_finite(result)){
             printf(
-                "Values: z = %f + i%f, "
-                "result = %f + i%f\n",
-                creal(z), cimag(z),
-                creal(result), cimag(result)
+                "Values: z = %Lf + i%Lf, "
+                "result = %Lf + i%Lf\n",
+                creall(z), cimagl(z),
+                creall(result), cimagl(result)
             );
         }
     }
     else{
-        double complex x = 0.99999999999980993;
+        long double complex x = 0.99999999999980993;
         z -= 1;
         for (int i = 0; i<gamma_coeff_len; ++i)
-            x += (double complex)gamma_coeff[i]/(z + i + 1);
-        double complex t = z + gamma_coeff_len - 0.5;
-        result = log(2*M_PI)/2. + (z + 0.5)*clog(t) - t + clog(x);
+            x += (long double complex)gamma_coeff[i]/(z + i + 1);
+        long double complex t = z + gamma_coeff_len - 0.5;
+        result = logl(2*M_PIl)/2. + (z + 0.5)*clogl(t) - t + clogl(x);
         if (!gsl_finite(result)){
             printf(
-                "Values: z = %f + i%f, x = %f + i%f, "
-                "t = %f + i%f, result = %f + i%f\n",
-                creal(z), cimag(z), creal(x), cimag(x),
-                creal(t), cimag(t),
-                creal(result), cimag(result)
+                "Values: z = %Lf + i%Lf, x = %Lf + i%Lf, "
+                "t = %Lf + i%Lf, result = %Lf + i%Lf\n",
+                creall(z), cimagl(z), creall(x), cimagl(x),
+                creall(t), cimagl(t),
+                creall(result), cimagl(result)
             );
         }
     }
@@ -161,7 +165,7 @@ static double complex twofast_mq(double t, double q, double alpha)
     const double complex n = q - 1 - t*I;
     double complex unl =
         cpow(2, n)
-       *cexp(ac_lgamma((1 + n)/2) - ac_lgamma((1 - n)/2));
+       *cexp(twofast_lgamma((1 + n)/2) - twofast_lgamma((1 - n)/2));
     if (gsl_finite(unl)) return cpow(alpha, t*I - q)*unl;
     else{
         fprintf(stderr, "ERROR: file %s, function %s\n", __FILE__, __func__);
