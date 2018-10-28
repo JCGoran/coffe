@@ -38,6 +38,17 @@ autoreconf -i
 ```
 From there, you may proceed as under point 2.
 
+### 4. From DockerHub
+Run
+```
+docker pull jcgoran/coffe
+```
+and then run a container using
+```
+docker run -ti jcgoran/coffe:latest
+```
+To generate the binary, run `make`. Copying the input/output can be done using `docker cp` as described in the manual.
+
 ## Usage
 To run the code
 ```
