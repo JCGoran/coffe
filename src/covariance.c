@@ -328,14 +328,17 @@ int coffe_covariance_init(
                         &bg->comoving_distance, cov_mp->z_mean[k] - cov_mp->deltaz[k]), 3)
                 )/3./pow(COFFE_H0, 3);
             c0 =
-                interp_spline(&par->matter_bias1, cov_mp->z_mean[k])
+                /* b^2 + 2/3 b f + f^2/5 */
+                pow(interp_spline(&par->matter_bias1, cov_mp->z_mean[k]), 2)
                +2*interp_spline(&par->matter_bias1, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/3.
-               +interp_spline(&bg->f, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/5.;
+               +pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/5.;
             c2 =
+                /* 4/3 b f + 4/7 f^2 */
                 4*interp_spline(&par->matter_bias1, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/3.
-               +4*interp_spline(&bg->f, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/7.;
+               +4*pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/7.;
             c4 =
-                8*interp_spline(&bg->f, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/35.;
+                /* 8/35 f^2 */
+                8*pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/35.;
             D1z = interp_spline(&bg->D1, cov_mp->z_mean[k]);
 
             double c0bar =
