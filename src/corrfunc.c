@@ -229,7 +229,7 @@ static double corrfunc_single_integrated(
     }
     if (flag == 0) return 0;
 
-    double result, error, prec = 1E-5;
+    double result, error;
 
 #ifdef DOUBLE_EXPONENTIAL
     result = tanhsinh_quad(
@@ -239,6 +239,7 @@ static double corrfunc_single_integrated(
         &error, NULL
     );
 #else
+    double prec = 1E-5;
     gsl_function integrand;
     integrand.function = &corrfunc_single_integrated_integrand;
     integrand.params = &test;
