@@ -319,7 +319,7 @@ int coffe_covariance_init(
         double *volume =
             (double *)coffe_malloc(sizeof(double)*cov_mp->list_len);
         for (size_t k = 0; k<cov_mp->list_len; ++k){
-            double c0 = 0, c2 = 0, c4 = 0, D1z = 0;
+            double c0 = 0, c2 = 0, c4 = 0;
             volume[k] = 4*M_PI*cov_mp->fsky[k]
                *(
                     pow(interp_spline(
@@ -339,7 +339,6 @@ int coffe_covariance_init(
             c4 =
                 /* 8/35 f^2 */
                 8*pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/35.;
-            D1z = interp_spline(&bg->D1, cov_mp->z_mean[k]);
 
             double c0bar =
                 c0*c0 + c2*c2/5. + c4*c4/9.;
@@ -353,6 +352,7 @@ int coffe_covariance_init(
                 490*c4*c4/1287.;
 
             double D10 = interp_spline(&bg->D1, 0);
+            double D1z = interp_spline(&bg->D1, cov_mp->z_mean[k]);
 
             double coeff_array[] = {c0, c2, c4};
             double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
@@ -584,7 +584,7 @@ int coffe_covariance_init(
         double *volume =
             (double *)coffe_malloc(sizeof(double)*cov_ramp->list_len);
         for (size_t k = 0; k<cov_ramp->list_len; ++k){
-            double c0 = 0, c2 = 0, c4 = 0, D1z = 0;
+            double c0 = 0, c2 = 0, c4 = 0;
             struct covariance_volume_params test;
             test.conformal_Hz = &bg->conformal_Hz;
             test.comoving_distance = &bg->comoving_distance;
@@ -604,16 +604,21 @@ int coffe_covariance_init(
             );
             gsl_integration_workspace_free(space);
             volume[k] = 4*M_PI*cov_ramp->fsky[k]/integral_result/pow(COFFE_H0, 3);
+
+            const double zmean = (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2.;
+
+            /* b^2 + 2/3 b f + f^2/5 */
             c0 =
-                interp_spline(&par->matter_bias1, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)
-               +2*interp_spline(&par->matter_bias1, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)/3.
-               +interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)/5.;
+                pow(interp_spline(&par->matter_bias1, zmean), 2)
+               +2*interp_spline(&par->matter_bias1, zmean)*interp_spline(&bg->f, zmean)/3.
+               +pow(interp_spline(&bg->f, zmean), 2)/5.;
+            /* 4/3 b f + 4/7 f^2 */
             c2 =
-                4*interp_spline(&par->matter_bias1, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)/3.
-               +4*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)/7.;
+                4*interp_spline(&par->matter_bias1, zmean)*interp_spline(&bg->f, zmean)/3.
+               +4*pow(interp_spline(&bg->f, zmean), 2)/7.;
+            /* 8/35 f^2 */
             c4 =
-                8*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)*interp_spline(&bg->f, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2)/35.;
-            D1z = interp_spline(&bg->D1, (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2);
+                8*pow(interp_spline(&bg->f, zmean), 2)/35.;
 
             double c0bar =
                 c0*c0 + c2*c2/5. + c4*c4/9.;
@@ -626,6 +631,7 @@ int coffe_covariance_init(
             double c8bar =
                 490*c4*c4/1287.;
 
+            double D1z = interp_spline(&bg->D1, zmean);
             double D10 = interp_spline(&bg->D1, 0);
 
             double coeff_array[] = {c0, c2, c4};
