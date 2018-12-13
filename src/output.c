@@ -230,8 +230,6 @@ int coffe_output_init(
     /* settings file copy */
     snprintf(filepath, COFFE_MAX_STRLEN, "%ssettings.cfg", prefix);
     config_write_file(par->conf, filepath);
-    config_destroy(par->conf);
-    par->conf = NULL;
 
     /* background */
     snprintf(filepath, COFFE_MAX_STRLEN, "%sbackground.dat", prefix);

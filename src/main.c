@@ -163,6 +163,8 @@ int main(int argc, char *argv[])
 
     coffe_covariance_free(&cov_ramp);
 
+    coffe_parameters_free(&par);
+
     end = clock();
     printf("Total program runtime is: %.2f s\n",
         (double)(end - start) / CLOCKS_PER_SEC);
