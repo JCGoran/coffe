@@ -27,6 +27,10 @@
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_errno.h>
 
+#ifdef DOUBLE_EXPONENTIAL
+#include "tanhsinh.h"
+#endif
+
 #include "common.h"
 #include "background.h"
 #include "integrals.h"
@@ -133,7 +137,14 @@ static double integrals_prefactor(double k, void *p)
     integrand k^2 P(k) j_l(k r)/(k r)^n
 **/
 
-static double integrals_bessel_integrand(double k, void *p)
+static double integrals_bessel_integrand(
+    double k,
+#ifdef DOUBLE_EXPONENTIAL
+    const void *p
+#else
+    void *p
+#endif
+)
 {
     struct integrals_params *integrand = (struct integrals_params *) p;
     double result;
@@ -184,11 +195,22 @@ static double integrals_bessel(
     test.l = l;
     test.r = sep;
 
+    double output, error;
+
+#ifdef DOUBLE_EXPONENTIAL
+    output = tanhsinh_quad(
+        &integrals_bessel_integrand,
+        &test,
+        kmin, kmax, 0.,
+        &error, NULL
+    );
+#else
+
+    double precision = 1E-5;
     gsl_function integrand;
     integrand.params = &test;
     integrand.function = &integrals_bessel_integrand;
 
-    double output, error, precision = 1E-5;
 
     gsl_integration_workspace *wspace =
         gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
@@ -202,6 +224,7 @@ static double integrals_bessel(
     );
 
     gsl_integration_workspace_free(wspace);
+#endif
 
     return output*pow(sep, 4)/2./M_PI/M_PI;
 }
@@ -211,7 +234,14 @@ static double integrals_bessel(
     renormalized integrand of I^4_0 at r = 0
 **/
 
-static double integrals_renormalization0_integrand(double k, void *p)
+static double integrals_renormalization0_integrand(
+    double k,
+#ifdef DOUBLE_EXPONENTIAL
+    const void *p
+#else
+    void *p
+#endif
+)
 {
     struct integrals_params *integrand = (struct integrals_params *) p;
     return interp_spline(&integrand->result, k)
@@ -236,11 +266,21 @@ static double integrals_renormalization0(
     test.l = l;
     test.r = sep;
 
+    double output, error;
+
+#ifdef DOUBLE_EXPONENTIAL
+    output = tanhsinh_quad(
+        &integrals_renormalization0_integrand,
+        &test,
+        kmin, kmax, 0.,
+        &error, NULL
+    );
+#else
+
+    double precision = 1E-5;
     gsl_function integrand;
     integrand.params = &test;
     integrand.function = &integrals_renormalization0_integrand;
-
-    double output, error, precision = 1E-5;
 
     gsl_integration_workspace *wspace =
         gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
@@ -254,6 +294,7 @@ static double integrals_renormalization0(
     );
 
     gsl_integration_workspace_free(wspace);
+#endif
 
     return output/2./M_PI/M_PI;
 }
@@ -263,7 +304,14 @@ static double integrals_renormalization0(
     integrand of the renormalization term (the divergent one)
 **/
 
-static double integrals_renormalization_integrand(double k, void *p)
+static double integrals_renormalization_integrand(
+    double k,
+#ifdef DOUBLE_EXPONENTIAL
+    const void *p
+#else
+    void *p
+#endif
+)
 {
     struct integrals_divergent_params *integrand =
         (struct integrals_divergent_params *) p;
@@ -289,9 +337,18 @@ static double integrals_renormalization(
     test.chi1 = chi1;
     test.chi2 = chi2;
 
-    double precision = 1E-5;
     double output, error;
 
+#ifdef DOUBLE_EXPONENTIAL
+    output = tanhsinh_quad(
+        &integrals_renormalization_integrand,
+        &test,
+        kmin, kmax, 0.,
+        &error, NULL
+    );
+#else
+
+    double precision = 1E-5;
     gsl_function integrand;
     integrand.params = &test;
     integrand.function = &integrals_renormalization_integrand;
@@ -306,6 +363,7 @@ static double integrals_renormalization(
     );
 
     gsl_integration_workspace_free(wspace);
+#endif
 
     return output/2./M_PI/M_PI;
 }
@@ -553,15 +611,17 @@ int coffe_integrals_init(
                 test.n = n;
                 test.l = l;
 
+                double temp_result, temp_error;
+
+#ifndef DOUBLE_EXPONENTIAL
+                double precision = 1E-5;
                 gsl_function integrand;
                 integrand.function = &integrals_bessel_integrand;
                 integrand.params = &test;
 
-                double precision = 1E-5;
-                double temp_result, temp_error;
-
                 gsl_integration_workspace *wspace =
                     gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+#endif
 
                 double *final_sep =
                     (double *)coffe_malloc(sizeof(double)*(npoints + len + 1));
@@ -575,12 +635,21 @@ int coffe_integrals_init(
                 for (size_t i = 1; i<=len; ++i){
                     test.r = min_sep[i - 1];
                     final_sep[i] = min_sep[i - 1]; // dimensionless!
+#ifdef DOUBLE_EXPONENTIAL
+                    temp_result = tanhsinh_quad(
+                        &integrals_bessel_integrand,
+                        &test,
+                        par->k_min_norm, par->k_max_norm, 0.,
+                        &temp_error, NULL
+                    );
+#else
                     gsl_integration_qag(
                         &integrand, par->k_min_norm, par->k_max_norm, 0,
                         precision, COFFE_MAX_INTSPACE,
                         GSL_INTEG_GAUSS61, wspace,
                         &temp_result, &temp_error
                     );
+#endif
                     if (n > l){
                         final_result[i] = pow(final_sep[i], n - l)*temp_result/2./M_PI/M_PI;
                     }
@@ -588,7 +657,9 @@ int coffe_integrals_init(
                         final_result[i] = temp_result/2./M_PI/M_PI;
                     }
                 }
+#ifndef DOUBLE_EXPONENTIAL
                 gsl_integration_workspace_free(wspace);
+#endif
 
                 for (size_t i = len + 1; i<npoints + len + 1; ++i){
                     final_sep[i] = sep[i - len - 1];

@@ -25,6 +25,10 @@
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_errno.h>
 
+#ifdef DOUBLE_EXPONENTIAL
+#include "tanhsinh.h"
+#endif
+
 #ifdef HAVE_CUBA
 #include "cuba.h"
 #else
@@ -139,7 +143,11 @@ static double corrfunc_nonintegrated(
 
 static double corrfunc_single_integrated_integrand(
     double x,
+#ifdef DOUBLE_EXPONENTIAL
+    const void *p
+#else
     void *p
+#endif
 )
 {
     struct corrfunc_params *test =
@@ -221,8 +229,17 @@ static double corrfunc_single_integrated(
     }
     if (flag == 0) return 0;
 
-    double result, error, prec = 1E-5;
+    double result, error;
 
+#ifdef DOUBLE_EXPONENTIAL
+    result = tanhsinh_quad(
+        &corrfunc_single_integrated_integrand,
+        &test,
+        0., 1., 0.,
+        &error, NULL
+    );
+#else
+    double prec = 1E-5;
     gsl_function integrand;
     integrand.function = &corrfunc_single_integrated_integrand;
     integrand.params = &test;
@@ -236,6 +253,7 @@ static double corrfunc_single_integrated(
         &result, &error
     );
     gsl_integration_workspace_free(wspace);
+#endif
 
     return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
 }

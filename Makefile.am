@@ -11,6 +11,7 @@ coffe_SOURCES = \
     src/integrals.h \
     src/background.h \
     src/functions.h \
+    src/tanhsinh.h \
     src/corrfunc.h \
     src/multipoles.h \
     src/average_multipoles.h \
@@ -23,6 +24,7 @@ coffe_SOURCES = \
     src/integrals.c \
     src/background.c \
     src/functions.c \
+    src/tanhsinh.c \
     src/corrfunc.c \
     src/multipoles.c \
     src/average_multipoles.c \

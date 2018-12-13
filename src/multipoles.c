@@ -23,6 +23,10 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_errno.h>
 
+#ifdef DOUBLE_EXPONENTIAL
+#include "tanhsinh.h"
+#endif
+
 #ifdef HAVE_CUBA
 #include "cuba.h"
 #else
@@ -118,7 +122,11 @@ static int multipoles_check_range(
 
 static double multipoles_nonintegrated_integrand(
     double x,
+#ifdef DOUBLE_EXPONENTIAL
+    const void *p
+#else
     void *p
+#endif
 )
 {
     struct multipoles_params *all_params =
@@ -162,6 +170,14 @@ static double multipoles_nonintegrated(
 
     double result, error, prec = 1E-5;
 
+#ifdef DOUBLE_EXPONENTIAL
+    result = tanhsinh_quad(
+        &multipoles_nonintegrated_integrand,
+        &test,
+        0., 1., 0.,
+        &error, NULL
+    );
+#else
     gsl_function integrand;
     integrand.function = &multipoles_nonintegrated_integrand;
     integrand.params = &test;
@@ -175,6 +191,7 @@ static double multipoles_nonintegrated(
         &result, &error
     );
     gsl_integration_workspace_free(wspace);
+#endif
     return (2*l + 1)*result
         /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
 }
