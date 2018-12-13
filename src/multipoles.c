@@ -23,7 +23,7 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
 #endif
 
@@ -122,7 +122,7 @@ static int multipoles_check_range(
 
 static double multipoles_nonintegrated_integrand(
     double x,
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
 #else
     void *p
@@ -170,7 +170,7 @@ static double multipoles_nonintegrated(
 
     double result, error, prec = 1E-5;
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     result = tanhsinh_quad(
         &multipoles_nonintegrated_integrand,
         &test,

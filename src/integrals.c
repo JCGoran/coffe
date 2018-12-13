@@ -27,7 +27,7 @@
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
 #endif
 
@@ -139,7 +139,7 @@ static double integrals_prefactor(double k, void *p)
 
 static double integrals_bessel_integrand(
     double k,
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
 #else
     void *p
@@ -197,7 +197,7 @@ static double integrals_bessel(
 
     double output, error;
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     output = tanhsinh_quad(
         &integrals_bessel_integrand,
         &test,
@@ -236,7 +236,7 @@ static double integrals_bessel(
 
 static double integrals_renormalization0_integrand(
     double k,
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
 #else
     void *p
@@ -268,7 +268,7 @@ static double integrals_renormalization0(
 
     double output, error;
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     output = tanhsinh_quad(
         &integrals_renormalization0_integrand,
         &test,
@@ -306,7 +306,7 @@ static double integrals_renormalization0(
 
 static double integrals_renormalization_integrand(
     double k,
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
 #else
     void *p
@@ -339,7 +339,7 @@ static double integrals_renormalization(
 
     double output, error;
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     output = tanhsinh_quad(
         &integrals_renormalization_integrand,
         &test,
@@ -613,7 +613,7 @@ int coffe_integrals_init(
 
                 double temp_result, temp_error;
 
-#ifndef DOUBLE_EXPONENTIAL
+#ifndef HAVE_DOUBLE_EXPONENTIAL
                 double precision = 1E-5;
                 gsl_function integrand;
                 integrand.function = &integrals_bessel_integrand;
@@ -635,7 +635,7 @@ int coffe_integrals_init(
                 for (size_t i = 1; i<=len; ++i){
                     test.r = min_sep[i - 1];
                     final_sep[i] = min_sep[i - 1]; // dimensionless!
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
                     temp_result = tanhsinh_quad(
                         &integrals_bessel_integrand,
                         &test,
@@ -657,7 +657,7 @@ int coffe_integrals_init(
                         final_result[i] = temp_result/2./M_PI/M_PI;
                     }
                 }
-#ifndef DOUBLE_EXPONENTIAL
+#ifndef HAVE_DOUBLE_EXPONENTIAL
                 gsl_integration_workspace_free(wspace);
 #endif
 

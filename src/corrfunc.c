@@ -25,7 +25,7 @@
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
 #endif
 
@@ -143,7 +143,7 @@ static double corrfunc_nonintegrated(
 
 static double corrfunc_single_integrated_integrand(
     double x,
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
 #else
     void *p
@@ -231,7 +231,7 @@ static double corrfunc_single_integrated(
 
     double result, error;
 
-#ifdef DOUBLE_EXPONENTIAL
+#ifdef HAVE_DOUBLE_EXPONENTIAL
     result = tanhsinh_quad(
         &corrfunc_single_integrated_integrand,
         &test,
