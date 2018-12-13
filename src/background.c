@@ -28,9 +28,11 @@
 
 struct integration_params
 {
-    double Omega0_m; /* omega parameter for (total) matter */
+    double Omega0_cdm; /* omega parameter for cold dark matter */
 
-    double Omega0_gamma; /* omega parameter of photons */
+    double Omega0_baryon; /* omega parameter for baryons */
+
+    double Omega0_gamma; /* omega parameter for photons */
 
     double Omega0_de; /* present omega parameter for dark energy-like component */
 
@@ -217,7 +219,7 @@ static double integrand_comoving(
 {
     struct integration_params *par = (struct integration_params *) p;
     double integrand = 1./pow(
-        par->Omega0_m*pow(1 + z, 3)
+        (par->Omega0_cdm + par->Omega0_baryon)*pow(1 + z, 3)
        +par->Omega0_gamma*pow(1 + z, 4)
        +par->Omega0_de*interp_spline(&par->wint, z),
         1./2);
@@ -255,7 +257,8 @@ int coffe_background_init(
     temp_bg->comoving_distance = (double *)coffe_malloc(sizeof(double)*par->background_bins);
 
     struct integration_params ipar;
-    ipar.Omega0_m = par->Omega0_m;
+    ipar.Omega0_cdm = par->Omega0_cdm;
+    ipar.Omega0_baryon = par->Omega0_baryon;
     ipar.Omega0_gamma = par->Omega0_gamma;
     ipar.Omega0_de = par->Omega0_de;
     {
@@ -286,11 +289,11 @@ int coffe_background_init(
             z = z_max*i/(double)bins;
             if (i != 0){
                 z_array[i] = z;
-                xint_array[i] = ipar.Omega0_m/(1 - ipar.Omega0_m)*exp(-3*integral_x(&ipar, z));
+                xint_array[i] = (ipar.Omega0_cdm + ipar.Omega0_baryon)/(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))*exp(-3*integral_x(&ipar, z));
             }
             else{
                 z_array[i] = 0;
-                xint_array[i] = ipar.Omega0_m/(1 - ipar.Omega0_m);
+                xint_array[i] = (ipar.Omega0_cdm + ipar.Omega0_baryon)/(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon));
             }
         }
         init_spline(&ipar.xint, z_array, xint_array, bins + 1, 1);
@@ -339,12 +342,12 @@ int coffe_background_init(
         (temp_bg->z)[i] = z;
         (temp_bg->a)[i] = 1./(1. + z);
         (temp_bg->Hz)[i] = sqrt(
-             par->Omega0_m*pow(1 + z, 3)
+             (par->Omega0_cdm + par->Omega0_baryon)*pow(1 + z, 3)
             +par->Omega0_gamma*pow(1 + z, 4)
             +par->Omega0_de*wint); // in units H0
         (temp_bg->conformal_Hz)[i] = (temp_bg->a)[i]*(temp_bg->Hz)[i]; // in units H0
         (temp_bg->conformal_Hz_prime)[i] = -(
-            pow(1 + z, 3)*(2*(1 + z)*par->Omega0_gamma + par->Omega0_m)
+            pow(1 + z, 3)*(2*(1 + z)*par->Omega0_gamma + (par->Omega0_cdm + par->Omega0_baryon))
            +(1 + 3*w)*par->Omega0_de*wint
         )/pow(1 + z, 2)/2.; // in units H0^2
 

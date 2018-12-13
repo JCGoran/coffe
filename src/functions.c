@@ -147,7 +147,7 @@ double functions_nonintegrated(
         }
         /* g1-g1 term */
         else if (strcmp(par->corr_terms[i], "44") == 0){
-            result += 9*pow(par->Omega0_m, 2)
+            result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
                *(1 + G1)*(1 + G2)/4/a1/a2
                *(
                     interp_spline(&integral[8].result, sep)
@@ -162,7 +162,7 @@ double functions_nonintegrated(
         }
         /* g2-g2 term */
         else if (strcmp(par->corr_terms[i], "55") == 0){
-            result += 9*pow(par->Omega0_m, 2)
+            result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
                *(5*s1 - 2)*(5*s2 - 2)/4/a1/a2
                *(
                     interp_spline(&integral[8].result, sep)
@@ -177,7 +177,7 @@ double functions_nonintegrated(
         }
         /* g3-g3 term */
         else if (strcmp(par->corr_terms[i], "66") == 0){
-            result += 9*pow(par->Omega0_m, 2)
+            result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
                *(f1 - 1)*(f2 - 1)/4/a1/a2
                *(
                     interp_spline(&integral[8].result, sep)
@@ -247,9 +247,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "40") == 0
         ){
             result += -(
-                    b1*3*par->Omega0_m/2/a2*(1 + G2)
+                    b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(1 + G2)
                     +
-                    b2*3*par->Omega0_m/2/a1*(1 + G1)
+                    b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(1 + G1)
                 )
                *interp_spline(&integral[5].result, sep);
         }
@@ -259,9 +259,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "50") == 0
         ){
             result += -(
-                    b1*3*par->Omega0_m/2/a2*(5*s2 - 2)
+                    b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(5*s2 - 2)
                     +
-                    b2*3*par->Omega0_m/2/a1*(5*s1 - 2)
+                    b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(5*s1 - 2)
                 )
                *interp_spline(&integral[5].result, sep);
         }
@@ -271,9 +271,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "60") == 0
         ){
             result += -(
-                    b1*3*par->Omega0_m/2/a2*(f2 - 1)
+                    b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(f2 - 1)
                     +
-                    b2*3*par->Omega0_m/2/a1*(f1 - 1)
+                    b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(f1 - 1)
                 )
                *interp_spline(&integral[5].result, sep);
         }
@@ -339,15 +339,15 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "41") == 0
         ){
             result += -(
-                    par->Omega0_m/2./a2*f1*(1 + G2)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(1 + G2)
                     +
-                    par->Omega0_m/2./a1*f2*(1 + G1)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)
                 )
                *interp_spline(&integral[5].result, sep)
                 + (
-                    3*par->Omega0_m/2./a2*f1*(1 + G2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(1 + G2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                     +
-                    3*par->Omega0_m/2./a1*f2*(1 + G1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
                 )
                *interp_spline(&integral[6].result, sep);
         }
@@ -357,15 +357,15 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "51") == 0
         ){
             result += -(
-                    par->Omega0_m/2./a2*f1*(5*s2 - 2)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(5*s2 - 2)
                     +
-                    par->Omega0_m/2./a1*f2*(5*s1 - 2)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)
                 )
                *interp_spline(&integral[5].result, sep)
                 + (
-                    3*par->Omega0_m/2./a2*f1*(5*s2 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(5*s2 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                     +
-                    3*par->Omega0_m/2./a1*f2*(5*s1 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
                 )
                *interp_spline(&integral[6].result, sep);
         }
@@ -375,15 +375,15 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "61") == 0
         ){
             result += -(
-                    par->Omega0_m/2./a2*f1*(f2 - 1)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(f2 - 1)
                     +
-                    par->Omega0_m/2./a1*f2*(f1 - 1)
+                    (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)
                 )
                *interp_spline(&integral[5].result, sep)
                 + (
-                    3*par->Omega0_m/2./a2*f1*(f2 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(f2 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                     +
-                    3*par->Omega0_m/2./a1*f2*(f1 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
                 )
                *interp_spline(&integral[6].result, sep);
 
@@ -406,9 +406,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "42") == 0
         ){
             result += (
-                    3*par->Omega0_m/2./a2*curlyH1*f1*(1 + G2)*(chi2*costheta - chi1)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(1 + G2)*(chi2*costheta - chi1)
                     +
-                    3*par->Omega0_m/2./a1*curlyH2*f2*(1 + G1)*(chi1*costheta - chi2)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(1 + G1)*(chi1*costheta - chi2)
                 )
                *interp_spline(&integral[7].result, sep);
         }
@@ -418,9 +418,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "52") == 0
         ){
             result += (
-                    3*par->Omega0_m/2./a2*curlyH1*f1*(5*s2 - 2)*(chi2*costheta - chi1)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(5*s2 - 2)*(chi2*costheta - chi1)
                     +
-                    3*par->Omega0_m/2./a1*curlyH2*f2*(5*s1 - 2)*(chi1*costheta - chi2)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(5*s1 - 2)*(chi1*costheta - chi2)
                 )
                *interp_spline(&integral[7].result, sep);
         }
@@ -430,9 +430,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "62") == 0
         ){
             result += (
-                    3*par->Omega0_m/2./a2*curlyH1*f1*(f2 - 1.)*(chi2*costheta - chi1)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(f2 - 1.)*(chi2*costheta - chi1)
                     +
-                    3*par->Omega0_m/2./a1*curlyH2*f2*(f1 - 1.)*(chi1*costheta - chi2)
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(f1 - 1.)*(chi1*costheta - chi2)
                 )
                *interp_spline(&integral[7].result, sep);
         }
@@ -442,9 +442,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "43") == 0
         ){
             result += -(
-                    3*(3 - fevo1)*par->Omega0_m/2./a2*pow(curlyH1, 2)*f1*(1 + G2)
+                    3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(1 + G2)
                     +
-                    3*(3 - fevo2)*par->Omega0_m/2./a1*pow(curlyH2, 2)*f2*(1 + G1)
+                    3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(1 + G1)
                 )
                *(
                     interp_spline(&integral[8].result, sep)
@@ -463,9 +463,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "53") == 0
         ){
             result += -(
-                    3*(3 - fevo1)*par->Omega0_m/2./a2*pow(curlyH1, 2)*f1*(5*s2 - 2)
+                    3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(5*s2 - 2)
                     +
-                    3*(3 - fevo2)*par->Omega0_m/2./a1*pow(curlyH2, 2)*f2*(5*s1 - 2)
+                    3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(5*s1 - 2)
                 )
                *(
                     interp_spline(&integral[8].result, sep)
@@ -484,9 +484,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "63") == 0
         ){
             result += -(
-                    3*(3 - fevo1)*par->Omega0_m/2./a2*pow(curlyH1, 2)*f1*(f2 - 1)
+                    3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(f2 - 1)
                     +
-                    3*(3 - fevo2)*par->Omega0_m/2./a1*pow(curlyH2, 2)*f2*(f1 - 1)
+                    3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(f1 - 1)
                 )
                *(
                     interp_spline(&integral[8].result, sep)
@@ -505,9 +505,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "54") == 0
         ){
             result += (
-                    9*pow(par->Omega0_m, 2)/4./a1/a2*(1 + G1)*(5*s2 - 2)
+                    9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a1/a2*(1 + G1)*(5*s2 - 2)
                     +
-                    9*pow(par->Omega0_m, 2)/4./a2/a1*(1 + G2)*(5*s1 - 2)
+                    9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(5*s1 - 2)
                 )
                *(
                     interp_spline(&integral[8].result, sep)
@@ -526,9 +526,9 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "64") == 0
         ){
             result += (
-                    9*pow(par->Omega0_m, 2)/4./a1/a2*(1 + G1)*(f2 - 1)
+                    9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a1/a2*(1 + G1)*(f2 - 1)
                     +
-                    9*pow(par->Omega0_m, 2)/4./a2/a1*(1 + G2)*(f1 - 1)
+                    9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(f1 - 1)
                 )
                *(
                     interp_spline(&integral[8].result, sep)
@@ -546,7 +546,7 @@ double functions_nonintegrated(
             strcmp(par->corr_terms[i], "56") == 0 ||
             strcmp(par->corr_terms[i], "65") == 0
         ){
-            result += 9*pow(par->Omega0_m, 2)/4.*(
+            result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4.*(
                     (5*s1 - 2)*(f2 - 1)/a1/a2
                     +
                     (5*s2 - 2)*(f1 - 1)/a2/a1
@@ -655,7 +655,7 @@ double functions_single_integrated(
             /* den-len + len-den modified in flatsky */
             if (par->flatsky){
                 result +=
-                   -3*par->Omega0_m/M_PI/4
+                   -3*(par->Omega0_cdm + par->Omega0_baryon)/M_PI/4
                    *interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
                    *((2 - 5*sz_mean1)*bz_mean2 + (2 - 5*sz_mean2)*bz_mean1)
                    *interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
@@ -663,7 +663,7 @@ double functions_single_integrated(
             else{
             if (r21 != 0.0 && r22 != 0.0){
                 result +=
-                   -3*par->Omega0_m/2.
+                   -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
                         /* integrand */
@@ -688,7 +688,7 @@ double functions_single_integrated(
             }
             else if (r21 == 0.0 && r22 != 0){
                 result +=
-                   -3*par->Omega0_m/2.
+                   -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
                         /* integrand */
@@ -710,7 +710,7 @@ double functions_single_integrated(
             }
             else if (r21 != 0 && r22 == 0.0){
                 result +=
-                   -3*par->Omega0_m/2.
+                   -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
                         /* integrand */
@@ -732,7 +732,7 @@ double functions_single_integrated(
             }
             else{
                 result +=
-                   -3*par->Omega0_m/2.
+                   -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -759,7 +759,7 @@ double functions_single_integrated(
             if (r21 != 0 && r22 != 0){
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -791,7 +791,7 @@ double functions_single_integrated(
                     );
                 if (fabs(mu) < 0.999){
                     result +=
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -826,7 +826,7 @@ double functions_single_integrated(
                 }
                 else{
                     result +=
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -842,7 +842,7 @@ double functions_single_integrated(
             }
             else if (r21 == 0 && r22 != 0){
                 result +=
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -878,7 +878,7 @@ double functions_single_integrated(
             else if (r21 != 0 && r22 == 0){
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -913,7 +913,7 @@ double functions_single_integrated(
             }
             else{
                 result +=
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                         /* integrand */
@@ -939,7 +939,7 @@ double functions_single_integrated(
             if (r21 != 0 && r22 != 0){
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
                        *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -979,7 +979,7 @@ double functions_single_integrated(
             else if (r21 == 0 && r22 != 0){
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
                        *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -1010,7 +1010,7 @@ double functions_single_integrated(
             else if (r21 != 0 && r22 == 0){
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
                        *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -1041,7 +1041,7 @@ double functions_single_integrated(
             else{
                 result +=
                     /* constant in front */
-                    3*par->Omega0_m/2.
+                    3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
                        *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -1068,7 +1068,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-               -3*par->Omega0_m/2.
+               -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     chi2*(3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
                    *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -1100,7 +1100,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m/4.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
                *(
                     chi2*(1 + interp_spline(&bg->G1, z1_const))*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                    *(
@@ -1130,7 +1130,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m/4.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
                *(
                     chi2*(5*s1 - 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                    *(
@@ -1160,7 +1160,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m/4.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
                *(
                     chi2*(interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                    *(
@@ -1190,7 +1190,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-               -3*par->Omega0_m
+               -3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                     /* integrand */
@@ -1210,7 +1210,7 @@ double functions_single_integrated(
         ){
             result +=
                 /* constant in front */
-               -3*par->Omega0_m
+               -3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     chi2*b1*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
                     /* integrand */
@@ -1231,7 +1231,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "71") == 0
         ){
             result +=
-                3*par->Omega0_m
+                3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                     /* integrand */
@@ -1258,7 +1258,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "81") == 0
         ){
             result +=
-                3*par->Omega0_m
+                3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     chi2*interp_spline(&bg->f, z1_const)*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
                     /* integrand */
@@ -1287,7 +1287,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "72") == 0
         ){
             result +=
-                3*par->Omega0_m
+                3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
                    *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*(lambda2*costheta - chi1)
@@ -1304,7 +1304,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "82") == 0
         ){
             result +=
-                3*par->Omega0_m
+                3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
                    *interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
@@ -1325,7 +1325,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "73") == 0
         ){
             result +=
-               -3*par->Omega0_m
+               -3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     (3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
                    *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
@@ -1344,7 +1344,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "83") == 0
         ){
             result +=
-               -3*par->Omega0_m
+               -3*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     chi2*(3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
                    *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
@@ -1365,7 +1365,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "74") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     (1 + interp_spline(&bg->G1, z1_const))*(2 - 5*s2)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1384,7 +1384,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "84") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     chi2*(1 + interp_spline(&bg->G1, z1_const))*interp_spline(&bg->G2, z2_const)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1407,7 +1407,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "75") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     (5*s1 - 2)*(2 - 5*s2)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1426,7 +1426,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "85") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     chi2*(5*s1 - 2)*interp_spline(&bg->G2, z2_const)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1449,7 +1449,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "76") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     (interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1468,7 +1468,7 @@ double functions_single_integrated(
             strcmp(par->corr_terms[i], "86") == 0
         ){
             result +=
-                9*par->Omega0_m*par->Omega0_m/2.
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     chi2*(interp_spline(&bg->f, z1_const) - 1)*interp_spline(&bg->G2, z2_const)
                    *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
@@ -1580,7 +1580,7 @@ double functions_double_integrated(
                 /* len-len modified by flatsky */
                 result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)
                 /* integrand */
                *interp_spline(&integral[9].result, x1*temp_sep*sqrt(1 - mu*mu))
                *pow(interp_spline(&bg->D1, interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
@@ -1591,7 +1591,7 @@ double functions_double_integrated(
             if (r2 > 1e-20){
                 result +=
                 /* constant in front */
-                9.*par->Omega0_m*par->Omega0_m*(2 - 5*s1)*(2 - 5*s2)/4.*chi1*chi2
+                9.*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)/4.*chi1*chi2
                *
                 /* integrand */
                 interp_spline(&bg->D1, z1)
@@ -1625,7 +1625,7 @@ double functions_double_integrated(
             else{
                 result +=
                 /* constant in front */
-                9./4*pow(par->Omega0_m, 2)*(2 - 5*s1)*(2 - 5*s2)*chi1*chi2
+                9./4*pow((par->Omega0_cdm + par->Omega0_baryon), 2)*(2 - 5*s1)*(2 - 5*s2)*chi1*chi2
                *
                 /* integrand */
                 interp_spline(&bg->D1, z1)
@@ -1646,7 +1646,7 @@ double functions_double_integrated(
         else if (strcmp(par->corr_terms[i], "77") == 0){
             result +=
             /* constant in front */
-            9*par->Omega0_m*par->Omega0_m*(2 - 5*s1)*(2 - 5*s2)
+            9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)
            *
                 /* integrand */
                 interp_spline(&bg->D1, z1)
@@ -1659,7 +1659,7 @@ double functions_double_integrated(
         else if (strcmp(par->corr_terms[i], "88") == 0){
             result +=
             /* constant in front */
-            9*par->Omega0_m*par->Omega0_m
+            9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)
            *interp_spline(&bg->G1, z1_const)
            *interp_spline(&bg->G2, z2_const)
            *chi1*chi2
@@ -1683,7 +1683,7 @@ double functions_double_integrated(
             if (r2 != 0){
                 result +=
                     /* constant in front */
-                    9*par->Omega0_m*par->Omega0_m/2.
+                    9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         (2 - 5*s1)*(2 - 5*s2)
                        *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
@@ -1704,7 +1704,7 @@ double functions_double_integrated(
             }
             else{
                 result +=
-                    9*par->Omega0_m*par->Omega0_m/2.
+                    9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         (2 - 5*s1)*(2 - 5*s2)
                        *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
@@ -1726,7 +1726,7 @@ double functions_double_integrated(
             if (r2 != 0){
                 result +=
                     /* constant in front */
-                    9*par->Omega0_m*par->Omega0_m/2.
+                    9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         (2 - 5*s2)*interp_spline(&bg->G1, z1_const)*chi1
                        *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->conformal_Hz, z1) - 1)
@@ -1749,7 +1749,7 @@ double functions_double_integrated(
             }
             else{
                 result +=
-                    9*par->Omega0_m*par->Omega0_m/2.
+                    9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                    *(
                         (2 - 5*s2)*interp_spline(&bg->G1, z1_const)*chi1
                        *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->conformal_Hz, z1) - 1)
@@ -1772,7 +1772,7 @@ double functions_double_integrated(
         ){
             result +=
                 /* constant in front */
-                9*par->Omega0_m*par->Omega0_m
+                9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)
                *(
                     interp_spline(&bg->G2, z2_const)*(2 - 5*s1)*chi2
                    *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)

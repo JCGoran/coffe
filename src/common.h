@@ -153,9 +153,11 @@ struct coffe_parameters_t
 
     double H0; /* same as hardcoded COFFE_H0 in our units */
 
-    double Omega0_m; /* omega parameter for (total) matter */
+    double Omega0_cdm; /* omega parameter for cold dark matter */
 
-    double Omega0_gamma; /* omega parameter of photons */
+    double Omega0_baryon; /* omega parameter for baryons */
+
+    double Omega0_gamma; /* omega parameter for photons */
 
     double w0; /* parameter for the equation of state of dark energy */
 
@@ -264,19 +266,15 @@ struct coffe_parameters_t
 #ifdef HAVE_CLASS
     /* stuff for CLASS only */
 
-    int have_class;
+    int have_class; /* should CLASS be used or not? */
 
-    double spectral_index; /* spectral index n_s */
+    double n_s; /* spectral index n_s */
 
-    double spectrum_amplitude; /* A_s */
+    double ln_10_pow_10_A_s; /* amplitude of primordial power spectrum A_s */
 
     double h; /* Damn you, little h! */
 
-    double Omega0_baryon; /* omega parameter for baryons */
-
     double k_pivot; /* for CLASS */
-
-    int nonlinear; /* do we want halofit or not? */
 
 #endif
 

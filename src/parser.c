@@ -244,10 +244,11 @@ int coffe_parser_init(
     parse_int(conf, "background_sampling", &par->background_bins, COFFE_TRUE);
 
     /* cosmological parameters */
-    parse_double(conf, "omega_m", &par->Omega0_m, COFFE_TRUE);
+    parse_double(conf, "omega_cdm", &par->Omega0_cdm, COFFE_TRUE);
+    parse_double(conf, "omega_baryon", &par->Omega0_baryon, COFFE_TRUE);
     parse_double(conf, "omega_gamma", &par->Omega0_gamma, COFFE_TRUE);
 
-    par->Omega0_de = 1. - par->Omega0_m - par->Omega0_gamma;
+    par->Omega0_de = 1. - (par->Omega0_cdm + par->Omega0_baryon) - par->Omega0_gamma;
 
     /* mean redshift */
     if (
@@ -570,12 +571,9 @@ int coffe_parser_init(
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
         parse_double(conf, "h", &par->h, COFFE_TRUE);
-        parse_double(conf, "omega_baryon", &par->Omega0_baryon, COFFE_TRUE);
-        parse_double(conf, "spectrum_amplitude", &par->spectrum_amplitude, COFFE_TRUE);
-        parse_double(conf, "spectral_index", &par->spectral_index, COFFE_TRUE);
+        parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
+        parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
-
-        parse_int(conf, "nonlinear", &par->nonlinear, COFFE_TRUE);
 
         struct precision ppr;
         struct background pba;
@@ -599,12 +597,7 @@ int coffe_parser_init(
         class_start = clock();
         struct file_content fc;
 
-        if (par->nonlinear){
-            parser_init(&fc, 19, "", errmsg);
-        }
-        else{
-            parser_init(&fc, 18, "", errmsg);
-        }
+        parser_init(&fc, 18, "", errmsg);
 
         /* not sure which values I actually need (maybe give the user the ability to read all of them?) */
 
@@ -621,7 +614,7 @@ int coffe_parser_init(
         sprintf(fc.value[3], "%e", 3.046);
 
         sprintf(fc.name[4], "Omega_cdm");
-        sprintf(fc.value[4], "%e", par->Omega0_m - par->Omega0_baryon);
+        sprintf(fc.value[4], "%e", (par->Omega0_cdm + par->Omega0_baryon) - par->Omega0_baryon);
 
         sprintf(fc.name[5], "Omega_k");
         sprintf(fc.value[5], "%e", 0.0);
@@ -644,11 +637,11 @@ int coffe_parser_init(
         sprintf(fc.name[11], "k_pivot");
         sprintf(fc.value[11], "%e", par->k_pivot);
 
-        sprintf(fc.name[12], "A_s");
-        sprintf(fc.value[12], "%e", par->spectrum_amplitude);
+        sprintf(fc.name[12], "ln10^{10}A_s");
+        sprintf(fc.value[12], "%e", par->ln_10_pow_10_A_s);
 
         sprintf(fc.name[13], "n_s");
-        sprintf(fc.value[13], "%e", par->spectral_index);
+        sprintf(fc.value[13], "%e", par->n_s);
 
         sprintf(fc.name[14], "alpha_s");
         sprintf(fc.value[14], "%e", 0.0);
@@ -661,11 +654,6 @@ int coffe_parser_init(
 
         sprintf(fc.name[17], "z_pk");
         sprintf(fc.value[17], "%e", 0.0);
-
-        if (par->nonlinear){
-            sprintf(fc.name[18], "non linear");
-            sprintf(fc.value[18], "halofit");
-        }
 
         if (
             input_init(
@@ -699,12 +687,7 @@ int coffe_parser_init(
 
         for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
             k[i] = exp(psp.ln_k[i])/par->h;
-            if (par->nonlinear){
-                pk[i] = exp(psp.ln_pk_nl[i])*pow(par->h, 3);
-            }
-            else{
-                pk[i] = exp(psp.ln_pk_l[i])*pow(par->h, 3);
-            }
+            pk[i] = exp(psp.ln_pk_l[i])*pow(par->h, 3);
         }
         init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
