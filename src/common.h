@@ -1,6 +1,6 @@
 /*
  * This file is part of COFFE
- * Copyright (C) 2018 Goran Jelic-Cizmek
+ * Copyright (C) 2019 Goran Jelic-Cizmek
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include <libconfig.h>
 
 #ifndef COFFE_VERSION_STRING
-#define COFFE_VERSION_STRING "1.0"
+#define COFFE_VERSION_STRING "1.1.0"
 #endif
 
 #ifndef COFFE_VERSION_MAJOR
@@ -32,7 +32,7 @@
 #endif
 
 #ifndef COFFE_VERSION_MINOR
-#define COFFE_VERSION_MINOR 0
+#define COFFE_VERSION_MINOR 1
 #endif
 
 #ifndef COFFE_VERSION_PATCH
@@ -41,7 +41,7 @@
 
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
-                        "Copyright (C) 2018 Goran Jelic-Cizmek\n" \
+                        "Copyright (C) 2019 Goran Jelic-Cizmek\n" \
                         "This is free software; see the source for copying conditions.\n" \
                         "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n" \
                         "Report bugs to: goran.jelic-cizmek@unige.ch\n"

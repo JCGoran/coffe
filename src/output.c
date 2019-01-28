@@ -1,6 +1,6 @@
 /*
  * This file is part of COFFE
- * Copyright (C) 2018 Goran Jelic-Cizmek
+ * Copyright (C) 2019 Goran Jelic-Cizmek
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -415,10 +415,26 @@ int coffe_output_init(
             NULL
         );
     }
+    if (par->flatsky){
+        snprintf(
+            header, COFFE_MAX_STRLEN,
+            "# flatsky\n",
+        );
+        snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral9.dat", prefix);
+        write_ncol_null(
+            filepath,
+            integral[9].result.spline->size, header, " ",
+            integral[9].result.spline->x,
+            integral[9].result.spline->y,
+            NULL
+        );
+    }
+
 #endif
 
 
     end = clock();
+
     printf("Output finished in %.2f s\n",
         (double)(end - start) / CLOCKS_PER_SEC);
 
