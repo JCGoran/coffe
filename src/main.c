@@ -68,6 +68,15 @@ int main(int argc, char *argv[])
                 break;
             case 'v':
                 printf("COFFE version %s\n", COFFE_VERSION_STRING);
+#ifdef HAVE_CUBA
+                printf("CUBA: enabled\n");
+#endif
+#ifdef HAVE_CLASS
+                printf("CLASS: enabled\n");
+#endif
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+                printf("Double exponential quadrature: enabled\n");
+#endif
                 return EXIT_SUCCESS;
                 break;
             case 'C':

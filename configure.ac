@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([coffe], [1.0], [goran.jelic-cizmek@unige.ch])
+AC_INIT([coffe], [1.1.0], [goran.jelic-cizmek@unige.ch])
 AM_INIT_AUTOMAKE([foreign subdir-objects]) # Does not require NEWS, COPYING, AUTHORS, ChangeLog or README
 
 # silent make https://autotools.io/automake/silent.html
@@ -83,14 +83,18 @@ dnl                 ])
 
 # Checks for header files.
 AC_HEADER_ASSERT # ./configure --disable-assert to define NDEBUG 
-AC_CHECK_HEADERS([stdlib.h stdarg.h complex.h math.h string.h], [], [
+AC_CHECK_HEADERS([stdlib.h stdarg.h complex.h math.h string.h float.h limits.h stddef.h], [], [
     AC_MSG_ERROR([Certain standard headers not found.])
+    ])
+
+AC_CHECK_FUNCS([mkdir pow sqrt], [],[
+    AC_MSG_ERROR([Certain standard functions not found.])
     ])
 
 AC_ARG_ENABLE(class, [  --enable-class      Automatically includes CLASS library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CLASS", [])
 dnl AC_ARG_ENABLE(covariance, [--enable-covariance Automatically includes the covariance calculation if required libraries found], CPPFLAGS="$CPPFLAGS -DHAVE_COVARIANCE", [])
 AC_ARG_ENABLE(cuba, [  --enable-cuba    Automatically includes the CUBA library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CUBA", [])
-AC_ARG_ENABLE(doubleexp, [  --enable-doubleexp    Uses the double exponential integration method for one dimensional integrals], CPPFLAGS="$CPPFLAGS -DHAVE_DOUBLE_EXPONENTIAL", [])
+AC_ARG_ENABLE(doubleexp, [  --enable-doubleexp    Uses the double exponential quadrature for one dimensional integrals], CPPFLAGS="$CPPFLAGS -DHAVE_DOUBLE_EXPONENTIAL", [])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
