@@ -605,18 +605,33 @@ int coffe_parameters_free(
         free(par->correlation_sources[i]);
     }
     free(par->correlation_sources);
-    free(par->mu);
+
     for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
         free(par->type_bg[i]);
     }
     free(par->type_bg);
-    free(par->sep);
+
+    if (par->output_type == 1){
+        free(par->sep);
+        free(par->mu);
+    }
     if (par->output_type == 2){
+        free(par->sep);
         free(par->multipole_values);
     }
-    if (par->output_type == 5 || par->output_type == 6){
+    if (par->output_type == 3){
+        free(par->sep);
+        free(par->multipole_values);
+    }
+    if (par->output_type == 4){
+        free(par->multipole_values);
         free(par->covariance_z_mean);
         free(par->covariance_deltaz);
+        free(par->covariance_fsky);
+        free(par->covariance_density);
+    }
+    if (par->output_type == 5){
+        free(par->multipole_values);
         free(par->covariance_zmin);
         free(par->covariance_zmax);
         free(par->covariance_fsky);
