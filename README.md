@@ -47,7 +47,7 @@ and then run a container using
 ```
 docker run -ti jcgoran/coffe:latest
 ```
-To generate the binary, run `make`. Copying the input/output can be done using `docker cp` as described in the manual.
+The binary can be run from any directory inside the container. Copying the input/output can be done using `docker cp` as described in the manual.
 
 ## Usage
 To run the code
