@@ -248,7 +248,7 @@ int coffe_parser_init(
     parse_double(conf, "omega_baryon", &par->Omega0_baryon, COFFE_TRUE);
     parse_double(conf, "omega_gamma", &par->Omega0_gamma, COFFE_TRUE);
 
-    par->Omega0_de = 1. - (par->Omega0_cdm + par->Omega0_baryon) - par->Omega0_gamma;
+    par->Omega0_de = 1. - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
 
     /* mean redshift */
     if (
@@ -614,7 +614,7 @@ int coffe_parser_init(
         sprintf(fc.value[3], "%e", 3.046);
 
         sprintf(fc.name[4], "Omega_cdm");
-        sprintf(fc.value[4], "%e", (par->Omega0_cdm + par->Omega0_baryon) - par->Omega0_baryon);
+        sprintf(fc.value[4], "%e", par->Omega0_cdm);
 
         sprintf(fc.name[5], "Omega_k");
         sprintf(fc.value[5], "%e", 0.0);
