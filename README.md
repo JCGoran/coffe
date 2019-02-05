@@ -2,61 +2,77 @@
 This is the public repository for the code COFFE (COrrelation Function Full-sky Estimator).
 The relevant theoretical papers are [arXiv:1708.00492](https://arxiv.org/abs/1708.00492) and [arXiv:1806.11090](https://arxiv.org/abs/1806.11090).
 
-## Installation
-There are a couple of ways to install the code:
+## Installation and running
+There are a couple of ways to install and run the code:
 
-### 1. Docker version
-Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that has "Docker" in the title.
-Then install the downloaded image using
-```
-docker load -i [FILENAME]
-```
-where `[FILENAME]` is the file you just downloaded. You can then run an interactive session by running
-```
-docker run -ti coffe-docker:[VERSION]
-```
-where `[VERSION]` indicates the version of the image you have downloaded. COFFE and all the necessary configuration files are located in the `/build/` directory.
-
-### 2. From the tarball
+### 1. From the tarball
 Go [here](https://github.com/JCGoran/coffe/releases) and download the latest release that doesn't have "Docker" in the title.
 Extract the contents of the tarball somewhere. Make sure you have a C compiler (compatible with the C99 standard) and the following libraries installed:
 * [FFTW](http://www.fftw.org/download.html)
 * [libconfig](https://hyperrealm.github.io/libconfig/)
 * GSL
 * [CUBA](http://www.feynarts.de/cuba/) (optional)
+* [CLASS](https://github.com/lesgourg/class_public) (optional)
 
 Once you have installed the dependencies, you can run 
 ```
 ./configure && make
 ```
-from the directory in which COFFE was extracted. If you wish to enable the CUBA library, you can specify the flag `--enable-cuba` for the `configure` script.
+from the directory in which COFFE was extracted. If you wish to enable the CUBA library, you can specify the flag `--enable-cuba` for the `configure` script. You can also enable CLASS as a library using `--enable-class` and double exponential quadrature using `--enable-doubleexp`.
 
-### 3. From source
-After making sure you have the adequate versions of `autotools` installed on your machine, clone this repository and run
-```
-autoreconf -i
-```
-From there, you may proceed as under point 2.
-
-### 4. From DockerHub
-Run
-```
-docker pull jcgoran/coffe
-```
-and then run a container using
-```
-docker run -ti jcgoran/coffe:latest
-```
-The binary can be run from any directory inside the container. Copying the input/output can be done using `docker cp` as described in the manual.
-
-## Usage
-To run the code
+To run the code:
 ```
 coffe -s [SETTINGSFILE] -n [NUMTHREADS]
 ```
 where `[SETTINGSFILE]` is the name of the settings file, and `[NUMTHREADS]` is the number of processes you wish to spawn (loosely speaking, the number of cores to use for the computation).
 
 The `settings.cfg` file contains explanations about the possible input and output. For more details, please consult the manual located in the `manual` subdirectory.
+
+
+### 2. From source
+After making sure you have the adequate versions of `autotools` installed on your machine, clone this repository:
+```
+git clone https://github.com/JCGoran/coffe
+```
+and run
+```
+autoreconf -i
+```
+From there, you may proceed as under point 1.
+
+### 3. From DockerHub (compatible with Docker, Singularity and Shifter)
+COFFE has a [Docker](https://docs.docker.com/install/) version available.
+To pull the Docker image from DockerHub:
+```
+docker pull jcgoran/coffe:[TAG]
+```
+and then run a container using
+```
+docker run -ti jcgoran/coffe:[TAG]
+```
+where `[TAG]` is the tag of the release (`latest` by default). The binary can be run from any directory inside the container. Copying the input/output can be done using `docker cp` as described in the manual.
+
+Alternatively, one can run the Docker image using [Singularity](https://github.com/sylabs/singularity).
+To pull the image from DockerHub using Singularity:
+```
+singularity pull docker://jcgoran/coffe
+```
+and then run the code directly using
+```
+singularity exec [FILE] coffe -s [SETTINGSFILE] -n [NUMTHREADS]
+```
+where `[FILE]` is the name of the file Singularity has downloaded.
+This, unlike Docker, avoids the hassle of copying to/from the container and directly outputs to your storage device.
+
+Alternatively, one can use [Shifter](https://github.com/NERSC/shifter) on a HPC cluster, as follows:
+```
+shifter pull jcgoran/coffe:[TAG]
+```
+Then you can run the code using:
+```
+shifter run jcgoran/coffe:[TAG] coffe -s [SETTINGSFILE] -n [NUMTHREADS]
+```
+The above may need some adjustments depending on your HPC environment (using `srun` or similar).
 
 ## Bug reports and feature requests
 Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests. For bug reports, if you are running something other than the Docker version, please specify your platform as well as library versions.
