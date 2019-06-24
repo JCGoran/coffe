@@ -43,3 +43,4 @@ RUN autoreconf -i
 RUN ./configure --enable-cuba --enable-class --enable-doubleexp
 RUN make
 RUN ln -s /coffe/coffe /usr/bin/coffe
+WORKDIR /data/
