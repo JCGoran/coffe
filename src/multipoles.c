@@ -168,7 +168,7 @@ static double multipoles_nonintegrated(
     test.l = l;
     test.sep = sep;
 
-    double result, error, prec = 1E-5;
+    double result, error;
 
 #ifdef HAVE_DOUBLE_EXPONENTIAL
     result = tanhsinh_quad(
@@ -178,6 +178,7 @@ static double multipoles_nonintegrated(
         &error, NULL
     );
 #else
+    double prec = 1E-5;
     gsl_function integrand;
     integrand.function = &multipoles_nonintegrated_integrand;
     integrand.params = &test;
