@@ -212,6 +212,48 @@ static int parse_double_array(
 
 
 /**
+    parses the value of bias given by <setting> from config <conf>
+    into coffe_interpolation <spline> depending on value of <flag>
+**/
+
+static int parse_bias(
+    config_t *conf,
+    char *setting,
+    char *filename,
+    char *setting_single,
+    struct coffe_interpolation *spline,
+    int method,
+    int flag
+)
+{
+    if (flag == COFFE_TRUE){
+        double *redshifts, *values;
+        size_t len;
+        parse_string(conf, setting, filename, COFFE_TRUE);
+        read_2col(
+            filename,
+            &redshifts,
+            &values,
+            &len
+        );
+        init_spline(spline, redshifts, values, len, method);
+        free(redshifts);
+        free(values);
+    }
+    else{
+        double value;
+        parse_double(conf, setting_single, &value, COFFE_TRUE);
+        /* a hacky way to init; if you need more range, increase redshift */
+        double redshifts[] = {0, 25, 50, 75, 100};
+        double values[] = {value, value, value, value, value};
+        init_spline(spline, redshifts, values, sizeof(redshifts)/sizeof(redshifts[0]), method);
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+/**
     parses all the settings from the input file
     (given by argv[1]) into the structure <par>
 **/
@@ -336,160 +378,72 @@ int coffe_parser_init(
 
     /* parsing the matter bias */
     parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
-    if (par->read_matter_bias1 == COFFE_TRUE){
-        double *bias_z, *bias_value;
-        size_t bias_len;
-        parse_string(conf, "input_matter_bias1", par->file_matter_bias1, COFFE_TRUE);
-        read_2col(
-            par->file_matter_bias1,
-            &bias_z,
-            &bias_value,
-            &bias_len
-        );
-        init_spline(&par->matter_bias1, bias_z, bias_value, bias_len, par->interp_method);
-        free(bias_z);
-        free(bias_value);
-    }
-    else{
-        double bias;
-        parse_double(conf, "matter_bias1", &bias, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double bias_redshift[] = {0, 25, 50, 75, 100};
-        double bias_value[] = {bias, bias, bias, bias, bias};
-        init_spline(&par->matter_bias1, bias_redshift, bias_value, sizeof(bias_redshift)/sizeof(bias_redshift[0]), par->interp_method);
-    }
+    parse_bias(
+        conf,
+        "input_matter_bias1",
+        par->file_matter_bias1,
+        "matter_bias1",
+        &par->matter_bias1,
+        par->interp_method,
+        par->read_matter_bias1
+    );
 
     parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
-    if (par->read_matter_bias2 == COFFE_TRUE){
-        double *bias_z, *bias_value;
-        size_t bias_len;
-        parse_string(conf, "input_matter_bias2", par->file_matter_bias2, COFFE_TRUE);
-        read_2col(
-            par->file_matter_bias2,
-            &bias_z,
-            &bias_value,
-            &bias_len
-        );
-        init_spline(&par->matter_bias2, bias_z, bias_value, bias_len, par->interp_method);
-        free(bias_z);
-        free(bias_value);
-    }
-    else{
-        double bias;
-        parse_double(conf, "matter_bias2", &bias, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double bias_redshift[] = {0, 25, 50, 75, 100};
-        double bias_value[] = {bias, bias, bias, bias, bias};
-        init_spline(&par->matter_bias2, bias_redshift, bias_value, sizeof(bias_redshift)/sizeof(bias_redshift[0]), par->interp_method);
-    }
-
+    parse_bias(
+        conf,
+        "input_matter_bias2",
+        par->file_matter_bias2,
+        "matter_bias2",
+        &par->matter_bias2,
+        par->interp_method,
+        par->read_matter_bias2
+    );
 
     /* parsing the magnification bias (s) */
     parse_int(conf, "read_magnification_bias1", &par->read_magnification_bias1, COFFE_FALSE);
-    if (par->read_magnification_bias1 == COFFE_TRUE){
-        double *s_z, *s_value;
-        size_t s_len;
-        parse_string(
-            conf,
-            "input_magnification_bias1",
-            par->file_magnification_bias1,
-            COFFE_TRUE
-        );
-        read_2col(
-            par->file_magnification_bias1,
-            &s_z,
-            &s_value,
-            &s_len
-        );
-        init_spline(
-            &par->magnification_bias1,
-            s_z, s_value, s_len,
-            par->interp_method
-        );
-        free(s_z);
-        free(s_value);
-    }
-    else{
-        double s;
-        parse_double(conf, "magnification_bias1", &s, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double s_redshift[] = {0, 25, 50, 75, 100};
-        double s_value[] = {s, s, s, s, s};
-        init_spline(&par->magnification_bias1, s_redshift, s_value, sizeof(s_redshift)/sizeof(s_redshift[0]), par->interp_method);
-    }
+    parse_bias(
+        conf,
+        "input_magnification_bias1",
+        par->file_magnification_bias1,
+        "magnification_bias1",
+        &par->magnification_bias1,
+        par->interp_method,
+        par->read_magnification_bias1
+    );
 
     parse_int(conf, "read_magnification_bias2", &par->read_magnification_bias2, COFFE_FALSE);
-    if (par->read_magnification_bias2 == COFFE_TRUE){
-        double *s_z, *s_value;
-        size_t s_len;
-        parse_string(conf, "input_magnification_bias2", par->file_magnification_bias2, COFFE_TRUE);
-        read_2col(
-            par->file_magnification_bias2,
-            &s_z,
-            &s_value,
-            &s_len
-        );
-        init_spline(&par->magnification_bias2, s_z, s_value, s_len, par->interp_method);
-        free(s_z);
-        free(s_value);
-    }
-    else{
-        double s;
-        parse_double(conf, "magnification_bias2", &s, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double s_redshift[] = {0, 25, 50, 75, 100};
-        double s_value[] = {s, s, s, s, s};
-        init_spline(&par->magnification_bias2, s_redshift, s_value, sizeof(s_redshift)/sizeof(s_redshift[0]), par->interp_method);
-    }
+    parse_bias(
+        conf,
+        "input_magnification_bias2",
+        par->file_magnification_bias2,
+        "magnification_bias2",
+        &par->magnification_bias2,
+        par->interp_method,
+        par->read_magnification_bias2
+    );
 
     /* parsing the evolution_bias (f_evo) */
     parse_int(conf, "read_evolution_bias1", &par->read_evolution_bias1, COFFE_FALSE);
-    if (par->read_evolution_bias1 == COFFE_TRUE){
-        double *f_evo_z, *f_evo_value;
-        size_t f_evo_len;
-        parse_string(conf, "input_evolution_bias1", par->file_evolution_bias1, COFFE_TRUE);
-        read_2col(
-            par->file_evolution_bias1,
-            &f_evo_z,
-            &f_evo_value,
-            &f_evo_len
-        );
-        init_spline(&par->evolution_bias1, f_evo_z, f_evo_value, f_evo_len, par->interp_method);
-        free(f_evo_z);
-        free(f_evo_value);
-    }
-    else{
-        double f_evo;
-        parse_double(conf, "evolution_bias1", &f_evo, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double f_evo_redshift[] = {0, 25, 50, 75, 200};
-        double f_evo_value[] = {f_evo, f_evo, f_evo, f_evo, f_evo};
-        init_spline(&par->evolution_bias1, f_evo_redshift, f_evo_value, sizeof(f_evo_redshift)/sizeof(f_evo_redshift[0]), par->interp_method);
-    }
+    parse_bias(
+        conf,
+        "input_evolution_bias1",
+        par->file_evolution_bias1,
+        "evolution_bias1",
+        &par->evolution_bias1,
+        par->interp_method,
+        par->read_evolution_bias1
+    );
 
     parse_int(conf, "read_evolution_bias2", &par->read_evolution_bias2, COFFE_FALSE);
-    if (par->read_evolution_bias2 == COFFE_TRUE){
-        double *f_evo_z, *f_evo_value;
-        size_t f_evo_len;
-        parse_string(conf, "input_evolution_bias2", par->file_evolution_bias2, COFFE_TRUE);
-        read_2col(
-            par->file_evolution_bias2,
-            &f_evo_z,
-            &f_evo_value,
-            &f_evo_len
-        );
-        init_spline(&par->evolution_bias2, f_evo_z, f_evo_value, f_evo_len, par->interp_method);
-        free(f_evo_z);
-        free(f_evo_value);
-    }
-    else{
-        double f_evo;
-        parse_double(conf, "evolution_bias2", &f_evo, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double f_evo_redshift[] = {0, 25, 50, 75, 200};
-        double f_evo_value[] = {f_evo, f_evo, f_evo, f_evo, f_evo};
-        init_spline(&par->evolution_bias2, f_evo_redshift, f_evo_value, sizeof(f_evo_redshift)/sizeof(f_evo_redshift[0]), par->interp_method);
-    }
+    parse_bias(
+        conf,
+        "input_evolution_bias2",
+        par->file_evolution_bias2,
+        "evolution_bias2",
+        &par->evolution_bias2,
+        par->interp_method,
+        par->read_evolution_bias2
+    );
 
     /* parsing the covariance parameters */
     if (par->output_type == 4 || par->output_type == 5){
