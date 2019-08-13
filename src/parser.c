@@ -682,6 +682,8 @@ int coffe_parser_init(
         }
     }
     else{
+#endif
+        /* the power spectrum */
         parse_string(
             conf,
             "input_power_spectrum",
@@ -729,52 +731,7 @@ int coffe_parser_init(
                     par->power_spectrum.spline->size - 1
                 ];
         }
-    }
-#else
-
-    /* the power spectrum */
-    parse_string(
-        conf,
-        "input_power_spectrum",
-        par->file_power_spectrum,
-        COFFE_TRUE
-    );
-    double *k, *pk;
-    size_t pk_len;
-
-    read_2col(
-        par->file_power_spectrum,
-        &k, &pk, &pk_len
-    );
-
-    init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
-
-    free(k);
-    free(pk);
-
-    /* the lower limit of integration for P(k) */
-    parse_double(conf, "k_min", &par->k_min, COFFE_FALSE);
-
-    if (par->k_min < par->power_spectrum.spline->x[0]){
-        fprintf(
-            stderr,
-            "WARNING: k_min smaller than minimum value in the file; "
-            "using minimum value instead\n"
-        );
-        par->k_min = par->power_spectrum.spline->x[0];
-    }
-
-    /* the upper limit of integration for P(k) */
-    parse_double(conf, "k_max", &par->k_max, COFFE_FALSE);
-
-    if (par->k_max > par->power_spectrum.spline->x[par->power_spectrum.spline->size - 1]){
-        fprintf(
-            stderr,
-            "WARNING: k_max larger than maximum value in the file; "
-            "using maximum value instead\n"
-        );
-        par->k_max =
-            par->power_spectrum.spline->x[par->power_spectrum.spline->size - 1];
+#ifdef HAVE_CLASS
     }
 #endif
 
