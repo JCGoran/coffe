@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
                 return EXIT_SUCCESS;
                 break;
             case 'v':
-                printf("COFFE version %s\n", PACKAGE_VERSION);
+                printf("%s\n", PACKAGE_STRING);
 #ifdef HAVE_CUBA
                 printf("CUBA: enabled\n");
 #endif
