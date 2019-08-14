@@ -167,30 +167,60 @@ int coffe_covariance_init(
     struct coffe_covariance_t *cov_ramp
 )
 {
-    if (par->output_type == 4){
-        cov_mp->flag = 1;
+    if (par->output_type == 4 || par->output_type == 5){
+        if (par->output_type == 4){
+            cov_mp->flag = 1;
+        }
+        else{
+            cov_ramp->flag = 1;
+        }
         time_t start, end;
-        printf("Calculating covariance of multipoles...\n");
+        if (par->output_type == 4){
+            printf("Calculating covariance of multipoles...\n");
+        }
+        else{
+            printf("Calculating covariance of redshift averaged multipoles...\n");
+        }
         start = clock();
 
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        cov_mp->z_mean = (double *)par->covariance_z_mean;
-        cov_mp->deltaz = (double *)par->covariance_deltaz;
+        if (par->output_type == 4){
+            cov_mp->z_mean = (double *)par->covariance_z_mean;
+            cov_mp->deltaz = (double *)par->covariance_deltaz;
 
-        cov_mp->density = (double *)par->covariance_density;
-        cov_mp->fsky = (double *)par->covariance_fsky;
-        cov_mp->pixelsize = (double)par->covariance_pixelsize;
-        cov_mp->list_len = (size_t)par->covariance_density_len;
+            cov_mp->density = (double *)par->covariance_density;
+            cov_mp->fsky = (double *)par->covariance_fsky;
+            cov_mp->pixelsize = (double)par->covariance_pixelsize;
+            cov_mp->list_len = (size_t)par->covariance_density_len;
 
-        cov_mp->sep = (double **)coffe_malloc(sizeof(double *)*cov_mp->list_len);
-        cov_mp->sep_len = (size_t *)coffe_malloc(sizeof(size_t)*cov_mp->list_len);
+            cov_mp->sep = (double **)coffe_malloc(sizeof(double *)*cov_mp->list_len);
+            cov_mp->sep_len = (size_t *)coffe_malloc(sizeof(size_t)*cov_mp->list_len);
 
-        cov_mp->l_len = (size_t)par->multipole_values_len;
-        cov_mp->l = (int *)coffe_malloc(sizeof(int)*cov_mp->l_len);
-        for (size_t i = 0; i<cov_mp->l_len; ++i){
-            cov_mp->l[i] = (int)par->multipole_values[i];
+            cov_mp->l_len = (size_t)par->multipole_values_len;
+            cov_mp->l = (int *)coffe_malloc(sizeof(int)*cov_mp->l_len);
+            for (size_t i = 0; i<cov_mp->l_len; ++i){
+                cov_mp->l[i] = (int)par->multipole_values[i];
+            }
+        }
+        else{
+            cov_ramp->zmin = (double *)par->covariance_zmin;
+            cov_ramp->zmax = (double *)par->covariance_zmax;
+
+            cov_ramp->density = (double *)par->covariance_density;
+            cov_ramp->fsky = (double *)par->covariance_fsky;
+            cov_ramp->pixelsize = (double)par->covariance_pixelsize;
+            cov_ramp->list_len = (size_t)par->covariance_density_len;
+
+            cov_ramp->sep = (double **)coffe_malloc(sizeof(double *)*cov_ramp->list_len);
+            cov_ramp->sep_len = (size_t *)coffe_malloc(sizeof(size_t)*cov_ramp->list_len);
+
+            cov_ramp->l_len = (size_t)par->multipole_values_len;
+            cov_ramp->l = (int *)coffe_malloc(sizeof(int)*cov_ramp->l_len);
+            for (size_t i = 0; i<cov_ramp->l_len; ++i){
+                cov_ramp->l[i] = (int)par->multipole_values[i];
+            }
         }
 
         double *temp_spectrum_pk =
@@ -230,58 +260,79 @@ int coffe_covariance_init(
 
         /* finding the largest separation */
         double *upper_limit =
-            (double *)coffe_malloc(sizeof(double)*cov_mp->list_len);
-        for (size_t i = 0; i<cov_mp->list_len; ++i){
-            upper_limit[i] = 2*(
-                interp_spline(
-                    &bg->comoving_distance,
-                    cov_mp->z_mean[i] + cov_mp->deltaz[i]
-                )
-               -interp_spline(
-                    &bg->comoving_distance,
-                    cov_mp->z_mean[i]
-                )
-            )/COFFE_H0;
+            (double *)coffe_malloc(sizeof(double)*par->covariance_density_len);
+        for (size_t i = 0; i<par->covariance_density_len; ++i){
+            if (par->output_type == 4){
+                upper_limit[i] = 2*(
+                    interp_spline(
+                        &bg->comoving_distance,
+                        cov_mp->z_mean[i] + cov_mp->deltaz[i]
+                    )
+                   -interp_spline(
+                        &bg->comoving_distance,
+                        cov_mp->z_mean[i]
+                    )
+                )/COFFE_H0;
+            }
+            else{
+                upper_limit[i] = (
+                    interp_spline(
+                        &bg->comoving_distance,
+                        cov_ramp->zmax[i]
+                    )
+                   -interp_spline(
+                        &bg->comoving_distance,
+                        cov_ramp->zmin[i]
+                    )
+                )/COFFE_H0;
+            }
         }
 
         /* max number of pixels possible for each redshift z_mean and range deltaz */
         size_t *npixels =
-            (size_t *)coffe_malloc(sizeof(size_t)*cov_mp->list_len);
+            (size_t *)coffe_malloc(sizeof(size_t)*par->covariance_density_len);
 
-        for (size_t i = 0; i<cov_mp->list_len; ++i){
-            npixels[i] = (size_t)(upper_limit[i]/cov_mp->pixelsize);
-            cov_mp->sep[i] =
-                (double *)coffe_malloc(sizeof(double)*npixels[i]);
-            cov_mp->sep_len[i] = npixels[i];
+        for (size_t i = 0; i<par->covariance_density_len; ++i){
+            npixels[i] = (size_t)(upper_limit[i]/par->covariance_pixelsize);
+            if (par->output_type == 4){
+                cov_mp->sep[i] =
+                    (double *)coffe_malloc(sizeof(double)*npixels[i]);
+                cov_mp->sep_len[i] = npixels[i];
+            }
+            else{
+                cov_ramp->sep[i] =
+                    (double *)coffe_malloc(sizeof(double)*npixels[i]);
+                cov_ramp->sep_len[i] = npixels[i];
+            }
         }
-        size_t npixels_max = covariance_find_maximum(npixels, cov_mp->list_len);
+        size_t npixels_max = covariance_find_maximum(npixels, par->covariance_density_len);
 
         /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
         double **integral_pk =
-            (double **)coffe_malloc(sizeof(double *)*cov_mp->l_len*cov_mp->l_len);
+            (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
         double **integral_pk2 =
-            (double **)coffe_malloc(sizeof(double *)*cov_mp->l_len*cov_mp->l_len);
-        for (size_t i = 0; i<cov_mp->l_len; ++i){
-            for (size_t j = 0; j<cov_mp->l_len; ++j){
-            integral_pk[i*cov_mp->l_len + j] =
+            (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
+            for (size_t j = 0; j<par->multipole_values_len; ++j){
+            integral_pk[i*par->multipole_values_len + j] =
                 (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
-            integral_pk2[i*cov_mp->l_len + j] =
+            integral_pk2[i*par->multipole_values_len + j] =
                 (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
             }
         }
 
         /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
-        for (size_t i = 0; i<cov_mp->l_len; ++i){
-            for (size_t j = i; j<cov_mp->l_len; ++j){
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
+            for (size_t j = i; j<par->multipole_values_len; ++j){
                 #pragma omp parallel for num_threads(par->nthreads) collapse(2)
                 for (size_t m = 0; m<npixels_max; ++m){
                     for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*cov_mp->l_len + j][npixels_max*n + m] =
-                            (2*cov_mp->l[i] + 1)*(2*cov_mp->l[j] + 1)
+                        integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
+                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
                            *covariance_integral(
                                 &integrand_pk,
-                                (m + 1)*cov_mp->pixelsize, (n + 1)*cov_mp->pixelsize,
-                                cov_mp->l[i], cov_mp->l[j],
+                                (m + 1)*par->covariance_pixelsize, (n + 1)*par->covariance_pixelsize,
+                                par->multipole_values[i], par->multipole_values[j],
                                 par->k_min, par->k_max, par->covariance_pixelsize
                             )/M_PI;
                     }
@@ -289,12 +340,12 @@ int coffe_covariance_init(
                 #pragma omp parallel for num_threads(par->nthreads) collapse(2)
                 for (size_t m = 0; m<npixels_max; ++m){
                     for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk2[i*cov_mp->l_len + j][npixels_max*n + m] =
-                            (2*cov_mp->l[i] + 1)*(2*cov_mp->l[j] + 1)
+                        integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
+                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
                            *covariance_integral(
                                 &integrand_pk2,
-                                (m + 1)*cov_mp->pixelsize, (n + 1)*cov_mp->pixelsize,
-                                cov_mp->l[i], cov_mp->l[j],
+                                (m + 1)*par->covariance_pixelsize, (n + 1)*par->covariance_pixelsize,
+                                par->multipole_values[i], par->multipole_values[j],
                                 par->k_min, par->k_max, par->covariance_pixelsize
                             )/2./M_PI;
                     }
@@ -303,335 +354,97 @@ int coffe_covariance_init(
         }
 
         /* allocating memory for the final result */
-        cov_mp->result = (double ***)coffe_malloc(sizeof(double **)*cov_mp->list_len);
-        for (size_t k = 0; k<cov_mp->list_len; ++k){
-            cov_mp->result[k] =
-                (double **)coffe_malloc(sizeof(double *)*cov_mp->l_len*cov_mp->l_len);
-            for (size_t i = 0; i<cov_mp->l_len; ++i){
-                for (size_t j = 0; j<cov_mp->l_len; ++j){
-                    cov_mp->result[k][i*cov_mp->l_len + j] =
-                        (double *)coffe_malloc(sizeof(double)*npixels[k]*npixels[k]);
+        if (par->output_type == 4){
+            cov_mp->result = (double ***)coffe_malloc(sizeof(double **)*cov_mp->list_len);
+            for (size_t k = 0; k<cov_mp->list_len; ++k){
+                cov_mp->result[k] =
+                    (double **)coffe_malloc(sizeof(double *)*cov_mp->l_len*cov_mp->l_len);
+                for (size_t i = 0; i<cov_mp->l_len; ++i){
+                    for (size_t j = 0; j<cov_mp->l_len; ++j){
+                        cov_mp->result[k][i*cov_mp->l_len + j] =
+                            (double *)coffe_malloc(sizeof(double)*npixels[k]*npixels[k]);
+                    }
+                }
+            }
+        }
+        else{
+            cov_ramp->result = (double ***)coffe_malloc(sizeof(double **)*cov_ramp->list_len);
+            for (size_t k = 0; k<cov_ramp->list_len; ++k){
+                cov_ramp->result[k] =
+                    (double **)coffe_malloc(sizeof(double *)*cov_ramp->l_len*cov_ramp->l_len);
+                for (size_t i = 0; i<cov_ramp->l_len; ++i){
+                    for (size_t j = 0; j<cov_ramp->l_len; ++j){
+                        cov_ramp->result[k][i*cov_ramp->l_len + j] =
+                            (double *)coffe_malloc(sizeof(double)*npixels[k]*npixels[k]);
+                    }
                 }
             }
         }
 
         /* setting the transpose */
-        for (size_t i = 0; i<cov_mp->l_len; ++i){
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
             for (size_t j = 0; j<i; ++j){
                 for (size_t m = 0; m<npixels_max; ++m){
                     for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*cov_mp->l_len + j][npixels_max*n + m] =
-                            integral_pk[j*cov_mp->l_len + i][npixels_max*m + n];
-                        integral_pk2[i*cov_mp->l_len + j][npixels_max*n + m] =
-                            integral_pk2[j*cov_mp->l_len + i][npixels_max*m + n];
+                        integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
+                            integral_pk[j*par->multipole_values_len + i][npixels_max*m + n];
+                        integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
+                            integral_pk2[j*par->multipole_values_len + i][npixels_max*m + n];
                     }
                 }
             }
         }
 
         double *volume =
-            (double *)coffe_malloc(sizeof(double)*cov_mp->list_len);
-        for (size_t k = 0; k<cov_mp->list_len; ++k){
-            double c0 = 0, c2 = 0, c4 = 0;
-            volume[k] = 4*M_PI*cov_mp->fsky[k]
-               *(
-                    pow(interp_spline(
-                        &bg->comoving_distance, cov_mp->z_mean[k] + cov_mp->deltaz[k]), 3)
-                   -pow(interp_spline(
-                        &bg->comoving_distance, cov_mp->z_mean[k] - cov_mp->deltaz[k]), 3)
-                )/3./pow(COFFE_H0, 3);
-            c0 =
-                /* b^2 + 2/3 b f + f^2/5 */
-                pow(interp_spline(&par->matter_bias1, cov_mp->z_mean[k]), 2)
-               +2*interp_spline(&par->matter_bias1, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/3.
-               +pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/5.;
-            c2 =
-                /* 4/3 b f + 4/7 f^2 */
-                4*interp_spline(&par->matter_bias1, cov_mp->z_mean[k])*interp_spline(&bg->f, cov_mp->z_mean[k])/3.
-               +4*pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/7.;
-            c4 =
-                /* 8/35 f^2 */
-                8*pow(interp_spline(&bg->f, cov_mp->z_mean[k]), 2)/35.;
+            (double *)coffe_malloc(sizeof(double)*par->covariance_density_len);
+        for (size_t k = 0; k<par->covariance_density_len; ++k){
+            double z_mean;
 
-            double c0bar =
-                c0*c0 + c2*c2/5. + c4*c4/9.;
-            double c2bar =
-                2*c2*(7*c0 + c2)/7. + 4*c2*c4/7. + 100*c4*c4/693.;
-            double c4bar =
-                18*c2*c2/35. + 2*c0*c4 + 40*c2*c4/77. + 162*c4*c4/1001.;
-            double c6bar =
-                10*c4*(9*c2 + 2*c4)/99.;
-            double c8bar =
-                490*c4*c4/1287.;
-
-            double D10 = interp_spline(&bg->D1, 0);
-            double D1z = interp_spline(&bg->D1, cov_mp->z_mean[k]);
-
-            double coeff_array[] = {c0, c2, c4};
-            double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
-            double coeff_sum = 0;
-            double coeffbar_sum = 0;
-
-            for (size_t i = 0; i<cov_mp->l_len; ++i){
-                for (size_t j = 0; j<cov_mp->l_len; ++j){
-                    /* the sums c_i wigner3j^2(l1, l2, i) */
-                    for (size_t cnt = 0; cnt<sizeof(coeff_array)/sizeof(coeff_array[0]); ++cnt){
-                        coeff_sum +=
-                            coeff_array[cnt]
-                           *pow(gsl_sf_coupling_3j(2*cov_mp->l[i], 2*cov_mp->l[j], 4*cnt, 0, 0, 0), 2);
-                    }
-                    for (size_t cnt = 0; cnt<sizeof(coeffbar_array)/sizeof(coeffbar_array[0]); ++cnt){
-                        coeffbar_sum +=
-                            coeffbar_array[cnt]
-                           *pow(gsl_sf_coupling_3j(2*cov_mp->l[i], 2*cov_mp->l[j], 4*cnt, 0, 0, 0), 2);
-                    }
-
-                    double deltal1l2;
-                    if (cov_mp->l[i] == cov_mp->l[j]) deltal1l2 = 1;
-                    else deltal1l2 = 0;
-
-                    for (size_t m = 0; m<npixels[k]; ++m){
-                        for (size_t n = 0; n<npixels[k]; ++n){
-                            double deltaij;
-                            if (m == n) deltaij = 1;
-                            else deltaij = 0;
-
-                            cov_mp->sep[k][m] = (m + 1)*cov_mp->pixelsize;
-                            cov_mp->sep[k][n] = (n + 1)*cov_mp->pixelsize;
-                            /* flat-sky covariance */
-                            cov_mp->result[k][cov_mp->l_len*i + j][npixels[k]*n + m] =
-                                covariance_complex(cov_mp->l[i], cov_mp->l[j])*(
-                                (2*cov_mp->l[i] + 1)*deltaij*deltal1l2
-                               /2./M_PI/cov_mp->density[k]/cov_mp->density[k]
-                               /cov_mp->pixelsize/((n + 1)*cov_mp->pixelsize)/((m + 1)*cov_mp->pixelsize)
-                               +D1z*D1z/D10/D10*integral_pk[i*cov_mp->l_len + j][npixels_max*n + m]*coeff_sum/cov_mp->density[k]
-                               +D1z*D1z*D1z*D1z/D10/D10/D10/D10*integral_pk2[i*cov_mp->l_len + j][npixels_max*n + m]*coeffbar_sum
-                            )/volume[k];
-                        }
-                    }
-                    coeff_sum = 0, coeffbar_sum = 0;
-                }
+            if (par->output_type == 4){
+                z_mean = cov_mp->z_mean[k];
+                volume[k] = 4*M_PI*cov_mp->fsky[k]
+                   *(
+                        pow(interp_spline(
+                            &bg->comoving_distance, cov_mp->z_mean[k] + cov_mp->deltaz[k]), 3)
+                       -pow(interp_spline(
+                            &bg->comoving_distance, cov_mp->z_mean[k] - cov_mp->deltaz[k]), 3)
+                    )/3./pow(COFFE_H0, 3);
             }
-        }
+            else{
+                z_mean = (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2.;
+                struct covariance_volume_params test;
+                test.conformal_Hz = &bg->conformal_Hz;
+                test.comoving_distance = &bg->comoving_distance;
 
-        /* memory cleanup */
-        for (size_t i = 0; i<cov_mp->l_len*cov_mp->l_len; ++i){
-            free(integral_pk[i]);
-            free(integral_pk2[i]);
-        }
-        free(integral_pk);
-        free(integral_pk2);
-        gsl_spline_free(integrand_pk.spline);
-        gsl_interp_accel_free(integrand_pk.accel);
-        gsl_spline_free(integrand_pk2.spline);
-        gsl_interp_accel_free(integrand_pk2.accel);
-
-        end = clock();
-        printf("Covariance calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
-
-        gsl_set_error_handler(default_handler);
-    }
-    else if (par->output_type == 5){
-        cov_ramp->flag = 1;
-        time_t start, end;
-        printf("Calculating covariance of redshift averaged multipoles...\n");
-        start = clock();
-
-        gsl_error_handler_t *default_handler =
-            gsl_set_error_handler_off();
-
-        cov_ramp->zmin = (double *)par->covariance_zmin;
-        cov_ramp->zmax = (double *)par->covariance_zmax;
-
-        cov_ramp->density = (double *)par->covariance_density;
-        cov_ramp->fsky = (double *)par->covariance_fsky;
-        cov_ramp->pixelsize = (double)par->covariance_pixelsize;
-        cov_ramp->list_len = (size_t)par->covariance_density_len;
-
-        cov_ramp->sep = (double **)coffe_malloc(sizeof(double *)*cov_ramp->list_len);
-        cov_ramp->sep_len = (size_t *)coffe_malloc(sizeof(size_t)*cov_ramp->list_len);
-
-        cov_ramp->l_len = (size_t)par->multipole_values_len;
-        cov_ramp->l = (int *)coffe_malloc(sizeof(int)*cov_ramp->l_len);
-        for (size_t i = 0; i<cov_ramp->l_len; ++i){
-            cov_ramp->l[i] = (int)par->multipole_values[i];
-        }
-
-        double *temp_spectrum_pk =
-            (double *)coffe_malloc(sizeof(double)*par->power_spectrum.spline->size);
-        double *temp_spectrum_pk2 =
-            (double *)coffe_malloc(sizeof(double)*par->power_spectrum.spline->size);
-        struct coffe_interpolation integrand_pk, integrand_pk2;
-
-        /* setting the power spectra P(k) and P^2(k) */
-        for (size_t i = 0; i<par->power_spectrum.spline->size; ++i){
-            temp_spectrum_pk[i] =
-                par->power_spectrum.spline->y[i];
-            temp_spectrum_pk2[i] =
-                par->power_spectrum.spline->y[i]*par->power_spectrum.spline->y[i];
-        }
-
-        /* interpolations of P(k) and P^2(k) */
-        init_spline(
-            &integrand_pk,
-            par->power_spectrum.spline->x,
-            temp_spectrum_pk,
-            par->power_spectrum.spline->size,
-            5
-        );
-
-        init_spline(
-            &integrand_pk2,
-            par->power_spectrum.spline->x,
-            temp_spectrum_pk2,
-            par->power_spectrum.spline->size,
-            5
-        );
-
-        /* memory cleanup */
-        free(temp_spectrum_pk);
-        free(temp_spectrum_pk2);
-
-        /* finding the largest separation */
-        double *upper_limit =
-            (double *)coffe_malloc(sizeof(double)*cov_ramp->list_len);
-        for (size_t i = 0; i<cov_ramp->list_len; ++i){
-            upper_limit[i] = (
-                interp_spline(
-                    &bg->comoving_distance,
-                    cov_ramp->zmax[i]
-                )
-               -interp_spline(
-                    &bg->comoving_distance,
-                    cov_ramp->zmin[i]
-                )
-            )/COFFE_H0;
-        }
-
-        /* max number of pixels possible for each redshift range */
-        size_t *npixels =
-            (size_t *)coffe_malloc(sizeof(size_t)*cov_ramp->list_len);
-
-        for (size_t i = 0; i<cov_ramp->list_len; ++i){
-            npixels[i] = (size_t)(upper_limit[i]/cov_ramp->pixelsize);
-            cov_ramp->sep[i] =
-                (double *)coffe_malloc(sizeof(double)*npixels[i]);
-            cov_ramp->sep_len[i] = npixels[i];
-        }
-        size_t npixels_max = covariance_find_maximum(npixels, cov_ramp->list_len);
-
-        /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
-        double **integral_pk =
-            (double **)coffe_malloc(sizeof(double *)*cov_ramp->l_len*cov_ramp->l_len);
-        double **integral_pk2 =
-            (double **)coffe_malloc(sizeof(double *)*cov_ramp->l_len*cov_ramp->l_len);
-        for (size_t i = 0; i<cov_ramp->l_len; ++i){
-            for (size_t j = 0; j<cov_ramp->l_len; ++j){
-            integral_pk[i*cov_ramp->l_len + j] =
-                (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
-            integral_pk2[i*cov_ramp->l_len + j] =
-                (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
+                gsl_integration_workspace *space =
+                    gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+                gsl_function integrand;
+                integrand.function = &covariance_volume_integrand;
+                integrand.params = &test;
+                double prec = 1E-6;
+                double integral_result, integral_error;
+                gsl_integration_qag(
+                    &integrand, cov_ramp->zmin[k], cov_ramp->zmax[k], 0, prec,
+                    COFFE_MAX_INTSPACE,
+                    GSL_INTEG_GAUSS61, space,
+                    &integral_result, &integral_error
+                );
+                gsl_integration_workspace_free(space);
+                volume[k] = 4*M_PI*cov_ramp->fsky[k]/integral_result/pow(COFFE_H0, 3);
             }
-        }
-
-        /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
-        for (size_t i = 0; i<cov_ramp->l_len; ++i){
-            for (size_t j = i; j<cov_ramp->l_len; ++j){
-                #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*cov_ramp->l_len + j][npixels_max*n + m] =
-                            (2*cov_ramp->l[i] + 1)*(2*cov_ramp->l[j] + 1)
-                           *covariance_integral(
-                                &integrand_pk,
-                                (m + 1)*cov_ramp->pixelsize, (n + 1)*cov_ramp->pixelsize,
-                                cov_ramp->l[i], cov_ramp->l[j],
-                                par->k_min, par->k_max, par->covariance_pixelsize
-                            )/M_PI;
-                    }
-                }
-                #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk2[i*cov_ramp->l_len + j][npixels_max*n + m] =
-                            (2*cov_ramp->l[i] + 1)*(2*cov_ramp->l[j] + 1)
-                           *covariance_integral(
-                                &integrand_pk2,
-                                (m + 1)*cov_ramp->pixelsize, (n + 1)*cov_ramp->pixelsize,
-                                cov_ramp->l[i], cov_ramp->l[j],
-                                par->k_min, par->k_max, par->covariance_pixelsize
-                            )/2./M_PI;
-                    }
-                }
-            }
-        }
-
-        /* allocating memory for the final result */
-        cov_ramp->result = (double ***)coffe_malloc(sizeof(double **)*cov_ramp->list_len);
-        for (size_t k = 0; k<cov_ramp->list_len; ++k){
-            cov_ramp->result[k] =
-                (double **)coffe_malloc(sizeof(double *)*cov_ramp->l_len*cov_ramp->l_len);
-            for (size_t i = 0; i<cov_ramp->l_len; ++i){
-                for (size_t j = 0; j<cov_ramp->l_len; ++j){
-                    cov_ramp->result[k][i*cov_ramp->l_len + j] =
-                        (double *)coffe_malloc(sizeof(double)*npixels[k]*npixels[k]);
-                }
-            }
-        }
-
-        /* setting the transpose */
-        for (size_t i = 0; i<cov_ramp->l_len; ++i){
-            for (size_t j = 0; j<i; ++j){
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*cov_ramp->l_len + j][npixels_max*n + m] =
-                            integral_pk[j*cov_ramp->l_len + i][npixels_max*m + n];
-                        integral_pk2[i*cov_ramp->l_len + j][npixels_max*n + m] =
-                            integral_pk2[j*cov_ramp->l_len + i][npixels_max*m + n];
-                    }
-                }
-            }
-        }
-
-        double *volume =
-            (double *)coffe_malloc(sizeof(double)*cov_ramp->list_len);
-        for (size_t k = 0; k<cov_ramp->list_len; ++k){
-            double c0 = 0, c2 = 0, c4 = 0;
-            struct covariance_volume_params test;
-            test.conformal_Hz = &bg->conformal_Hz;
-            test.comoving_distance = &bg->comoving_distance;
-
-            gsl_integration_workspace *space =
-                gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-            gsl_function integrand;
-            integrand.function = &covariance_volume_integrand;
-            integrand.params = &test;
-            double prec = 1E-6;
-            double integral_result, integral_error;
-            gsl_integration_qag(
-                &integrand, cov_ramp->zmin[k], cov_ramp->zmax[k], 0, prec,
-                COFFE_MAX_INTSPACE,
-                GSL_INTEG_GAUSS61, space,
-                &integral_result, &integral_error
-            );
-            gsl_integration_workspace_free(space);
-            volume[k] = 4*M_PI*cov_ramp->fsky[k]/integral_result/pow(COFFE_H0, 3);
-
-            const double zmean = (cov_ramp->zmin[k] + cov_ramp->zmax[k])/2.;
 
             /* b^2 + 2/3 b f + f^2/5 */
-            c0 =
-                pow(interp_spline(&par->matter_bias1, zmean), 2)
-               +2*interp_spline(&par->matter_bias1, zmean)*interp_spline(&bg->f, zmean)/3.
-               +pow(interp_spline(&bg->f, zmean), 2)/5.;
+            double c0 =
+                pow(interp_spline(&par->matter_bias1, z_mean), 2)
+               +2*interp_spline(&par->matter_bias1, z_mean)*interp_spline(&bg->f, z_mean)/3.
+               +pow(interp_spline(&bg->f, z_mean), 2)/5.;
             /* 4/3 b f + 4/7 f^2 */
-            c2 =
-                4*interp_spline(&par->matter_bias1, zmean)*interp_spline(&bg->f, zmean)/3.
-               +4*pow(interp_spline(&bg->f, zmean), 2)/7.;
+            double c2 =
+                4*interp_spline(&par->matter_bias1, z_mean)*interp_spline(&bg->f, z_mean)/3.
+               +4*pow(interp_spline(&bg->f, z_mean), 2)/7.;
             /* 8/35 f^2 */
-            c4 =
-                8*pow(interp_spline(&bg->f, zmean), 2)/35.;
+            double c4 =
+                8*pow(interp_spline(&bg->f, z_mean), 2)/35.;
 
             double c0bar =
                 c0*c0 + c2*c2/5. + c4*c4/9.;
@@ -644,30 +457,30 @@ int coffe_covariance_init(
             double c8bar =
                 490*c4*c4/1287.;
 
-            double D1z = interp_spline(&bg->D1, zmean);
             double D10 = interp_spline(&bg->D1, 0);
+            double D1z = interp_spline(&bg->D1, z_mean);
 
             double coeff_array[] = {c0, c2, c4};
             double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
             double coeff_sum = 0;
             double coeffbar_sum = 0;
 
-            for (size_t i = 0; i<cov_ramp->l_len; ++i){
-                for (size_t j = 0; j<cov_ramp->l_len; ++j){
+            for (size_t i = 0; i<par->multipole_values_len; ++i){
+                for (size_t j = 0; j<par->multipole_values_len; ++j){
                     /* the sums c_i wigner3j^2(l1, l2, i) */
                     for (size_t cnt = 0; cnt<sizeof(coeff_array)/sizeof(coeff_array[0]); ++cnt){
                         coeff_sum +=
                             coeff_array[cnt]
-                           *pow(gsl_sf_coupling_3j(2*cov_ramp->l[i], 2*cov_ramp->l[j], 4*cnt, 0, 0, 0), 2);
+                           *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
                     }
                     for (size_t cnt = 0; cnt<sizeof(coeffbar_array)/sizeof(coeffbar_array[0]); ++cnt){
                         coeffbar_sum +=
                             coeffbar_array[cnt]
-                           *pow(gsl_sf_coupling_3j(2*cov_ramp->l[i], 2*cov_ramp->l[j], 4*cnt, 0, 0, 0), 2);
+                           *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
                     }
 
                     double deltal1l2;
-                    if (cov_ramp->l[i] == cov_ramp->l[j]) deltal1l2 = 1;
+                    if (par->multipole_values[i] == par->multipole_values[j]) deltal1l2 = 1;
                     else deltal1l2 = 0;
 
                     for (size_t m = 0; m<npixels[k]; ++m){
@@ -675,18 +488,37 @@ int coffe_covariance_init(
                             double deltaij;
                             if (m == n) deltaij = 1;
                             else deltaij = 0;
-
-                            cov_ramp->sep[k][m] = (m + 1)*cov_ramp->pixelsize;
-                            cov_ramp->sep[k][n] = (n + 1)*cov_ramp->pixelsize;
                             /* flat-sky covariance */
-                            cov_ramp->result[k][cov_ramp->l_len*i + j][npixels[k]*n + m] =
-                                covariance_complex(cov_ramp->l[i], cov_ramp->l[j])*(
-                                (2*cov_ramp->l[i] + 1)*deltaij*deltal1l2
-                               /2./M_PI/cov_ramp->density[k]/cov_ramp->density[k]
-                               /cov_ramp->pixelsize/((n + 1)*cov_ramp->pixelsize)/((m + 1)*cov_ramp->pixelsize)
-                               +D1z*D1z/D10/D10*integral_pk[i*cov_ramp->l_len + j][npixels_max*n + m]*coeff_sum/cov_ramp->density[k]
-                               +D1z*D1z*D1z*D1z/D10/D10/D10/D10*integral_pk2[i*cov_ramp->l_len + j][npixels_max*n + m]*coeffbar_sum
-                            )/volume[k];
+                            const double result_mp_or_ramp =
+                                covariance_complex(
+                                    par->multipole_values[i],
+                                    par->multipole_values[j]
+                            )
+                               *(
+                                    (2*par->multipole_values[i] + 1)*deltaij*deltal1l2
+                                   / 2. / M_PI
+                                   /par->covariance_density[k] / par->covariance_density[k]
+                                   /par->covariance_pixelsize
+                                   /((n + 1)*par->covariance_pixelsize)
+                                   /((m + 1)*par->covariance_pixelsize)
+                                   +D1z * D1z / D10 / D10
+                                   *integral_pk[i*par->multipole_values_len + j][npixels_max*n + m]
+                                   *coeff_sum/par->covariance_density[k]
+                                   +D1z * D1z * D1z * D1z / D10 / D10 / D10 / D10
+                                   *integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m]
+                                   *coeffbar_sum
+                                )
+                               /volume[k];
+                            if (par->output_type == 4){
+                                cov_mp->sep[k][m] = (m + 1)*cov_mp->pixelsize;
+                                cov_mp->sep[k][n] = (n + 1)*cov_mp->pixelsize;
+                                cov_mp->result[k][par->multipole_values_len*i + j][npixels[k]*n + m] = result_mp_or_ramp;
+                            }
+                            else{
+                                cov_ramp->sep[k][m] = (m + 1)*cov_ramp->pixelsize;
+                                cov_ramp->sep[k][n] = (n + 1)*cov_ramp->pixelsize;
+                                cov_ramp->result[k][par->multipole_values_len*i + j][npixels[k]*n + m] = result_mp_or_ramp;
+                            }
                         }
                     }
                     coeff_sum = 0, coeffbar_sum = 0;
@@ -695,7 +527,7 @@ int coffe_covariance_init(
         }
 
         /* memory cleanup */
-        for (size_t i = 0; i<cov_ramp->l_len*cov_ramp->l_len; ++i){
+        for (size_t i = 0; i<par->multipole_values_len*par->multipole_values_len; ++i){
             free(integral_pk[i]);
             free(integral_pk2[i]);
         }
