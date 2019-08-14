@@ -433,18 +433,25 @@ int coffe_covariance_init(
                 volume[k] = 4*M_PI*cov_ramp->fsky[k]/integral_result/pow(COFFE_H0, 3);
             }
 
+            /* TODO implement covariance for two populations */
+            /* TODO maybe pick a different variable name for the growth rate? */
+            double matter_bias1 = 0, f = 0;
+
+            for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
+                if (strcmp(par->corr_terms[i], "00") == 0){
+                    matter_bias1 = interp_spline(&par->matter_bias1, z_mean);
+                }
+                if (strcmp(par->corr_terms[i], "11") == 0){
+                    f = interp_spline(&bg->f, z_mean);
+                }
+            }
+
             /* b^2 + 2/3 b f + f^2/5 */
-            double c0 =
-                pow(interp_spline(&par->matter_bias1, z_mean), 2)
-               +2*interp_spline(&par->matter_bias1, z_mean)*interp_spline(&bg->f, z_mean)/3.
-               +pow(interp_spline(&bg->f, z_mean), 2)/5.;
+            double c0 = pow(matter_bias1, 2) + 2 * matter_bias1 * f / 3. + pow(f, 2)/5.;
             /* 4/3 b f + 4/7 f^2 */
-            double c2 =
-                4*interp_spline(&par->matter_bias1, z_mean)*interp_spline(&bg->f, z_mean)/3.
-               +4*pow(interp_spline(&bg->f, z_mean), 2)/7.;
+            double c2 = 4 * matter_bias1 * f / 3. + 4 * pow(f, 2) / 7.;
             /* 8/35 f^2 */
-            double c4 =
-                8*pow(interp_spline(&bg->f, z_mean), 2)/35.;
+            double c4 = 8 * pow(f, 2) / 35.;
 
             double c0bar =
                 c0*c0 + c2*c2/5. + c4*c4/9.;
