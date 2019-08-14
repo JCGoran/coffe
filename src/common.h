@@ -23,22 +23,6 @@
 #include <gsl/gsl_spline2d.h>
 #include <libconfig.h>
 
-#ifndef COFFE_VERSION_STRING
-#define COFFE_VERSION_STRING "1.1.0"
-#endif
-
-#ifndef COFFE_VERSION_MAJOR
-#define COFFE_VERSION_MAJOR 1
-#endif
-
-#ifndef COFFE_VERSION_MINOR
-#define COFFE_VERSION_MINOR 1
-#endif
-
-#ifndef COFFE_VERSION_PATCH
-#define COFFE_VERSION_PATCH 0
-#endif
-
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
                         "Copyright (C) 2019 Goran Jelic-Cizmek\n" \
