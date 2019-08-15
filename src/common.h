@@ -95,8 +95,6 @@ struct nl_terms
 
 struct coffe_parameters_t
 {
-    char correlation_type[COFFE_MAX_STRLEN];
-
     char **correlation_sources; /* correlation sources to calculate */
 
     int correlation_sources_len; /* number of correlation sources to calculate */
