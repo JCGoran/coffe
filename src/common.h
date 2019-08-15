@@ -101,8 +101,6 @@ struct coffe_parameters_t
 
     int output_type; /* correlation function (angular or full sky), or multipoles, or redshift averaged multipoles */
 
-    char file_angles[COFFE_MAX_STRLEN]; /* filename containing the angles */
-
     double *mu; /* value for the angles */
 
     int mu_len; /* number of angles */
