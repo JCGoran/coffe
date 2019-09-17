@@ -519,6 +519,110 @@ int coffe_parser_init(
         }
     }
 
+    /* if we just want the angular correlation function */
+    if (par->output_type == 0){
+        parse_int(
+            conf,
+            "theta_sampling",
+            &par->theta_len,
+            COFFE_TRUE
+        );
+    }
+
+    for (int i = 0; i<9; ++i){
+        par->nonzero_terms[i].l = -1, par->nonzero_terms[i].n = -1;
+    }
+
+    /* parsing the contributions to the correlation function */
+    if (
+        par->output_type == 0 ||
+        par->output_type == 1 ||
+        par->output_type == 2 ||
+        par->output_type == 3 ||
+        par->output_type == 6
+    ){
+        parse_string_array(
+            conf, "correlation_contributions",
+            &par->correlation_sources,
+            &par->correlation_sources_len
+        );
+
+        char possible_inputs[10][10]
+            = {"den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"};
+
+        int counter = 0;
+        char temp_input[10];
+        for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
+            strcpy(par->corr_terms[i], "\0");
+        }
+
+        /* input of the possible correlation terms */
+        for (int i = 0; i<par->correlation_sources_len; ++i){
+            for (int j = i; j<par->correlation_sources_len; ++j){
+                for (int l = 0; l<10; ++l){
+                    sprintf(temp_input, "%d", l);
+                    if (strcmp(par->correlation_sources[i], possible_inputs[l]) == 0)
+                        strcat(par->corr_terms[counter], temp_input);
+                    if (strcmp(par->correlation_sources[j], possible_inputs[l]) == 0)
+                        strcat(par->corr_terms[counter], temp_input);
+                }
+                ++counter;
+            }
+        }
+
+        par->divergent = 0;
+
+        par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
+        par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
+        par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
+        par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
+        par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
+        par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
+        par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
+        par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
+
+        /* isolating the term requiring renormalization */
+        for (int i = 0; i<counter; ++i){
+            if (
+                strcmp(par->corr_terms[i], "33") == 0 || // d2-d2 term
+                strcmp(par->corr_terms[i], "44") == 0 || // g1-g1 term
+                strcmp(par->corr_terms[i], "55") == 0 || // g2-g2 term
+                strcmp(par->corr_terms[i], "66") == 0 || // g3-g3 term
+                strcmp(par->corr_terms[i], "77") == 0 || // g4-g4 term
+                strcmp(par->corr_terms[i], "88") == 0 || // g5-g5 term
+                /* I don't think these are necessary anymore */
+                strcmp(par->corr_terms[i], "34") == 0 ||
+                strcmp(par->corr_terms[i], "43") == 0 ||
+                strcmp(par->corr_terms[i], "35") == 0 ||
+                strcmp(par->corr_terms[i], "53") == 0 ||
+                strcmp(par->corr_terms[i], "36") == 0 ||
+                strcmp(par->corr_terms[i], "63") == 0 ||
+                strcmp(par->corr_terms[i], "45") == 0 ||
+                strcmp(par->corr_terms[i], "54") == 0 ||
+                strcmp(par->corr_terms[i], "46") == 0 ||
+                strcmp(par->corr_terms[i], "64") == 0 ||
+                strcmp(par->corr_terms[i], "56") == 0 ||
+                strcmp(par->corr_terms[i], "65") == 0
+            ){
+                par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
+                par->divergent = 1;
+            }
+        }
+    }
+
+    /* the output path */
+    parse_string(conf, "output_path", par->output_path, COFFE_TRUE);
+
+    /* the prefix for the output files */
+    parse_string(conf, "output_prefix", par->output_prefix, COFFE_TRUE);
+
+    /* flatsky parameter */
+    parse_int(conf, "flatsky", &par->flatsky, COFFE_TRUE);
+
+    if (par->flatsky){
+        par->nonzero_terms[9].n = -10, par->nonzero_terms[9].l = -10;
+    }
+
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS
 
@@ -551,63 +655,83 @@ int coffe_parser_init(
         class_start = clock();
         struct file_content fc;
 
-        parser_init(&fc, 18, "", errmsg);
+        size_t class_parameters_len = 18, counter = 0;
+
+        parser_init(&fc, class_parameters_len, "", errmsg);
 
         /* not sure which values I actually need (maybe give the user the ability to read all of them?) */
 
-        sprintf(fc.name[0], "h");
-        sprintf(fc.value[0], "%e", par->h);
+        sprintf(fc.name[counter], "h");
+        sprintf(fc.value[counter], "%e", par->h);
+        ++counter;
 
-        sprintf(fc.name[1], "T_cmb");
-        sprintf(fc.value[1], "%e", 2.7255);
+        sprintf(fc.name[counter], "T_cmb");
+        sprintf(fc.value[counter], "%e", 2.7255);
+        ++counter;
 
-        sprintf(fc.name[2], "Omega_b");
-        sprintf(fc.value[2], "%e", par->Omega0_baryon);
+        sprintf(fc.name[counter], "Omega_b");
+        sprintf(fc.value[counter], "%e", par->Omega0_baryon);
+        ++counter;
 
-        sprintf(fc.name[3], "N_ur");
-        sprintf(fc.value[3], "%e", 3.046);
+        sprintf(fc.name[counter], "N_ur");
+        sprintf(fc.value[counter], "%e", 3.046);
+        ++counter;
 
-        sprintf(fc.name[4], "Omega_cdm");
-        sprintf(fc.value[4], "%e", par->Omega0_cdm);
+        sprintf(fc.name[counter], "Omega_cdm");
+        sprintf(fc.value[counter], "%e", par->Omega0_cdm);
+        ++counter;
 
-        sprintf(fc.name[5], "Omega_k");
-        sprintf(fc.value[5], "%e", 0.0);
+        sprintf(fc.name[counter], "Omega_k");
+        sprintf(fc.value[counter], "%e", 0.0);
+        ++counter;
 
-        sprintf(fc.name[6], "w0_fld");
-        sprintf(fc.value[6], "%e", par->w0);
+        sprintf(fc.name[counter], "w0_fld");
+        sprintf(fc.value[counter], "%e", par->w0);
+        ++counter;
 
-        sprintf(fc.name[7], "wa_fld");
-        sprintf(fc.value[7], "%e", par->wa);
+        sprintf(fc.name[counter], "wa_fld");
+        sprintf(fc.value[counter], "%e", par->wa);
+        ++counter;
 
-        sprintf(fc.name[8], "output");
-        sprintf(fc.value[8], "mPk");
+        sprintf(fc.name[counter], "output");
+        sprintf(fc.value[counter], "mPk");
+        ++counter;
 
-        sprintf(fc.name[9], "gauge");
-        sprintf(fc.value[9], "synchronous");
+        sprintf(fc.name[counter], "gauge");
+        sprintf(fc.value[counter], "synchronous");
+        ++counter;
 
-        sprintf(fc.name[10], "P_k_ini type");
-        sprintf(fc.value[10], "analytic_Pk");
+        sprintf(fc.name[counter], "P_k_ini type");
+        sprintf(fc.value[counter], "analytic_Pk");
+        ++counter;
 
-        sprintf(fc.name[11], "k_pivot");
-        sprintf(fc.value[11], "%e", par->k_pivot);
+        sprintf(fc.name[counter], "k_pivot");
+        sprintf(fc.value[counter], "%e", par->k_pivot);
+        ++counter;
 
-        sprintf(fc.name[12], "ln10^{10}A_s");
-        sprintf(fc.value[12], "%e", par->ln_10_pow_10_A_s);
+        sprintf(fc.name[counter], "ln10^{10}A_s");
+        sprintf(fc.value[counter], "%e", par->ln_10_pow_10_A_s);
+        ++counter;
 
-        sprintf(fc.name[13], "n_s");
-        sprintf(fc.value[13], "%e", par->n_s);
+        sprintf(fc.name[counter], "n_s");
+        sprintf(fc.value[counter], "%e", par->n_s);
+        ++counter;
 
-        sprintf(fc.name[14], "alpha_s");
-        sprintf(fc.value[14], "%e", 0.0);
+        sprintf(fc.name[counter], "alpha_s");
+        sprintf(fc.value[counter], "%e", 0.0);
+        ++counter;
 
-        sprintf(fc.name[15], "k_min_tau0");
-        sprintf(fc.value[15], "%e", 0.002);
+        sprintf(fc.name[counter], "k_min_tau0");
+        sprintf(fc.value[counter], "%e", 0.002);
+        ++counter;
 
-        sprintf(fc.name[16], "P_k_max_h/Mpc");
-        sprintf(fc.value[16], "%e", par->k_max);
+        sprintf(fc.name[counter], "P_k_max_h/Mpc");
+        sprintf(fc.value[counter], "%e", par->k_max);
+        ++counter;
 
-        sprintf(fc.name[17], "z_pk");
-        sprintf(fc.value[17], "%e", 0.0);
+        sprintf(fc.name[counter], "z_pk");
+        sprintf(fc.value[counter], "%e", 0.0);
+        ++counter;
 
         if (
             input_init(
@@ -757,108 +881,6 @@ int coffe_parser_init(
         free(pk_norm);
     }
 
-    if (par->output_type == 0){
-        parse_int(
-            conf,
-            "theta_sampling",
-            &par->theta_len,
-            COFFE_TRUE
-        );
-    }
-
-    for (int i = 0; i<9; ++i){
-        par->nonzero_terms[i].l = -1, par->nonzero_terms[i].n = -1;
-    }
-
-    /* parsing the contributions to the correlation function */
-    if (
-        par->output_type == 0 ||
-        par->output_type == 1 ||
-        par->output_type == 2 ||
-        par->output_type == 3 ||
-        par->output_type == 6
-    ){
-        parse_string_array(
-            conf, "correlation_contributions",
-            &par->correlation_sources,
-            &par->correlation_sources_len
-        );
-
-        char possible_inputs[10][10]
-            = {"den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"};
-
-        int counter = 0;
-        char temp_input[10];
-        for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
-            strcpy(par->corr_terms[i], "\0");
-        }
-
-        /* input of the possible correlation terms */
-        for (int i = 0; i<par->correlation_sources_len; ++i){
-            for (int j = i; j<par->correlation_sources_len; ++j){
-                for (int l = 0; l<10; ++l){
-                    sprintf(temp_input, "%d", l);
-                    if (strcmp(par->correlation_sources[i], possible_inputs[l]) == 0)
-                        strcat(par->corr_terms[counter], temp_input);
-                    if (strcmp(par->correlation_sources[j], possible_inputs[l]) == 0)
-                        strcat(par->corr_terms[counter], temp_input);
-                }
-                ++counter;
-            }
-        }
-
-        par->divergent = 0;
-
-        par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
-        par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
-        par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
-        par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
-        par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
-        par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
-        par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
-        par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
-
-        /* isolating the term requiring renormalization */
-        for (int i = 0; i<counter; ++i){
-            if (
-                strcmp(par->corr_terms[i], "33") == 0 || // d2-d2 term
-                strcmp(par->corr_terms[i], "44") == 0 || // g1-g1 term
-                strcmp(par->corr_terms[i], "55") == 0 || // g2-g2 term
-                strcmp(par->corr_terms[i], "66") == 0 || // g3-g3 term
-                strcmp(par->corr_terms[i], "77") == 0 || // g4-g4 term
-                strcmp(par->corr_terms[i], "88") == 0 || // g5-g5 term
-                /* I don't think these are necessary anymore */
-                strcmp(par->corr_terms[i], "34") == 0 ||
-                strcmp(par->corr_terms[i], "43") == 0 ||
-                strcmp(par->corr_terms[i], "35") == 0 ||
-                strcmp(par->corr_terms[i], "53") == 0 ||
-                strcmp(par->corr_terms[i], "36") == 0 ||
-                strcmp(par->corr_terms[i], "63") == 0 ||
-                strcmp(par->corr_terms[i], "45") == 0 ||
-                strcmp(par->corr_terms[i], "54") == 0 ||
-                strcmp(par->corr_terms[i], "46") == 0 ||
-                strcmp(par->corr_terms[i], "64") == 0 ||
-                strcmp(par->corr_terms[i], "56") == 0 ||
-                strcmp(par->corr_terms[i], "65") == 0
-            ){
-                par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
-                par->divergent = 1;
-            }
-        }
-    }
-
-    /* the output path */
-    parse_string(conf, "output_path", par->output_path, COFFE_TRUE);
-
-    /* the prefix for the output files */
-    parse_string(conf, "output_prefix", par->output_prefix, COFFE_TRUE);
-
-    /* flatsky parameter */
-    parse_int(conf, "flatsky", &par->flatsky, COFFE_TRUE);
-
-    if (par->flatsky){
-        par->nonzero_terms[9].n = -10, par->nonzero_terms[9].l = -10;
-    }
 
     /* saving the timestamp */
     sprintf(par->timestamp, "%s", coffe_get_time());
