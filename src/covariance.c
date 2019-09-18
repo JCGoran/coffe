@@ -438,9 +438,11 @@ int coffe_covariance_init(
             double matter_bias1 = 0, f = 0;
 
             for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
+                /* set bias to nonzero only if there is a density contribution */
                 if (strcmp(par->corr_terms[i], "00") == 0){
                     matter_bias1 = interp_spline(&par->matter_bias1, z_mean);
                 }
+                /* set growth rate to nonzero only if there's an rsd contribution */
                 if (strcmp(par->corr_terms[i], "11") == 0){
                     f = interp_spline(&bg->f, z_mean);
                 }
