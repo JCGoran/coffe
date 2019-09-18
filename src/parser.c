@@ -275,11 +275,14 @@ int coffe_parser_init(
 
     clock_t start, end;
 
-    printf("Parsing settings file \"%s\"...\n", filename);
-
     start = clock();
 
     config_set_auto_convert(conf, CONFIG_TRUE);
+
+    parse_int(conf, "verbose", &par->verbose, COFFE_TRUE);
+
+    if (par->verbose)
+        printf("Parsing settings file \"%s\"...\n", filename);
 
     parse_int(conf, "output_type", &par->output_type, COFFE_TRUE);
     parse_string_array(conf, "output_background", &par->type_bg, &par->type_bg_len);
@@ -648,7 +651,8 @@ int coffe_parser_init(
         parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
         parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
 
-        printf("Launching CLASS...\n");
+        if (par->verbose)
+            printf("Launching CLASS...\n");
 
         class_start = clock();
         struct file_content fc;
@@ -737,7 +741,7 @@ int coffe_parser_init(
                 &ppm, &psp, &pnl, &ple, &pop, errmsg
             ) == _FAILURE_
         ){
-            printf("\n\nError running input_init\n=>%s\n", errmsg);
+            fprintf(stderr, "\n\nError running input_init\n=>%s\n", errmsg);
             exit(EXIT_FAILURE);
         }
 
@@ -752,10 +756,11 @@ int coffe_parser_init(
         spectra_init(&ppr, &pba, &ppt, &ppm, &pnl, &ptr, &psp);
 
         class_end = clock();
-        printf(
-            "CLASS finished in %.2f s\n",
-            (double)(class_end - class_start) / CLOCKS_PER_SEC
-        );
+        if (par->verbose)
+            printf(
+                "CLASS finished in %.2f s\n",
+                (double)(class_end - class_start) / CLOCKS_PER_SEC
+            );
 
         double *k =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
         double *pk =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
@@ -887,10 +892,11 @@ int coffe_parser_init(
 
     end = clock();
 
-    printf(
-        "Settings file \"%s\" parsed in %.2f s\n",
-        filename,
-        (double)(end - start) / CLOCKS_PER_SEC
-    );
+    if (par->verbose)
+        printf(
+            "Settings file \"%s\" parsed in %.2f s\n",
+            filename,
+            (double)(end - start) / CLOCKS_PER_SEC
+        );
     return EXIT_SUCCESS;
 }

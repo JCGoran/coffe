@@ -425,8 +425,10 @@ int coffe_corrfunc_init(
     if (par->output_type == 0){
         cf_ang->flag = 1;
         clock_t start, end;
-        printf("Calculating the angular correlation function...\n");
         start = clock();
+
+        if (par->verbose)
+            printf("Calculating the angular correlation function...\n");
 
         double chi_mean = interp_spline(&bg->comoving_distance, par->z_mean);
         gsl_error_handler_t *default_handler =
@@ -468,15 +470,18 @@ int coffe_corrfunc_init(
         gsl_set_error_handler(default_handler);
 
         end = clock();
-        printf("Angular correlation function calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+
+        if (par->verbose)
+            printf("Angular correlation function calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
     }
     else if (par->output_type == 1){
         corrfunc->flag = 1;
         clock_t start, end;
-        printf("Calculating the correlation function...\n");
         start = clock();
 
+        if (par->verbose)
+            printf("Calculating the correlation function...\n");
 
         /* first index mu, second separations */
         alloc_double_matrix(
@@ -541,15 +546,19 @@ int coffe_corrfunc_init(
         gsl_set_error_handler(default_handler);
 
         end = clock();
-        printf("Correlation function calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+
+        if (par->verbose)
+            printf("Correlation function calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
     }
 
     else if (par->output_type == 6){
         cf2d->flag = 1;
         clock_t start, end;
-        printf("Calculating the 2D correlation function...\n");
         start = clock();
+
+        if (par->verbose)
+            printf("Calculating the 2D correlation function...\n");
 
         const double chi_mean = interp_spline(&bg->comoving_distance, par->z_mean);
         if (chi_mean < 320.*COFFE_H0){
@@ -614,8 +623,10 @@ int coffe_corrfunc_init(
         gsl_set_error_handler(default_handler);
 
         end = clock();
-        printf("2D correlation function calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+
+        if (par->verbose)
+            printf("2D correlation function calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
     }
 
     return EXIT_SUCCESS;

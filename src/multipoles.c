@@ -564,8 +564,10 @@ int coffe_multipoles_init(
     if (par->output_type == 2){
         mp->flag = 1;
         clock_t start, end;
-        printf("Calculating multipoles...\n");
         start = clock();
+
+        if (par->verbose)
+            printf("Calculating multipoles...\n");
 
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
@@ -626,8 +628,10 @@ int coffe_multipoles_init(
         }
 
         end = clock();
-        printf("Multipoles calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+
+        if (par->verbose)
+            printf("Multipoles calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
 
         gsl_set_error_handler(default_handler);
     }

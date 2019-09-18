@@ -236,8 +236,10 @@ int coffe_background_init(
 )
 {
     clock_t start, end;
-    printf("Initializing the background...\n");
     start = clock();
+
+    if (par->verbose)
+        printf("Initializing the background...\n");
 
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
@@ -504,8 +506,10 @@ int coffe_background_init(
     gsl_set_error_handler(default_handler);
 
     end = clock();
-    printf("Background initialized in %.2f s\n",
-        (double)(end - start) / CLOCKS_PER_SEC);
+
+    if (par->verbose)
+        printf("Background initialized in %.2f s\n",
+            (double)(end - start) / CLOCKS_PER_SEC);
 
     return EXIT_SUCCESS;
 }

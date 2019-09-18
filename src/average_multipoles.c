@@ -728,8 +728,10 @@ int coffe_average_multipoles_init(
     if (par->output_type == 3){
         ramp->flag = 1;
         clock_t start, end;
-        printf("Calculating the redshift averaged multipoles...\n");
         start = clock();
+
+        if (par->verbose)
+            printf("Calculating the redshift averaged multipoles...\n");
 
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
@@ -788,8 +790,9 @@ int coffe_average_multipoles_init(
 
         end = clock();
 
-        printf("Redshift averaged multipoles calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+        if (par->verbose)
+            printf("Redshift averaged multipoles calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
 
         gsl_set_error_handler(default_handler);
     }

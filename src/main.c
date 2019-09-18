@@ -99,14 +99,6 @@ int main(int argc, char *argv[])
     else{
         strncpy(settings_file, settings_opt, COFFE_MAX_STRLEN);
     }
-
-    printf("   _____ ____  ______ ______ ______ \n");
-    printf("  / ____/ __ \\|  ____|  ____|  ____|\n");
-    printf(" | |   | |  | | |__  | |__  | |__   \n");
-    printf(" | |   | |  | |  __| |  __| |  __|  \n");
-    printf(" | |___| |__| | |    | |    | |____ \n");
-    printf("  \\_____\\____/|_|    |_|    |______|\n");
-
     clock_t start, end;
     start = clock();
 
@@ -123,11 +115,20 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     par.nthreads = n;
-    printf("Number of threads in use: %d\n", par.nthreads);
 
     /* the main sequence */
 
     coffe_parser_init(settings_file, &par);
+
+    if (par.verbose){
+        printf("   _____ ____  ______ ______ ______ \n");
+        printf("  / ____/ __ \\|  ____|  ____|  ____|\n");
+        printf(" | |   | |  | | |__  | |__  | |__   \n");
+        printf(" | |   | |  | |  __| |  __| |  __|  \n");
+        printf(" | |___| |__| | |    | |    | |____ \n");
+        printf("  \\_____\\____/|_|    |_|    |______|\n");
+        printf("Number of threads in use: %d\n", par.nthreads);
+    }
 
     coffe_background_init(&par, &bg);
 
@@ -175,8 +176,9 @@ int main(int argc, char *argv[])
     coffe_parameters_free(&par);
 
     end = clock();
-    printf("Total program runtime is: %.2f s\n",
-        (double)(end - start) / CLOCKS_PER_SEC);
+    if (par.verbose)
+        printf("Total program runtime is: %.2f s\n",
+            (double)(end - start) / CLOCKS_PER_SEC);
 
     return EXIT_SUCCESS;
 }

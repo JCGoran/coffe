@@ -245,6 +245,8 @@ struct coffe_parameters_t
 
     int flatsky;
 
+    int verbose;
+
 #ifdef HAVE_CLASS
     /* stuff for CLASS only */
 

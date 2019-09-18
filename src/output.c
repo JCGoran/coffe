@@ -227,7 +227,8 @@ int coffe_output_init(
         snprintf(prefix, COFFE_MAX_STRLEN, "%s%s", par->output_path, par->output_prefix);
     }
 
-    printf("Writing output to \"%s\"...\n", prefix);
+    if (par->verbose)
+        printf("Writing output to \"%s\"...\n", prefix);
 
     /* settings file copy */
     snprintf(filepath, COFFE_MAX_STRLEN, "%ssettings.cfg", prefix);
@@ -437,7 +438,8 @@ int coffe_output_init(
 
     end = clock();
 
-    printf("Output finished in %.2f s\n",
+    if (par->verbose)
+        printf("Output finished in %.2f s\n",
         (double)(end - start) / CLOCKS_PER_SEC);
 
     return EXIT_SUCCESS;

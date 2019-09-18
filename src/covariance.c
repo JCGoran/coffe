@@ -175,13 +175,14 @@ int coffe_covariance_init(
             cov_ramp->flag = 1;
         }
         time_t start, end;
-        if (par->output_type == 4){
-            printf("Calculating covariance of multipoles...\n");
-        }
-        else{
-            printf("Calculating covariance of redshift averaged multipoles...\n");
-        }
         start = clock();
+
+        if (par->verbose){
+            if (par->output_type == 4)
+                printf("Calculating covariance of multipoles...\n");
+            else
+                printf("Calculating covariance of redshift averaged multipoles...\n");
+        }
 
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
@@ -557,8 +558,10 @@ int coffe_covariance_init(
         gsl_interp_accel_free(integrand_pk2.accel);
 
         end = clock();
-        printf("Covariance calculated in %.2f s\n",
-            (double)(end - start) / CLOCKS_PER_SEC);
+
+        if (par->verbose)
+            printf("Covariance calculated in %.2f s\n",
+                (double)(end - start) / CLOCKS_PER_SEC);
 
         gsl_set_error_handler(default_handler);
     }

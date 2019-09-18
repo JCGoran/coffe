@@ -427,7 +427,9 @@ int coffe_integrals_init(
 {
     clock_t start, end;
     start = clock();
-    printf("Calculating integrals of Bessel functions...\n");
+
+    if (par->verbose)
+        printf("Calculating integrals of Bessel functions...\n");
 
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
@@ -734,8 +736,10 @@ int coffe_integrals_init(
 
     gsl_set_error_handler(default_handler);
     end = clock();
-    printf("Integrals of Bessel functions calculated in %.2f s\n",
-        (double)(end - start) / CLOCKS_PER_SEC);
+
+    if (par->verbose)
+        printf("Integrals of Bessel functions calculated in %.2f s\n",
+            (double)(end - start) / CLOCKS_PER_SEC);
 
     return EXIT_SUCCESS;
 }
