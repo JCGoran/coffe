@@ -281,8 +281,10 @@ int coffe_parser_init(
 
     parse_int(conf, "verbose", &par->verbose, COFFE_TRUE);
 
-    if (par->verbose)
+    if (par->verbose){
+        printf(COFFE_LOGO);
         printf("Parsing settings file \"%s\"...\n", filename);
+    }
 
     parse_int(conf, "output_type", &par->output_type, COFFE_TRUE);
     parse_string_array(conf, "output_background", &par->type_bg, &par->type_bg_len);

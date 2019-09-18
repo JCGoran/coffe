@@ -121,12 +121,6 @@ int main(int argc, char *argv[])
     coffe_parser_init(settings_file, &par);
 
     if (par.verbose){
-        printf("   _____ ____  ______ ______ ______ \n");
-        printf("  / ____/ __ \\|  ____|  ____|  ____|\n");
-        printf(" | |   | |  | | |__  | |__  | |__   \n");
-        printf(" | |   | |  | |  __| |  __| |  __|  \n");
-        printf(" | |___| |__| | |    | |    | |____ \n");
-        printf("  \\_____\\____/|_|    |_|    |______|\n");
         printf("Number of threads in use: %d\n", par.nthreads);
     }
 

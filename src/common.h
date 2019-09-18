@@ -48,6 +48,17 @@
 #define COFFE_FALSE 0
 #endif
 
+#ifndef COFFE_LOGO
+#define COFFE_LOGO \
+        "   _____ ____  ______ ______ ______ \n" \
+        "  / ____/ __ \\|  ____|  ____|  ____|\n" \
+        " | |   | |  | | |__  | |__  | |__   \n" \
+        " | |   | |  | |  __| |  __| |  __|  \n" \
+        " | |___| |__| | |    | |    | |____ \n" \
+        "  \\_____\\____/|_|    |_|    |______|\n"
+#endif
+
+
 #ifndef COFFE_MAX_INTSPACE
 #define COFFE_MAX_INTSPACE 50000 // for 1D integration, the size of workspace
 #endif
