@@ -254,6 +254,171 @@ static int parse_bias(
 
 
 /**
+    parsing the power spectrum from an external source (only CLASS for now)
+**/
+
+static int parse_external_power_spectrum(
+    struct coffe_parameters_t *par
+)
+{
+    struct precision ppr;
+    struct background pba;
+    struct thermo pth;
+    struct perturbs ppt;
+    struct primordial ppm;
+    struct spectra psp;
+    struct nonlinear pnl;
+    struct output pop;
+    struct transfers ptr;
+    struct lensing ple;
+    ErrorMsg errmsg;
+
+    clock_t class_start, class_end;
+
+    if (par->verbose)
+        printf("Launching CLASS...\n");
+
+    class_start = clock();
+    struct file_content fc;
+
+    size_t class_parameters_len = 18, counter = 0;
+
+    parser_init(&fc, class_parameters_len, "", errmsg);
+
+    /*
+        not sure which values are actually necessary
+        (maybe give the user the ability to read all of them?)
+    */
+
+    sprintf(fc.name[counter], "h");
+    sprintf(fc.value[counter], "%e", par->h);
+    ++counter;
+
+    sprintf(fc.name[counter], "T_cmb");
+    sprintf(fc.value[counter], "%e", 2.7255);
+    ++counter;
+
+    sprintf(fc.name[counter], "Omega_b");
+    sprintf(fc.value[counter], "%e", par->Omega0_baryon);
+    ++counter;
+
+    sprintf(fc.name[counter], "N_ur");
+    sprintf(fc.value[counter], "%e", 3.046);
+    ++counter;
+
+    sprintf(fc.name[counter], "Omega_cdm");
+    sprintf(fc.value[counter], "%e", par->Omega0_cdm);
+    ++counter;
+
+    sprintf(fc.name[counter], "Omega_k");
+    sprintf(fc.value[counter], "%e", 0.0);
+    ++counter;
+
+    sprintf(fc.name[counter], "w0_fld");
+    sprintf(fc.value[counter], "%e", par->w0);
+    ++counter;
+
+    sprintf(fc.name[counter], "wa_fld");
+    sprintf(fc.value[counter], "%e", par->wa);
+    ++counter;
+
+    sprintf(fc.name[counter], "output");
+    sprintf(fc.value[counter], "mPk");
+    ++counter;
+
+    sprintf(fc.name[counter], "gauge");
+    sprintf(fc.value[counter], "synchronous");
+    ++counter;
+
+    sprintf(fc.name[counter], "P_k_ini type");
+    sprintf(fc.value[counter], "analytic_Pk");
+    ++counter;
+
+    sprintf(fc.name[counter], "k_pivot");
+    sprintf(fc.value[counter], "%e", par->k_pivot);
+    ++counter;
+
+    sprintf(fc.name[counter], "ln10^{10}A_s");
+    sprintf(fc.value[counter], "%e", par->ln_10_pow_10_A_s);
+    ++counter;
+
+    sprintf(fc.name[counter], "n_s");
+    sprintf(fc.value[counter], "%e", par->n_s);
+    ++counter;
+
+    sprintf(fc.name[counter], "alpha_s");
+    sprintf(fc.value[counter], "%e", 0.0);
+    ++counter;
+
+    sprintf(fc.name[counter], "k_min_tau0");
+    sprintf(fc.value[counter], "%e", 0.002);
+    ++counter;
+
+    sprintf(fc.name[counter], "P_k_max_h/Mpc");
+    sprintf(fc.value[counter], "%e", par->k_max);
+    ++counter;
+
+    sprintf(fc.name[counter], "z_pk");
+    sprintf(fc.value[counter], "%e", 0.0);
+    ++counter;
+
+    if (
+        input_init(
+            &fc, &ppr, &pba, &pth, &ppt, &ptr,
+            &ppm, &psp, &pnl, &ple, &pop, errmsg
+        ) == _FAILURE_
+    ){
+        fprintf(stderr, "\n\nError running input_init\n=>%s\n", errmsg);
+        exit(EXIT_FAILURE);
+    }
+
+    /* the main CLASS sequence */
+
+    background_init(&ppr, &pba);
+    thermodynamics_init(&ppr, &pba, &pth);
+    perturb_init(&ppr, &pba, &pth, &ppt);
+    primordial_init(&ppr, &ppt, &ppm);
+    nonlinear_init(&ppr, &pba, &pth, &ppt, &ppm, &pnl);
+    transfer_init(&ppr, &pba, &pth, &ppt, &pnl, &ptr);
+    spectra_init(&ppr, &pba, &ppt, &ppm, &pnl, &ptr, &psp);
+
+    class_end = clock();
+    if (par->verbose)
+        printf(
+            "CLASS finished in %.2f s\n",
+            (double)(class_end - class_start) / CLOCKS_PER_SEC
+        );
+
+    double *k =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
+    double *pk =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
+    size_t pk_len = psp.ln_k_size;
+
+    /* rescaling as CLASS internally uses units of 1/Mpc */
+    for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
+        k[i] = exp(psp.ln_k[i]) / par->h;
+        pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
+    }
+    init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+
+    free(k);
+    free(pk);
+
+    /* freeing the memory of CLASS structures */
+
+    background_free(&pba);
+    thermodynamics_free(&pth);
+    perturb_free(&ppt);
+    primordial_free(&ppm);
+    nonlinear_free(&pnl);
+    transfer_free(&ptr);
+    spectra_free(&psp);
+    parser_free(&fc);
+
+    return EXIT_SUCCESS;
+}
+
+
+/**
     parses all the settings from the input file
     (given by argv[1]) into the structure <par>
 **/
@@ -626,6 +791,10 @@ int coffe_parser_init(
         par->nonzero_terms[9].n = -10, par->nonzero_terms[9].l = -10;
     }
 
+    /* parsing the k range */
+    parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
+    parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
+
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS
 
@@ -635,180 +804,7 @@ int coffe_parser_init(
         parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
-
-        struct precision ppr;
-        struct background pba;
-        struct thermo pth;
-        struct perturbs ppt;
-        struct primordial ppm;
-        struct spectra psp;
-        struct nonlinear pnl;
-        struct output pop;
-        struct transfers ptr;
-        struct lensing ple;
-        ErrorMsg errmsg;
-
-        clock_t class_start, class_end;
-
-        parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
-        parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
-
-        if (par->verbose)
-            printf("Launching CLASS...\n");
-
-        class_start = clock();
-        struct file_content fc;
-
-        size_t class_parameters_len = 18, counter = 0;
-
-        parser_init(&fc, class_parameters_len, "", errmsg);
-
-        /* not sure which values I actually need (maybe give the user the ability to read all of them?) */
-
-        sprintf(fc.name[counter], "h");
-        sprintf(fc.value[counter], "%e", par->h);
-        ++counter;
-
-        sprintf(fc.name[counter], "T_cmb");
-        sprintf(fc.value[counter], "%e", 2.7255);
-        ++counter;
-
-        sprintf(fc.name[counter], "Omega_b");
-        sprintf(fc.value[counter], "%e", par->Omega0_baryon);
-        ++counter;
-
-        sprintf(fc.name[counter], "N_ur");
-        sprintf(fc.value[counter], "%e", 3.046);
-        ++counter;
-
-        sprintf(fc.name[counter], "Omega_cdm");
-        sprintf(fc.value[counter], "%e", par->Omega0_cdm);
-        ++counter;
-
-        sprintf(fc.name[counter], "Omega_k");
-        sprintf(fc.value[counter], "%e", 0.0);
-        ++counter;
-
-        sprintf(fc.name[counter], "w0_fld");
-        sprintf(fc.value[counter], "%e", par->w0);
-        ++counter;
-
-        sprintf(fc.name[counter], "wa_fld");
-        sprintf(fc.value[counter], "%e", par->wa);
-        ++counter;
-
-        sprintf(fc.name[counter], "output");
-        sprintf(fc.value[counter], "mPk");
-        ++counter;
-
-        sprintf(fc.name[counter], "gauge");
-        sprintf(fc.value[counter], "synchronous");
-        ++counter;
-
-        sprintf(fc.name[counter], "P_k_ini type");
-        sprintf(fc.value[counter], "analytic_Pk");
-        ++counter;
-
-        sprintf(fc.name[counter], "k_pivot");
-        sprintf(fc.value[counter], "%e", par->k_pivot);
-        ++counter;
-
-        sprintf(fc.name[counter], "ln10^{10}A_s");
-        sprintf(fc.value[counter], "%e", par->ln_10_pow_10_A_s);
-        ++counter;
-
-        sprintf(fc.name[counter], "n_s");
-        sprintf(fc.value[counter], "%e", par->n_s);
-        ++counter;
-
-        sprintf(fc.name[counter], "alpha_s");
-        sprintf(fc.value[counter], "%e", 0.0);
-        ++counter;
-
-        sprintf(fc.name[counter], "k_min_tau0");
-        sprintf(fc.value[counter], "%e", 0.002);
-        ++counter;
-
-        sprintf(fc.name[counter], "P_k_max_h/Mpc");
-        sprintf(fc.value[counter], "%e", par->k_max);
-        ++counter;
-
-        sprintf(fc.name[counter], "z_pk");
-        sprintf(fc.value[counter], "%e", 0.0);
-        ++counter;
-
-        if (
-            input_init(
-                &fc, &ppr, &pba, &pth, &ppt, &ptr,
-                &ppm, &psp, &pnl, &ple, &pop, errmsg
-            ) == _FAILURE_
-        ){
-            fprintf(stderr, "\n\nError running input_init\n=>%s\n", errmsg);
-            exit(EXIT_FAILURE);
-        }
-
-        /* the main CLASS sequence */
-
-        background_init(&ppr, &pba);
-        thermodynamics_init(&ppr, &pba, &pth);
-        perturb_init(&ppr, &pba, &pth, &ppt);
-        primordial_init(&ppr, &ppt, &ppm);
-        nonlinear_init(&ppr, &pba, &pth, &ppt, &ppm, &pnl);
-        transfer_init(&ppr, &pba, &pth, &ppt, &pnl, &ptr);
-        spectra_init(&ppr, &pba, &ppt, &ppm, &pnl, &ptr, &psp);
-
-        class_end = clock();
-        if (par->verbose)
-            printf(
-                "CLASS finished in %.2f s\n",
-                (double)(class_end - class_start) / CLOCKS_PER_SEC
-            );
-
-        double *k =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-        double *pk =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-        size_t pk_len = psp.ln_k_size;
-
-        for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
-            k[i] = exp(psp.ln_k[i])/par->h;
-            pk[i] = exp(psp.ln_pk_l[i])*pow(par->h, 3);
-        }
-        init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
-
-        free(k);
-        free(pk);
-
-        /* freeing the memory of CLASS structures */
-
-        background_free(&pba);
-        thermodynamics_free(&pth);
-        perturb_free(&ppt);
-        primordial_free(&ppm);
-        nonlinear_free(&pnl);
-        transfer_free(&ptr);
-        spectra_free(&psp);
-        parser_free(&fc);
-
-        if (par->k_min < par->power_spectrum.spline->x[0]){
-            fprintf(
-                stderr,
-                "WARNING: k_min smaller than minimum value in the file; "
-                "using minimum value instead\n"
-            );
-            par->k_min = par->power_spectrum.spline->x[0];
-        }
-        if (par->k_max > par->power_spectrum.spline->x[
-                par->power_spectrum.spline->size - 1
-            ]){
-            fprintf(
-                stderr,
-                "WARNING: k_max larger than maximum value in the file; "
-                "using maximum value instead\n"
-            );
-            par->k_max =
-                par->power_spectrum.spline->x[
-                    par->power_spectrum.spline->size - 1
-                ];
-        }
+        parse_external_power_spectrum(par);
     }
     else{
 #endif
@@ -833,36 +829,33 @@ int coffe_parser_init(
 
         free(k);
         free(pk);
-
-        parse_double(conf, "k_min", &par->k_min, COFFE_FALSE);
-
-        if (par->k_min < par->power_spectrum.spline->x[0]){
-            fprintf(
-                stderr,
-                "WARNING: k_min smaller than minimum value in the file; "
-                "using minimum value instead\n"
-            );
-            par->k_min = par->power_spectrum.spline->x[0];
-        }
-
-        parse_double(conf, "k_max", &par->k_max, COFFE_FALSE);
-
-        if (par->k_max > par->power_spectrum.spline->x[
-                par->power_spectrum.spline->size - 1
-            ]){
-            fprintf(
-                stderr,
-                "WARNING: k_max larger than maximum value in the file; "
-                "using maximum value instead\n"
-            );
-            par->k_max =
-                par->power_spectrum.spline->x[
-                    par->power_spectrum.spline->size - 1
-                ];
-        }
 #ifdef HAVE_CLASS
     }
 #endif
+
+    if (par->k_min < par->power_spectrum.spline->x[0]){
+        fprintf(
+            stderr,
+            "WARNING: k_min smaller than minimum value in the file; "
+            "using minimum value instead\n"
+        );
+        par->k_min = par->power_spectrum.spline->x[0];
+    }
+
+    if (par->k_max > par->power_spectrum.spline->x[
+            par->power_spectrum.spline->size - 1
+        ]){
+        fprintf(
+            stderr,
+            "WARNING: k_max larger than maximum value in the file; "
+            "using maximum value instead\n"
+        );
+        par->k_max =
+            par->power_spectrum.spline->x[
+                par->power_spectrum.spline->size - 1
+            ];
+    }
+
 
     /* normalizing the power spectrum to be dimensionless in our units */
     {
