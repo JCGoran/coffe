@@ -213,8 +213,8 @@ int coffe_output_init(
 )
 {
     clock_t start, end;
-    printf("Writing output...\n");
     start = clock();
+
     char filepath[COFFE_MAX_STRLEN];
     char prefix[COFFE_MAX_STRLEN];
     char header[COFFE_MAX_STRLEN];
@@ -226,6 +226,8 @@ int coffe_output_init(
     else{
         snprintf(prefix, COFFE_MAX_STRLEN, "%s%s", par->output_path, par->output_prefix);
     }
+
+    printf("Writing output to \"%s\"...\n", prefix);
 
     /* settings file copy */
     snprintf(filepath, COFFE_MAX_STRLEN, "%ssettings.cfg", prefix);
