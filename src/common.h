@@ -236,6 +236,8 @@ struct coffe_parameters_t
 
     double covariance_pixelsize;
 
+    double covariance_minimum_separation;
+
     /* for redshift averaged multipoles */
     double z_min, z_max;
 
