@@ -449,7 +449,7 @@ int coffe_covariance_init(
             }
 
             /* b^2 + 2/3 b f + f^2/5 */
-            double c0 = pow(matter_bias1, 2) + 2 * matter_bias1 * f / 3. + pow(f, 2)/5.;
+            double c0 = pow(matter_bias1, 2) + 2 * matter_bias1 * f / 3. + pow(f, 2) / 5.;
             /* 4/3 b f + 4/7 f^2 */
             double c2 = 4 * matter_bias1 * f / 3. + 4 * pow(f, 2) / 7.;
             /* 8/35 f^2 */
