@@ -293,7 +293,10 @@ int coffe_covariance_init(
             (size_t *)coffe_malloc(sizeof(size_t)*par->covariance_density_len);
 
         for (size_t i = 0; i<par->covariance_density_len; ++i){
-            npixels[i] = (size_t)(upper_limit[i]/par->covariance_pixelsize);
+            npixels[i] = (size_t)(
+                (upper_limit[i] - par->covariance_minimum_separation) / par->covariance_pixelsize
+            );
+
             if (par->output_type == 4){
                 cov_mp->sep[i] =
                     (double *)coffe_malloc(sizeof(double)*npixels[i]);
@@ -306,6 +309,11 @@ int coffe_covariance_init(
             }
         }
         size_t npixels_max = covariance_find_maximum(npixels, par->covariance_density_len);
+
+        /* all of the separations */
+        double *separations = (double *)coffe_malloc(sizeof(double) * npixels_max);
+        for (size_t i = 0; i<npixels_max; ++i)
+            separations[i] = par->covariance_minimum_separation + i * par->covariance_pixelsize;
 
         /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
         double **integral_pk =
@@ -331,7 +339,7 @@ int coffe_covariance_init(
                             (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
                            *covariance_integral(
                                 &integrand_pk,
-                                (m + 1)*par->covariance_pixelsize, (n + 1)*par->covariance_pixelsize,
+                                separations[m], separations[n],
                                 par->multipole_values[i], par->multipole_values[j],
                                 par->k_min, par->k_max, par->covariance_pixelsize
                             )/M_PI;
@@ -344,7 +352,7 @@ int coffe_covariance_init(
                             (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
                            *covariance_integral(
                                 &integrand_pk2,
-                                (m + 1)*par->covariance_pixelsize, (n + 1)*par->covariance_pixelsize,
+                                separations[m], separations[n],
                                 par->multipole_values[i], par->multipole_values[j],
                                 par->k_min, par->k_max, par->covariance_pixelsize
                             )/2./M_PI;
@@ -508,8 +516,8 @@ int coffe_covariance_init(
                                    / 2. / M_PI
                                    /par->covariance_density[k] / par->covariance_density[k]
                                    /par->covariance_pixelsize
-                                   /((n + 1)*par->covariance_pixelsize)
-                                   /((m + 1)*par->covariance_pixelsize)
+                                   /separations[n]
+                                   /separations[m]
                                    +D1z * D1z / D10 / D10
                                    *integral_pk[i*par->multipole_values_len + j][npixels_max*n + m]
                                    *coeff_sum/par->covariance_density[k]
@@ -519,13 +527,13 @@ int coffe_covariance_init(
                                 )
                                /volume[k];
                             if (par->output_type == 4){
-                                cov_mp->sep[k][m] = (m + 1)*cov_mp->pixelsize;
-                                cov_mp->sep[k][n] = (n + 1)*cov_mp->pixelsize;
+                                cov_mp->sep[k][m] = separations[m];
+                                cov_mp->sep[k][n] = separations[n];
                                 cov_mp->result[k][par->multipole_values_len*i + j][npixels[k]*n + m] = result_mp_or_ramp;
                             }
                             else{
-                                cov_ramp->sep[k][m] = (m + 1)*cov_ramp->pixelsize;
-                                cov_ramp->sep[k][n] = (n + 1)*cov_ramp->pixelsize;
+                                cov_ramp->sep[k][m] = separations[m];
+                                cov_ramp->sep[k][n] = separations[n];
                                 cov_ramp->result[k][par->multipole_values_len*i + j][npixels[k]*n + m] = result_mp_or_ramp;
                             }
                         }
@@ -540,6 +548,7 @@ int coffe_covariance_init(
             free(integral_pk[i]);
             free(integral_pk2[i]);
         }
+        free(separations);
         free(integral_pk);
         free(integral_pk2);
         gsl_spline_free(integrand_pk.spline);

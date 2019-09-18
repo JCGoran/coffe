@@ -465,6 +465,12 @@ int coffe_parser_init(
             &par->covariance_pixelsize,
             COFFE_TRUE
         );
+        parse_double(
+            conf,
+            "covariance_minimum_separation",
+            &par->covariance_minimum_separation,
+            COFFE_TRUE
+        );
     }
 
     if (par->output_type == 4){
