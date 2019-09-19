@@ -712,31 +712,31 @@ int coffe_parser_init(
     /* parsing the contributions to the correlation function and covariance */
     parse_string_array(
         conf, "correlation_contributions",
-        &par->correlation_sources,
-        &par->correlation_sources_len
+        &par->correlation_contributions,
+        &par->correlation_contributions_len
     );
 
-    char possible_inputs[10][10]
-        = {"den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"};
-
-    int counter = 0;
-    char temp_input[10];
-    for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
-        strcpy(par->corr_terms[i], "\0");
-    }
-
-    /* input of the possible correlation terms */
-    for (int i = 0; i<par->correlation_sources_len; ++i){
-        for (int j = i; j<par->correlation_sources_len; ++j){
-            for (int l = 0; l<10; ++l){
-                sprintf(temp_input, "%d", l);
-                if (strcmp(par->correlation_sources[i], possible_inputs[l]) == 0)
-                    strcat(par->corr_terms[counter], temp_input);
-                if (strcmp(par->correlation_sources[j], possible_inputs[l]) == 0)
-                    strcat(par->corr_terms[counter], temp_input);
-            }
-            ++counter;
-        }
+    for (int i = 0; i<par->correlation_contributions_len; ++i){
+        if (strcmp(par->correlation_contributions[i], "den") == 0)
+            par->correlation_contrib.den = 1;
+        else if (strcmp(par->correlation_contributions[i], "rsd") == 0)
+            par->correlation_contrib.rsd = 1;
+        else if (strcmp(par->correlation_contributions[i], "len") == 0)
+            par->correlation_contrib.len = 1;
+        else if (strcmp(par->correlation_contributions[i], "d1") == 0)
+            par->correlation_contrib.d1 = 1;
+        else if (strcmp(par->correlation_contributions[i], "d2") == 0)
+            par->correlation_contrib.d1 = 1;
+        else if (strcmp(par->correlation_contributions[i], "g1") == 0)
+            par->correlation_contrib.g1 = 1;
+        else if (strcmp(par->correlation_contributions[i], "g2") == 0)
+            par->correlation_contrib.g2 = 1;
+        else if (strcmp(par->correlation_contributions[i], "g3") == 0)
+            par->correlation_contrib.g3 = 1;
+        else if (strcmp(par->correlation_contributions[i], "g4") == 0)
+            par->correlation_contrib.g4 = 1;
+        else if (strcmp(par->correlation_contributions[i], "g5") == 0)
+            par->correlation_contrib.g5 = 1;
     }
 
     par->divergent = 0;
@@ -751,31 +751,16 @@ int coffe_parser_init(
     par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
 
     /* isolating the term requiring renormalization */
-    for (int i = 0; i<counter; ++i){
-        if (
-            strcmp(par->corr_terms[i], "33") == 0 || // d2-d2 term
-            strcmp(par->corr_terms[i], "44") == 0 || // g1-g1 term
-            strcmp(par->corr_terms[i], "55") == 0 || // g2-g2 term
-            strcmp(par->corr_terms[i], "66") == 0 || // g3-g3 term
-            strcmp(par->corr_terms[i], "77") == 0 || // g4-g4 term
-            strcmp(par->corr_terms[i], "88") == 0 || // g5-g5 term
-            /* I don't think these are necessary anymore */
-            strcmp(par->corr_terms[i], "34") == 0 ||
-            strcmp(par->corr_terms[i], "43") == 0 ||
-            strcmp(par->corr_terms[i], "35") == 0 ||
-            strcmp(par->corr_terms[i], "53") == 0 ||
-            strcmp(par->corr_terms[i], "36") == 0 ||
-            strcmp(par->corr_terms[i], "63") == 0 ||
-            strcmp(par->corr_terms[i], "45") == 0 ||
-            strcmp(par->corr_terms[i], "54") == 0 ||
-            strcmp(par->corr_terms[i], "46") == 0 ||
-            strcmp(par->corr_terms[i], "64") == 0 ||
-            strcmp(par->corr_terms[i], "56") == 0 ||
-            strcmp(par->corr_terms[i], "65") == 0
-        ){
-            par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
-            par->divergent = 1;
-        }
+    if (
+        par->correlation_contrib.d2 ||
+        par->correlation_contrib.g1 ||
+        par->correlation_contrib.g2 ||
+        par->correlation_contrib.g3 ||
+        par->correlation_contrib.g4 ||
+        par->correlation_contrib.g5
+    ){
+        par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
+        par->divergent = 1;
     }
 
     /* the output path */

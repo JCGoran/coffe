@@ -602,10 +602,10 @@ int coffe_parameters_free(
 {
     config_destroy(par->conf);
     par->conf = NULL;
-    for (size_t i = 0; i<(size_t)par->correlation_sources_len; ++i){
-        free(par->correlation_sources[i]);
+    for (size_t i = 0; i<(size_t)par->correlation_contributions_len; ++i){
+        free(par->correlation_contributions[i]);
     }
-    free(par->correlation_sources);
+    free(par->correlation_contributions);
 
     for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
         free(par->type_bg[i]);

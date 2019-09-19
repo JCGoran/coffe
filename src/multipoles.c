@@ -263,53 +263,11 @@ static double multipoles_single_integrated(
     test.l = l;
 
     int flag = 0;
-    int len = par->correlation_sources_len*(par->correlation_sources_len + 1)/2;
-    for (int i = 0; i<len; ++i){
-        if (
-            strcmp(par->corr_terms[i], "07") == 0 ||
-            strcmp(par->corr_terms[i], "70") == 0 ||
-            strcmp(par->corr_terms[i], "08") == 0 ||
-            strcmp(par->corr_terms[i], "80") == 0 ||
-            strcmp(par->corr_terms[i], "09") == 0 ||
-            strcmp(par->corr_terms[i], "90") == 0 ||
-            strcmp(par->corr_terms[i], "17") == 0 ||
-            strcmp(par->corr_terms[i], "71") == 0 ||
-            strcmp(par->corr_terms[i], "18") == 0 ||
-            strcmp(par->corr_terms[i], "81") == 0 ||
-            strcmp(par->corr_terms[i], "19") == 0 ||
-            strcmp(par->corr_terms[i], "91") == 0 ||
-            strcmp(par->corr_terms[i], "27") == 0 ||
-            strcmp(par->corr_terms[i], "72") == 0 ||
-            strcmp(par->corr_terms[i], "28") == 0 ||
-            strcmp(par->corr_terms[i], "82") == 0 ||
-            strcmp(par->corr_terms[i], "29") == 0 ||
-            strcmp(par->corr_terms[i], "92") == 0 ||
-            strcmp(par->corr_terms[i], "37") == 0 ||
-            strcmp(par->corr_terms[i], "73") == 0 ||
-            strcmp(par->corr_terms[i], "38") == 0 ||
-            strcmp(par->corr_terms[i], "83") == 0 ||
-            strcmp(par->corr_terms[i], "39") == 0 ||
-            strcmp(par->corr_terms[i], "93") == 0 ||
-            strcmp(par->corr_terms[i], "47") == 0 ||
-            strcmp(par->corr_terms[i], "74") == 0 ||
-            strcmp(par->corr_terms[i], "48") == 0 ||
-            strcmp(par->corr_terms[i], "84") == 0 ||
-            strcmp(par->corr_terms[i], "49") == 0 ||
-            strcmp(par->corr_terms[i], "94") == 0 ||
-            strcmp(par->corr_terms[i], "57") == 0 ||
-            strcmp(par->corr_terms[i], "75") == 0 ||
-            strcmp(par->corr_terms[i], "58") == 0 ||
-            strcmp(par->corr_terms[i], "85") == 0 ||
-            strcmp(par->corr_terms[i], "59") == 0 ||
-            strcmp(par->corr_terms[i], "95") == 0 ||
-            strcmp(par->corr_terms[i], "67") == 0 ||
-            strcmp(par->corr_terms[i], "76") == 0 ||
-            strcmp(par->corr_terms[i], "68") == 0 ||
-            strcmp(par->corr_terms[i], "86") == 0 ||
-            strcmp(par->corr_terms[i], "69") == 0 ||
-            strcmp(par->corr_terms[i], "96") == 0
-        ) ++flag;
-    }
+    if (
+        par->correlation_contrib.len ||
+        par->correlation_contrib.g4 ||
+        par->correlation_contrib.g5
+    ) ++flag;
     if (flag == 0) return 0;
 
 #ifdef HAVE_CUBA
@@ -456,20 +414,11 @@ static double multipoles_double_integrated(
     test.l = l;
 
     int flag = 0;
-    int len = par->correlation_sources_len*(par->correlation_sources_len + 1)/2;
-    for (int i = 0; i<len; ++i){
-        if (
-            strcmp(par->corr_terms[i], "77") == 0 || // g4-g4
-            strcmp(par->corr_terms[i], "88") == 0 || // g5-g5
-            strcmp(par->corr_terms[i], "99") == 0 || // len-len
-            strcmp(par->corr_terms[i], "78") == 0 || // g4-g5
-            strcmp(par->corr_terms[i], "87") == 0 || // g5-g4
-            strcmp(par->corr_terms[i], "79") == 0 || // g4-len
-            strcmp(par->corr_terms[i], "97") == 0 || // len-g4
-            strcmp(par->corr_terms[i], "89") == 0 || // g5-len
-            strcmp(par->corr_terms[i], "98") == 0    // len-g5
-        ) ++flag;
-    }
+    if (
+        par->correlation_contrib.len ||
+        par->correlation_contrib.g4 ||
+        par->correlation_contrib.g5
+    ) ++flag;
     if (flag == 0) return 0;
 
 #ifdef HAVE_CUBA

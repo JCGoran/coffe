@@ -100,15 +100,25 @@ struct nl_terms
 
 
 /**
+    structure with all of the correlation contributions
+**/
+
+struct coffe_correlation_contributions
+{
+    int den, rsd, len, d1, d2, g1, g2, g3, g4, g5;
+};
+
+
+/**
     contains all the parameters necessary to carry
     out the computation
 **/
 
 struct coffe_parameters_t
 {
-    char **correlation_sources; /* correlation sources to calculate */
+    char **correlation_contributions; /* correlation contributions to calculate */
 
-    int correlation_sources_len; /* number of correlation sources to calculate */
+    int correlation_contributions_len; /* number of correlation contributions to calculate */
 
     int output_type; /* correlation function (angular or full sky), or multipoles, or redshift averaged multipoles */
 
@@ -116,23 +126,9 @@ struct coffe_parameters_t
 
     int mu_len; /* number of angles */
 
-    char corr_terms[COFFE_MAX_STRLEN][COFFE_MAX_STRLEN]; 
-    /* 
-    contains all the possible terms contributing to the correlation function; 
-    for N input values, we get N*(N+1)/2 terms
+    struct coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
 
-    Nomenclature:
-        "den" = 0
-        "rsd" = 1
-        "d1"  = 2
-        "d2"  = 3
-        "g1"  = 4
-        "g2"  = 5
-        "g3"  = 6
-    cross terms are of the form "MN",
-    with M and N one of the above numbers */
-
-    struct nl_terms nonzero_terms[10];
+    struct nl_terms nonzero_terms[10]; /* contrains all of the integrals we need to compute */
 
     char **type_bg; /* background values to output */
 

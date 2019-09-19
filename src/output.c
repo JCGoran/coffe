@@ -241,8 +241,8 @@ int coffe_output_init(
     /* correlation function (angular) */
     if (par->output_type == 0){
         snprintf(header, COFFE_MAX_STRLEN, "# z_mean = %f\n# correlation contributions: ", par->z_mean);
-        for (int i = 0; i<par->correlation_sources_len; ++i){
-            strncat(header, par->correlation_sources[i], COFFE_MAX_STRLEN);
+        for (int i = 0; i<par->correlation_contributions_len; ++i){
+            strncat(header, par->correlation_contributions[i], COFFE_MAX_STRLEN);
             strncat(header, " ", COFFE_MAX_STRLEN);
         }
         strncat(header, "\n", COFFE_MAX_STRLEN);
@@ -263,8 +263,8 @@ int coffe_output_init(
                 "# mu = %f\n# z_mean = %f\n# correlation contributions: ",
                 par->mu[i], par->z_mean
             );
-            for (int j = 0; j<par->correlation_sources_len; ++j){
-                strncat(header, par->correlation_sources[j], COFFE_MAX_STRLEN);
+            for (int j = 0; j<par->correlation_contributions_len; ++j){
+                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
                 strncat(header, " ", COFFE_MAX_STRLEN);
             }
             strncat(header, "\n", COFFE_MAX_STRLEN);
@@ -286,8 +286,8 @@ int coffe_output_init(
                 "# l = %d\n# z_mean = %f\n# correlation contributions: ",
                 par->multipole_values[i], par->z_mean
             );
-            for (int j = 0; j<par->correlation_sources_len; ++j){
-                strncat(header, par->correlation_sources[j], COFFE_MAX_STRLEN);
+            for (int j = 0; j<par->correlation_contributions_len; ++j){
+                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
                 strncat(header, " ", COFFE_MAX_STRLEN);
             }
             strncat(header, "\n", COFFE_MAX_STRLEN);
@@ -309,8 +309,8 @@ int coffe_output_init(
                 "# l = %d\n# z_min = %f, z_max = %f\n# correlation contributions: ",
                 par->multipole_values[i], par->z_min, par->z_max
             );
-            for (int j = 0; j<par->correlation_sources_len; ++j){
-                strncat(header, par->correlation_sources[j], COFFE_MAX_STRLEN);
+            for (int j = 0; j<par->correlation_contributions_len; ++j){
+                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
                 strncat(header, " ", COFFE_MAX_STRLEN);
             }
             strncat(header, "\n", COFFE_MAX_STRLEN);
