@@ -181,9 +181,27 @@ static double corrfunc_single_integrated(
     test.sep = sep;
     int flag = 0;
     if (
-        par->correlation_contrib.len ||
-        par->correlation_contrib.g4 ||
-        par->correlation_contrib.g5
+        (par->correlation_contrib.len  && par->correlation_contrib.den) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.rsd) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.d1) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.d2) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.g1) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.g2) ||
+        (par->correlation_contrib.len  && par->correlation_contrib.g3) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.den) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.rsd) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.d1) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.d2) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.g1) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.g2) ||
+        (par->correlation_contrib.g4  && par->correlation_contrib.g3) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.den) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.rsd) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.d1) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.d2) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.g1) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.g2) ||
+        (par->correlation_contrib.g5  && par->correlation_contrib.g3)
     ) ++flag;
     if (flag == 0) return 0;
 
