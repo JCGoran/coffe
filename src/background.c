@@ -489,7 +489,6 @@ int coffe_background_init(
     free(temp_bg->conformal_Hz);
     free(temp_bg->conformal_Hz_prime);
     free(temp_bg->D1);
-    free(temp_bg->g);
     free(temp_bg->f);
     free(temp_bg->G1);
     free(temp_bg->G2);
@@ -524,7 +523,6 @@ int coffe_background_free(
     free_spline(&bg->conformal_Hz);
     free_spline(&bg->conformal_Hz_prime);
     free_spline(&bg->D1);
-    free_spline(&bg->g);
     free_spline(&bg->f);
     free_spline(&bg->G1);
     free_spline(&bg->G2);
