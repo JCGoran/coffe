@@ -716,6 +716,17 @@ int coffe_parser_init(
         &par->correlation_contributions_len
     );
 
+    par->correlation_contrib.den = 0;
+    par->correlation_contrib.rsd = 0;
+    par->correlation_contrib.d1 = 0;
+    par->correlation_contrib.d2 = 0;
+    par->correlation_contrib.g1 = 0;
+    par->correlation_contrib.g2 = 0;
+    par->correlation_contrib.g3 = 0;
+    par->correlation_contrib.len = 0;
+    par->correlation_contrib.g4 = 0;
+    par->correlation_contrib.g5 = 0;
+
     for (int i = 0; i<par->correlation_contributions_len; ++i){
         if (strcmp(par->correlation_contributions[i], "den") == 0)
             par->correlation_contrib.den = 1;
