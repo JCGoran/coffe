@@ -653,6 +653,7 @@ int coffe_average_multipoles_init(
 #ifdef HAVE_CUBA
     cubacores(0, 10000);
 #endif
+    ramp->flag = 0;
     if (par->output_type == 3){
         ramp->flag = 1;
         clock_t start, end;

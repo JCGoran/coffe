@@ -528,6 +528,7 @@ int coffe_multipoles_init(
 #ifdef HAVE_CUBA
     cubacores(0, 10000);
 #endif
+    mp->flag = 0;
     if (par->output_type == 2){
         mp->flag = 1;
         clock_t start, end;

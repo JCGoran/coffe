@@ -167,6 +167,8 @@ int coffe_covariance_init(
     struct coffe_covariance_t *cov_ramp
 )
 {
+    cov_mp->flag = 0;
+    cov_ramp->flag = 0;
     if (par->output_type == 4 || par->output_type == 5){
         if (par->output_type == 4){
             cov_mp->flag = 1;

@@ -389,6 +389,9 @@ int coffe_corrfunc_init(
 #ifdef HAVE_CUBA
     cubacores(0, 10000);
 #endif
+    cf_ang->flag = 0;
+    corrfunc->flag = 0;
+    cf2d->flag = 0;
     if (par->output_type == 0){
         cf_ang->flag = 1;
         clock_t start, end;
