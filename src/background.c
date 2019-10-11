@@ -524,7 +524,6 @@ int coffe_background_free(
     free_spline(&bg->conformal_Hz);
     free_spline(&bg->conformal_Hz_prime);
     free_spline(&bg->D1);
-    free_spline(&bg->g);
     free_spline(&bg->f);
     free_spline(&bg->G1);
     free_spline(&bg->G2);

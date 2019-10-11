@@ -38,8 +38,6 @@ struct coffe_background_t
 
     struct coffe_interpolation f; /* growth function f=d(log D)/d(log a) */
 
-    struct coffe_interpolation g; /* growth function g=(1+z)*D_1 */
-
     struct coffe_interpolation G1, G2;
 
     struct coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
