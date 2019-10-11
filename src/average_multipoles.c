@@ -172,111 +172,6 @@ static double average_multipoles_nonintegrated_integrand(
 }
 
 
-/* computes the average multipole of non-integrated terms for given l and separation */
-
-static double average_multipoles_nonintegrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
-    double sep,
-    int l
-)
-{
-    const int dims = 2;
-
-    struct average_multipoles_params test;
-    test.par = par;
-    test.bg = bg;
-    test.integral = integral;
-    test.sep = sep;
-    test.l = l;
-
-    int flag = 0;
-    if (
-        par->correlation_contrib.den ||
-        par->correlation_contrib.rsd ||
-        par->correlation_contrib.d1 ||
-        par->correlation_contrib.d2 ||
-        par->correlation_contrib.g1 ||
-        par->correlation_contrib.g2 ||
-        par->correlation_contrib.g3
-    ) ++flag;
-    if (flag == 0) return 0;
-
-#ifdef HAVE_CUBA
-    int nregions, neval, fail;
-    double result[1], error[1], prob[1];
-    Cuhre(dims, 1,
-        average_multipoles_nonintegrated_integrand,
-        (void *)&test, 1,
-        1e-3, 0, 0,
-        1, par->integration_bins, 7,
-        NULL, NULL,
-        &nregions, &neval, &fail, result, error, prob
-    );
-    return (2*l + 1)*result[0]
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#else
-    gsl_monte_function integrand;
-    integrand.f = &average_multipoles_nonintegrated_integrand;
-    integrand.dim = dims;
-    integrand.params = &test;
-    gsl_rng *random;
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    random = gsl_rng_alloc(T);
-    double result, error;
-    double lower[dims];
-    double upper[dims];
-    for (int i = 0; i<dims; ++i){
-        lower[i] = 0.0;
-        upper[i] = 1.0;
-    }
-    switch (par->integration_method){
-        case 0:{
-            gsl_monte_plain_state *state =
-                gsl_monte_plain_alloc(dims);
-            gsl_monte_plain_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_plain_free(state);
-            break;
-        }
-        case 1:{
-            gsl_monte_miser_state *state =
-                gsl_monte_miser_alloc(dims);
-            gsl_monte_miser_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_miser_free(state);
-            break;
-        }
-        case 2:{
-            gsl_monte_vegas_state *state =
-                gsl_monte_vegas_alloc(dims);
-            gsl_monte_vegas_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_vegas_free(state);
-            break;
-        }
-    }
-
-    gsl_rng_free(random);
-
-    return (2*l + 1)*result
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#endif
-}
 
 
 /* integrand of single integrated terms for redshift averaged multipoles */
@@ -344,128 +239,6 @@ static double average_multipoles_single_integrated_integrand(
        *gsl_sf_legendre_Pl(params->l, mu)
        /interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
-#endif
-}
-
-
-/* computes the average multipole of single integrated terms for given l and separation */
-
-static double average_multipoles_single_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
-    double sep,
-    int l
-)
-{
-    const int dims = 3;
-
-    struct average_multipoles_params test;
-    test.par = par;
-    test.bg = bg;
-    test.integral = integral;
-    test.sep = sep;
-    test.l = l;
-
-    int flag = 0;
-    if (
-        (par->correlation_contrib.len  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g3) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g3) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g3)
-    ) ++flag;
-    if (flag == 0) return 0;
-
-#ifdef HAVE_CUBA
-    int nregions, neval, fail;
-    double result[1], error[1], prob[1];
-    Cuhre(dims, 1,
-        average_multipoles_single_integrated_integrand,
-        (void *)&test, 1,
-        5e-4, 0, 0,
-        1, par->integration_bins, 7,
-        NULL, NULL,
-        &nregions, &neval, &fail, result, error, prob
-    );
-    return (2*l + 1)*result[0]
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#else
-    gsl_monte_function integrand;
-    integrand.f = &average_multipoles_single_integrated_integrand;
-    integrand.dim = dims;
-    integrand.params = &test;
-    gsl_rng *random;
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    random = gsl_rng_alloc(T);
-    double result, error;
-    double lower[dims];
-    double upper[dims];
-    for (int i = 0; i<dims; ++i){
-        lower[i] = 0.0;
-        upper[i] = 1.0;
-    }
-
-    switch (par->integration_method){
-        case 0:{
-            gsl_monte_plain_state *state =
-                gsl_monte_plain_alloc(dims);
-            gsl_monte_plain_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_plain_free(state);
-            break;
-        }
-        case 1:{
-            gsl_monte_miser_state *state =
-                gsl_monte_miser_alloc(dims);
-            gsl_monte_miser_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_miser_free(state);
-            break;
-        }
-        case 2:{
-            gsl_monte_vegas_state *state =
-                gsl_monte_vegas_alloc(dims);
-            gsl_monte_vegas_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_vegas_free(state);
-            break;
-        }
-    }
-
-    gsl_rng_free(random);
-
-    return (2*l + 1)*result
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
 #endif
 }
 
@@ -539,107 +312,308 @@ static double average_multipoles_double_integrated_integrand(
 }
 
 
-/* computes the average multipole of double integrated terms for given l and separation */
 
-static double average_multipoles_double_integrated(
+/* computes the average multipole of all terms for given l and separation */
+
+static double average_multipoles_compute(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
     struct coffe_integrals_t *integral,
     double sep,
-    int l
+    int l,
+    enum coffe_types average_multipoles_flag
 )
 {
-    const int dims = 4;
+    const struct average_multipoles_params test = {
+    .par = par,
+    .bg = bg,
+    .integral = integral,
+    .sep = sep,
+    .l = l
+    };
 
-    struct average_multipoles_params test;
-    test.par = par;
-    test.bg = bg;
-    test.integral = integral;
-    test.sep = sep;
-    test.l = l;
+    switch(average_multipoles_flag){
+        case NONINTEGRATED:{
+            const int dims = 2;
+            int flag = 0;
+            if (
+                par->correlation_contrib.den ||
+                par->correlation_contrib.rsd ||
+                par->correlation_contrib.d1 ||
+                par->correlation_contrib.d2 ||
+                par->correlation_contrib.g1 ||
+                par->correlation_contrib.g2 ||
+                par->correlation_contrib.g3
+            ) ++flag;
+            if (flag == 0) return 0;
 
-    int flag = 0;
-    if (
-        par->correlation_contrib.len ||
-        par->correlation_contrib.g4 ||
-        par->correlation_contrib.g5
-    ) ++flag;
-    if (flag == 0) return 0;
+            #ifdef HAVE_CUBA
+            int nregions, neval, fail;
+            double result[1], error[1], prob[1];
+            Cuhre(dims, 1,
+                average_multipoles_nonintegrated_integrand,
+                (void *)&test, 1,
+                1e-3, 0, 0,
+                1, par->integration_bins, 7,
+                NULL, NULL,
+                &nregions, &neval, &fail, result, error, prob
+            );
+            return (2*l + 1)*result[0]
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #else
+            gsl_monte_function integrand;
+            integrand.f = &average_multipoles_nonintegrated_integrand;
+            integrand.dim = dims;
+            integrand.params = &test;
+            gsl_rng *random;
+            gsl_rng_env_setup();
+            const gsl_rng_type *T = gsl_rng_default;
+            random = gsl_rng_alloc(T);
+            double result, error;
+            double lower[dims];
+            double upper[dims];
+            for (int i = 0; i<dims; ++i){
+                lower[i] = 0.0;
+                upper[i] = 1.0;
+            }
+            switch (par->integration_method){
+                case 0:{
+                    gsl_monte_plain_state *state =
+                        gsl_monte_plain_alloc(dims);
+                    gsl_monte_plain_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_plain_free(state);
+                    break;
+                }
+                case 1:{
+                    gsl_monte_miser_state *state =
+                        gsl_monte_miser_alloc(dims);
+                    gsl_monte_miser_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_miser_free(state);
+                    break;
+                }
+                case 2:{
+                    gsl_monte_vegas_state *state =
+                        gsl_monte_vegas_alloc(dims);
+                    gsl_monte_vegas_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_vegas_free(state);
+                    break;
+                }
+            }
 
-#ifdef HAVE_CUBA
-    int nregions, neval, fail;
-    double result[1], error[1], prob[1];
-    Cuhre(dims, 1,
-        average_multipoles_double_integrated_integrand,
-        (void *)&test, 1,
-        5e-4, 0, 0,
-        1, par->integration_bins, 7,
-        NULL, NULL,
-        &nregions, &neval, &fail, result, error, prob
-    );
-    return (2*l + 1)*result[0]
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#else
-    gsl_monte_function integrand;
-    integrand.f = &average_multipoles_double_integrated_integrand;
-    integrand.dim = dims;
-    integrand.params = &test;
-    gsl_rng *random;
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    random = gsl_rng_alloc(T);
-    double result, error;
-    double lower[dims];
-    double upper[dims];
-    for (int i = 0; i<dims; ++i){
-        lower[i] = 0.0;
-        upper[i] = 1.0;
+            gsl_rng_free(random);
+
+            return (2*l + 1)*result
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #endif
+        }
+        case SINGLE_INTEGRATED:{
+            const int dims = 3;
+
+            int flag = 0;
+            if (
+                (par->correlation_contrib.len  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g3) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g3) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g3)
+            ) ++flag;
+            if (flag == 0) return 0;
+
+            #ifdef HAVE_CUBA
+            int nregions, neval, fail;
+            double result[1], error[1], prob[1];
+            Cuhre(dims, 1,
+                average_multipoles_single_integrated_integrand,
+                (void *)&test, 1,
+                5e-4, 0, 0,
+                1, par->integration_bins, 7,
+                NULL, NULL,
+                &nregions, &neval, &fail, result, error, prob
+            );
+            return (2*l + 1)*result[0]
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #else
+            gsl_monte_function integrand;
+            integrand.f = &average_multipoles_single_integrated_integrand;
+            integrand.dim = dims;
+            integrand.params = &test;
+            gsl_rng *random;
+            gsl_rng_env_setup();
+            const gsl_rng_type *T = gsl_rng_default;
+            random = gsl_rng_alloc(T);
+            double result, error;
+            double lower[dims];
+            double upper[dims];
+            for (int i = 0; i<dims; ++i){
+                lower[i] = 0.0;
+                upper[i] = 1.0;
+            }
+
+            switch (par->integration_method){
+                case 0:{
+                    gsl_monte_plain_state *state =
+                        gsl_monte_plain_alloc(dims);
+                    gsl_monte_plain_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_plain_free(state);
+                    break;
+                }
+                case 1:{
+                    gsl_monte_miser_state *state =
+                        gsl_monte_miser_alloc(dims);
+                    gsl_monte_miser_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_miser_free(state);
+                    break;
+                }
+                case 2:{
+                    gsl_monte_vegas_state *state =
+                        gsl_monte_vegas_alloc(dims);
+                    gsl_monte_vegas_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_vegas_free(state);
+                    break;
+                }
+            }
+
+            gsl_rng_free(random);
+
+            return (2*l + 1)*result
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #endif
+        }
+        case DOUBLE_INTEGRATED:{
+            const int dims = 4;
+
+            int flag = 0;
+            if (
+                par->correlation_contrib.len ||
+                par->correlation_contrib.g4 ||
+                par->correlation_contrib.g5
+            ) ++flag;
+            if (flag == 0) return 0;
+
+            #ifdef HAVE_CUBA
+            int nregions, neval, fail;
+            double result[1], error[1], prob[1];
+            Cuhre(dims, 1,
+                average_multipoles_double_integrated_integrand,
+                (void *)&test, 1,
+                5e-4, 0, 0,
+                1, par->integration_bins, 7,
+                NULL, NULL,
+                &nregions, &neval, &fail, result, error, prob
+            );
+            return (2*l + 1)*result[0]
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #else
+            gsl_monte_function integrand;
+            integrand.f = &average_multipoles_double_integrated_integrand;
+            integrand.dim = dims;
+            integrand.params = &test;
+            gsl_rng *random;
+            gsl_rng_env_setup();
+            const gsl_rng_type *T = gsl_rng_default;
+            random = gsl_rng_alloc(T);
+            double result, error;
+            double lower[dims];
+            double upper[dims];
+            for (int i = 0; i<dims; ++i){
+                lower[i] = 0.0;
+                upper[i] = 1.0;
+            }
+
+            switch (par->integration_method){
+                case 0:{
+                    gsl_monte_plain_state *state =
+                        gsl_monte_plain_alloc(dims);
+                    gsl_monte_plain_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_plain_free(state);
+                    break;
+                }
+                case 1:{
+                    gsl_monte_miser_state *state =
+                        gsl_monte_miser_alloc(dims);
+                    gsl_monte_miser_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_miser_free(state);
+                    break;
+                }
+                case 2:{
+                    gsl_monte_vegas_state *state =
+                        gsl_monte_vegas_alloc(dims);
+                    gsl_monte_vegas_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_vegas_free(state);
+                    break;
+                }
+            }
+
+            gsl_rng_free(random);
+
+            return (2*l + 1)*result
+            /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #endif
+        }
+        default:
+            return 0.0;
     }
-
-    switch (par->integration_method){
-        case 0:{
-            gsl_monte_plain_state *state =
-                gsl_monte_plain_alloc(dims);
-            gsl_monte_plain_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_plain_free(state);
-            break;
-        }
-        case 1:{
-            gsl_monte_miser_state *state =
-                gsl_monte_miser_alloc(dims);
-            gsl_monte_miser_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_miser_free(state);
-            break;
-        }
-        case 2:{
-            gsl_monte_vegas_state *state =
-                gsl_monte_vegas_alloc(dims);
-            gsl_monte_vegas_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_vegas_free(state);
-            break;
-        }
-    }
-
-    gsl_rng_free(random);
-
-    return (2*l + 1)*result
-    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#endif
 }
 
 
@@ -690,9 +664,10 @@ int coffe_average_multipoles_init(
         for (size_t i = 0; i<ramp->l_len; ++i){
             for (size_t j = 0; j<ramp->sep_len; ++j){
                 ramp->result[i][j] =
-                    average_multipoles_nonintegrated(
+                    average_multipoles_compute(
                         par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, ramp->l[i]
+                        ramp->sep[j]*COFFE_H0, ramp->l[i],
+                        NONINTEGRATED
                     );
             }
         }
@@ -700,9 +675,10 @@ int coffe_average_multipoles_init(
         for (size_t i = 0; i<ramp->l_len; ++i){
             for (size_t j = 0; j<ramp->sep_len; ++j){
                 ramp->result[i][j] +=
-                    average_multipoles_single_integrated(
+                    average_multipoles_compute(
                         par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, ramp->l[i]
+                        ramp->sep[j]*COFFE_H0, ramp->l[i],
+                        SINGLE_INTEGRATED
                     );
             }
         }
@@ -710,9 +686,10 @@ int coffe_average_multipoles_init(
         for (size_t i = 0; i<ramp->l_len; ++i){
             for (size_t j = 0; j<ramp->sep_len; ++j){
                 ramp->result[i][j] +=
-                    average_multipoles_double_integrated(
+                    average_multipoles_compute(
                         par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, ramp->l[i]
+                        ramp->sep[j]*COFFE_H0, ramp->l[i],
+                        DOUBLE_INTEGRATED
                     );
             }
         }

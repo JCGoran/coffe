@@ -86,6 +86,11 @@ struct coffe_interpolation2d
     gsl_interp_accel *xaccel, *yaccel;
 };
 
+enum coffe_types
+{
+    NONINTEGRATED, SINGLE_INTEGRATED, DOUBLE_INTEGRATED
+};
+
 
 /**
     contains all the values for n and l

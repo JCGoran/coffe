@@ -127,20 +127,6 @@ static int corrfunc_check_range(
 }
 
 
-static double corrfunc_nonintegrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double mu,
-    double sep
-)
-{
-    return functions_nonintegrated(
-        par, bg, integral,
-        par->z_mean, mu, sep
-    )/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-}
-
 static double corrfunc_single_integrated_integrand(
     double x,
 #ifdef HAVE_DOUBLE_EXPONENTIAL
@@ -162,76 +148,6 @@ static double corrfunc_single_integrated_integrand(
             par, bg, integral,
             par->z_mean, mu, sep, x
         );
-}
-
-
-static double corrfunc_single_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double mu,
-    double sep
-)
-{
-    struct corrfunc_params test;
-    test.par = par;
-    test.bg = bg;
-    test.integral = integral;
-    test.mu = mu;
-    test.sep = sep;
-    int flag = 0;
-    if (
-        (par->correlation_contrib.len  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.len  && par->correlation_contrib.g3) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.g4  && par->correlation_contrib.g3) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.den) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.rsd) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.d1) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.d2) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g1) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g2) ||
-        (par->correlation_contrib.g5  && par->correlation_contrib.g3)
-    ) ++flag;
-    if (flag == 0) return 0;
-
-    double result, error;
-
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-    result = tanhsinh_quad(
-        &corrfunc_single_integrated_integrand,
-        &test,
-        0., 1., 0.,
-        &error, NULL
-    );
-#else
-    double prec = 1E-5;
-    gsl_function integrand;
-    integrand.function = &corrfunc_single_integrated_integrand;
-    integrand.params = &test;
-
-    gsl_integration_workspace *wspace =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-    gsl_integration_qag(
-        &integrand, 0., 1., 0,
-        prec, COFFE_MAX_INTSPACE,
-        GSL_INTEG_GAUSS61, wspace,
-        &result, &error
-    );
-    gsl_integration_workspace_free(wspace);
-#endif
-
-    return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
 }
 
 
@@ -270,107 +186,181 @@ static double corrfunc_double_integrated_integrand(
 }
 
 
-static double corrfunc_double_integrated(
+static double corrfunc_compute(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
     struct coffe_integrals_t integral[],
     double mu,
-    double sep
+    double sep,
+    enum coffe_types corrfunc_flag
 )
 {
-    const int dims = 2;
-
-    struct corrfunc_params test;
-    test.par = par;
-    test.bg = bg;
-    test.integral = integral;
-    test.mu = mu;
-    test.sep = sep;
-    int flag = 0;
-    if (
-        par->correlation_contrib.len ||
-        par->correlation_contrib.g4 ||
-        par->correlation_contrib.g5
-    ) ++flag;
-    if (flag == 0) return 0;
-
-#ifdef HAVE_CUBA
-    int nregions, neval, fail;
-    double result[1], error[1], prob[1];
-
-    Cuhre(dims, 1,
-        corrfunc_double_integrated_integrand,
-        (void *)&test, 1,
-        5e-4, 0, 0,
-        1, par->integration_bins, 7,
-        NULL, NULL,
-        &nregions, &neval, &fail, result, error, prob
-    );
-    return result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#else
-    gsl_monte_function integrand;
-    integrand.dim = dims;
-    integrand.params = &test;
-    integrand.f = &corrfunc_double_integrated_integrand;
-
-    gsl_rng *random;
-    gsl_rng_env_setup();
-    const gsl_rng_type *T = gsl_rng_default;
-    random = gsl_rng_alloc(T);
-    double result, error;
-    double lower[dims];
-    double upper[dims];
-    for (int i = 0; i<dims; ++i){
-        lower[i] = 0.0;
-        upper[i] = 1.0;
-    }
-
-    switch (par->integration_method){
-        case 0:{
-            gsl_monte_plain_state *state =
-                gsl_monte_plain_alloc(dims);
-            gsl_monte_plain_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
-            );
-            gsl_monte_plain_free(state);
-            break;
+    switch(corrfunc_flag){
+        case NONINTEGRATED:{
+            return functions_nonintegrated(
+                par, bg, integral,
+                par->z_mean, mu, sep
+            )/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
         }
-        case 1:{
-            gsl_monte_miser_state *state =
-                gsl_monte_miser_alloc(dims);
-            gsl_monte_miser_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
+        case SINGLE_INTEGRATED:{
+            const struct corrfunc_params test = {
+            .par = par,
+            .bg = bg,
+            .integral = integral,
+            .mu = mu,
+            .sep = sep
+            };
+            int flag = 0;
+            if (
+                (par->correlation_contrib.len  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.len  && par->correlation_contrib.g3) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.g4  && par->correlation_contrib.g3) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.den) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.rsd) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.d1) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.d2) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g1) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g2) ||
+                (par->correlation_contrib.g5  && par->correlation_contrib.g3)
+            ) ++flag;
+            if (flag == 0) return 0;
+
+            double result, error;
+
+            #ifdef HAVE_DOUBLE_EXPONENTIAL
+            result = tanhsinh_quad(
+                &corrfunc_single_integrated_integrand,
+                &test,
+                0., 1., 0.,
+                &error, NULL
+            );
+            #else
+            double prec = 1E-5;
+            gsl_function integrand;
+            integrand.function = &corrfunc_single_integrated_integrand;
+            integrand.params = &test;
+
+            gsl_integration_workspace *wspace =
+                gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+            gsl_integration_qag(
+                &integrand, 0., 1., 0,
+                prec, COFFE_MAX_INTSPACE,
+                GSL_INTEG_GAUSS61, wspace,
                 &result, &error
             );
-            gsl_monte_miser_free(state);
-            break;
+            gsl_integration_workspace_free(wspace);
+            #endif
+
+            return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
         }
-        case 2:{
-            gsl_monte_vegas_state *state =
-                gsl_monte_vegas_alloc(dims);
-            gsl_monte_vegas_integrate(
-                &integrand, lower, upper,
-                dims, par->integration_bins, random,
-                state,
-                &result, &error
+        case DOUBLE_INTEGRATED:{
+            const int dims = 2;
+
+            struct corrfunc_params test;
+            test.par = par;
+            test.bg = bg;
+            test.integral = integral;
+            test.mu = mu;
+            test.sep = sep;
+            int flag = 0;
+            if (
+                par->correlation_contrib.len ||
+                par->correlation_contrib.g4 ||
+                par->correlation_contrib.g5
+            ) ++flag;
+            if (flag == 0) return 0;
+
+            #ifdef HAVE_CUBA
+            int nregions, neval, fail;
+            double result[1], error[1], prob[1];
+
+            Cuhre(dims, 1,
+                corrfunc_double_integrated_integrand,
+                (void *)&test, 1,
+                5e-4, 0, 0,
+                1, par->integration_bins, 7,
+                NULL, NULL,
+                &nregions, &neval, &fail, result, error, prob
             );
-            gsl_monte_vegas_free(state);
-            break;
+            return result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #else
+            gsl_monte_function integrand;
+            integrand.dim = dims;
+            integrand.params = &test;
+            integrand.f = &corrfunc_single_integrated_integrand;
+
+            gsl_rng *random;
+            gsl_rng_env_setup();
+            const gsl_rng_type *T = gsl_rng_default;
+            random = gsl_rng_alloc(T);
+            double result, error;
+            double lower[dims];
+            double upper[dims];
+            for (int i = 0; i<dims; ++i){
+                lower[i] = 0.0;
+                upper[i] = 1.0;
+            }
+
+            switch (par->integration_method){
+                case 0:{
+                    gsl_monte_plain_state *state =
+                        gsl_monte_plain_alloc(dims);
+                    gsl_monte_plain_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_plain_free(state);
+                    break;
+                }
+                case 1:{
+                    gsl_monte_miser_state *state =
+                        gsl_monte_miser_alloc(dims);
+                    gsl_monte_miser_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_miser_free(state);
+                    break;
+                }
+                case 2:{
+                    gsl_monte_vegas_state *state =
+                        gsl_monte_vegas_alloc(dims);
+                    gsl_monte_vegas_integrate(
+                        &integrand, lower, upper,
+                        dims, par->integration_bins, random,
+                        state,
+                        &result, &error
+                    );
+                    gsl_monte_vegas_free(state);
+                    break;
+                }
+                default:
+                    result = 0;
+                    break;
+            }
+            gsl_rng_free(random);
+            return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+            #endif
         }
         default:
-            result = 0;
-            break;
+            return 0.0;
     }
-    gsl_rng_free(random);
-    return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
-#endif
 }
-
 
 /**
     computes and stores the values of the correlation
@@ -418,22 +408,25 @@ int coffe_corrfunc_init(
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i<theta_len; ++i){
             (cf_ang->result)[i] =
-                corrfunc_nonintegrated(
-                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i])))
+                corrfunc_compute(
+                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i]))),
+                    NONINTEGRATED
                 );
         }
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i<theta_len; ++i){
             (cf_ang->result)[i] +=
-                corrfunc_single_integrated(
-                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i])))
+                corrfunc_compute(
+                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i]))),
+                    SINGLE_INTEGRATED
                 );
         }
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i<theta_len; ++i){
             (cf_ang->result)[i] +=
-                corrfunc_double_integrated(
-                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i])))
+                corrfunc_compute(
+                    par, bg, integral, 0, chi_mean*sqrt(2*(1. - cos(cf_ang->theta[i]))),
+                    DOUBLE_INTEGRATED
                 );
         }
 
@@ -487,9 +480,10 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
                 (corrfunc->result)[i][j] =
-                    corrfunc_nonintegrated(
+                    corrfunc_compute(
                         par, bg, integral,
-                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0
+                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0,
+                        NONINTEGRATED
                     );
             }
         }
@@ -497,9 +491,10 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
                 (corrfunc->result)[i][j] +=
-                    corrfunc_single_integrated(
+                    corrfunc_compute(
                         par, bg, integral,
-                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0
+                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0,
+                        SINGLE_INTEGRATED
                     );
             }
         }
@@ -507,9 +502,10 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
                 (corrfunc->result)[i][j] +=
-                    corrfunc_double_integrated(
+                    corrfunc_compute(
                         par, bg, integral,
-                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0
+                        corrfunc->mu[i], corrfunc->sep[j]*COFFE_H0,
+                        DOUBLE_INTEGRATED
                     );
             }
         }
@@ -561,10 +557,11 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<cf2d->sep_len; ++i){
             for (size_t j = 0; j<cf2d->sep_len; ++j){
                 (cf2d->result)[i][j] =
-                    corrfunc_nonintegrated(
+                    corrfunc_compute(
                         par, bg, integral,
                         cf2d->sep_parallel[i]/sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2)),
-                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0
+                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0,
+                        NONINTEGRATED
                     );
             }
         }
@@ -572,10 +569,11 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<cf2d->sep_len; ++i){
             for (size_t j = 0; j<cf2d->sep_len; ++j){
                 (cf2d->result)[i][j] +=
-                    corrfunc_single_integrated(
+                    corrfunc_compute(
                         par, bg, integral,
                         cf2d->sep_parallel[i]/sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2)),
-                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0
+                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0,
+                        SINGLE_INTEGRATED
                     );
             }
         }
@@ -583,10 +581,11 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<cf2d->sep_len; ++i){
             for (size_t j = 0; j<cf2d->sep_len; ++j){
                 (cf2d->result)[i][j] +=
-                    corrfunc_double_integrated(
+                    corrfunc_compute(
                         par, bg, integral,
                         cf2d->sep_parallel[i]/sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2)),
-                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0
+                        sqrt(pow(cf2d->sep_parallel[i], 2) + pow(cf2d->sep_perpendicular[j], 2))*COFFE_H0,
+                        DOUBLE_INTEGRATED
                     );
             }
         }
