@@ -19,18 +19,6 @@
 #ifndef COFFE_FUNCTIONS_H
 #define COFFE_FUNCTIONS_H
 
-/**
-    contains all the parameters needed for evaluation of non-integrated terms
-**/
-struct functions_params
-{
-    struct coffe_parameters_t *par;
-    struct coffe_background_t *bg;
-    struct coffe_integrals_t *integral;
-    double sep, mu;
-    int l;
-};
-
 double functions_nonintegrated(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
