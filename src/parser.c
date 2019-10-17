@@ -211,6 +211,24 @@ static int parse_double_array(
 }
 
 
+static int parse_bias_default(
+    double value,
+    struct coffe_interpolation *spline,
+    int method
+)
+{
+    double redshifts[] = {0, 25, 50, 75, 100};
+    double values[] = {value, value, value, value, value};
+    init_spline(
+        spline, redshifts, values,
+        sizeof(redshifts)/sizeof(*redshifts),
+        method
+    );
+
+    return EXIT_SUCCESS;
+}
+
+
 /**
     parses the value of bias given by <setting> from config <conf>
     into coffe_interpolation <spline> depending on value of <flag>
@@ -243,10 +261,7 @@ static int parse_bias(
     else{
         double value;
         parse_double(conf, setting_single, &value, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double redshifts[] = {0, 25, 50, 75, 100};
-        double values[] = {value, value, value, value, value};
-        init_spline(spline, redshifts, values, sizeof(redshifts)/sizeof(redshifts[0]), method);
+        parse_bias_default(value, spline, method);
     }
 
     return EXIT_SUCCESS;
