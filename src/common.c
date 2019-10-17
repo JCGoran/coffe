@@ -341,34 +341,36 @@ int write_ncol_null(
 )
 {
     va_list args;
-    FILE *data = fopen(filename, "w");
-    if (data == NULL){
-        print_error_verbose(PROG_OPEN_ERROR, filename);
-        return EXIT_FAILURE;
-    }
-    if (header != NULL) fprintf(data, "%s", header);
-
     va_start(args, values);
     size_t counter = 0;
     double **all_values = (double **)coffe_malloc(sizeof(double *)*COFFE_MAX_ALLOCABLE);
     all_values[0] = values;
 
-    do{
+    while (values != NULL){
         values = va_arg(args, double *);
         ++counter;
         all_values[counter] = values;
-    } while (values != NULL);
+    }
     va_end(args);
 
-    for (size_t i = 0; i<len; ++i){
-        for (size_t j = 0; j<counter; ++j){
-            if (j<counter - 1)
-                fprintf(data, "%.10e%s", all_values[j][i], sep);
-            else
-                fprintf(data, "%.10e%s\n", all_values[j][i], sep);
+    if (counter > 0){
+        FILE *data = fopen(filename, "w");
+        if (data == NULL){
+            print_error_verbose(PROG_OPEN_ERROR, filename);
+            return EXIT_FAILURE;
         }
+        if (header != NULL) fprintf(data, "%s", header);
+
+        for (size_t i = 0; i<len; ++i){
+            for (size_t j = 0; j<counter; ++j){
+                if (j<counter - 1)
+                    fprintf(data, "%.10e%s", all_values[j][i], sep);
+                else
+                    fprintf(data, "%.10e%s\n", all_values[j][i], sep);
+            }
+        }
+        fclose(data);
     }
-    fclose(data);
     for (size_t i = 0; i<counter; ++i){
         all_values[i] = NULL;
     }
@@ -600,7 +602,8 @@ int coffe_parameters_free(
     struct coffe_parameters_t *par
 )
 {
-    config_destroy(par->conf);
+    if (par->conf != NULL)
+        config_destroy(par->conf);
     par->conf = NULL;
     for (size_t i = 0; i<(size_t)par->correlation_contributions_len; ++i){
         free(par->correlation_contributions[i]);

@@ -232,7 +232,8 @@ int coffe_output_init(
 
     /* settings file copy */
     snprintf(filepath, COFFE_MAX_STRLEN, "%ssettings.cfg", prefix);
-    config_write_file(par->conf, filepath);
+    if (par->conf != NULL)
+        config_write_file(par->conf, filepath);
 
     /* background */
     snprintf(filepath, COFFE_MAX_STRLEN, "%sbackground.dat", prefix);
