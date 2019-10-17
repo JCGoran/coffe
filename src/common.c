@@ -546,8 +546,10 @@ int free_spline(
     struct coffe_interpolation *interp
 )
 {
-    gsl_spline_free(interp->spline);
-    gsl_interp_accel_free(interp->accel);
+    if (interp->spline != NULL)
+        gsl_spline_free(interp->spline);
+    if (interp->accel != NULL)
+        gsl_interp_accel_free(interp->accel);
     if (interp->spline != NULL) interp->spline = NULL;
     if (interp->accel != NULL) interp->accel = NULL;
     return EXIT_SUCCESS;
@@ -609,6 +611,15 @@ int coffe_parameters_free(
         free(par->correlation_contributions[i]);
     }
     free(par->correlation_contributions);
+
+    free_spline(&par->power_spectrum);
+    free_spline(&par->power_spectrum_norm);
+    free_spline(&par->matter_bias1);
+    free_spline(&par->matter_bias2);
+    free_spline(&par->magnification_bias1);
+    free_spline(&par->magnification_bias2);
+    free_spline(&par->evolution_bias1);
+    free_spline(&par->evolution_bias2);
 
     for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
         free(par->type_bg[i]);
