@@ -8,6 +8,8 @@
 
 #ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
+#else
+#include <gsl/gsl_integration.h>
 #endif
 
 #ifdef HAVE_CUBA

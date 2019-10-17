@@ -256,7 +256,7 @@ static int parse_bias(
 /**
     parsing the power spectrum from an external source (only CLASS for now)
 **/
-
+#ifdef HAVE_CLASS
 static int parse_external_power_spectrum(
     struct coffe_parameters_t *par
 )
@@ -416,7 +416,7 @@ static int parse_external_power_spectrum(
 
     return EXIT_SUCCESS;
 }
-
+#endif
 
 /**
     parses all the settings from the input file
