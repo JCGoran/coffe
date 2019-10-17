@@ -428,11 +428,8 @@ static int signal_integrate_gsl(
     gsl_monte_function integrand,
     int integration_method,
     int dims,
-    double lower,
-    double upper,
     int integration_bins,
-    double *result,
-    double *error
+    double *result
 )
 {
     gsl_rng *random;
@@ -441,6 +438,7 @@ static int signal_integrate_gsl(
     random = gsl_rng_alloc(rng);
     double lower[dims];
     double upper[dims];
+    double error;
     for (int i = 0; i<dims; ++i){
         lower[i] = 0.0;
         upper[i] = 1.0;
@@ -453,7 +451,7 @@ static int signal_integrate_gsl(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, error
+                result, &error
             );
             gsl_monte_plain_free(state);
             break;
@@ -465,7 +463,7 @@ static int signal_integrate_gsl(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, error
+                result, &error
             );
             gsl_monte_miser_free(state);
             break;
@@ -477,7 +475,7 @@ static int signal_integrate_gsl(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, error
+                result, &error
             );
             gsl_monte_vegas_free(state);
             break;
@@ -583,61 +581,18 @@ double coffe_integrate(
                     return (2*l + 1)*result[0]
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.f = &average_multipoles_nonintegrated_integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *rng = gsl_rng_default;
-                    random = gsl_rng_alloc(rng);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                    }
-
-                    gsl_rng_free(random);
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
                     return (2*l + 1)*result
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
@@ -721,65 +676,19 @@ double coffe_integrate(
                     );
                     return (2*l + 1)*result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
                     integrand.f = &multipoles_single_integrated_integrand;
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *T = gsl_rng_default;
-                    random = gsl_rng_alloc(T);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                        default:
-                            result = 0;
-                            break;
-                    }
-                    gsl_rng_free(random);
                     return (2*l + 1)*result
                         /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #endif
@@ -800,62 +709,18 @@ double coffe_integrate(
                     return (2*l + 1)*result[0]
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.f = &average_multipoles_single_integrated_integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *T = gsl_rng_default;
-                    random = gsl_rng_alloc(T);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                    }
-
-                    gsl_rng_free(random);
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
                     return (2*l + 1)*result
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
@@ -891,65 +756,19 @@ double coffe_integrate(
                     );
                     return result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
-                    integrand.f = &corrfunc_single_integrated_integrand;
+                    integrand.f = &corrfunc_double_integrated_integrand;
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *T = gsl_rng_default;
-                    random = gsl_rng_alloc(T);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                        default:
-                            result = 0;
-                            break;
-                    }
-                    gsl_rng_free(random);
                     return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #endif
                 }
@@ -969,65 +788,19 @@ double coffe_integrate(
                     );
                     return (2*l + 1)*result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
                     integrand.f = &multipoles_double_integrated_integrand;
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *T = gsl_rng_default;
-                    random = gsl_rng_alloc(T);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                        default:
-                            result = 0;
-                            break;
-                    }
-                    gsl_rng_free(random);
                     return (2*l + 1)*result
                         /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #endif
@@ -1048,62 +821,18 @@ double coffe_integrate(
                     return (2*l + 1)*result[0]
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
                     #else
+                    double result;
                     gsl_monte_function integrand;
                     integrand.f = &average_multipoles_double_integrated_integrand;
                     integrand.dim = dims;
                     integrand.params = &test;
-                    gsl_rng *random;
-                    gsl_rng_env_setup();
-                    const gsl_rng_type *T = gsl_rng_default;
-                    random = gsl_rng_alloc(T);
-                    double result, error;
-                    double lower[dims];
-                    double upper[dims];
-                    for (int i = 0; i<dims; ++i){
-                        lower[i] = 0.0;
-                        upper[i] = 1.0;
-                    }
-
-                    switch (par->integration_method){
-                        case 0:{
-                            gsl_monte_plain_state *state =
-                                gsl_monte_plain_alloc(dims);
-                            gsl_monte_plain_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_plain_free(state);
-                            break;
-                        }
-                        case 1:{
-                            gsl_monte_miser_state *state =
-                                gsl_monte_miser_alloc(dims);
-                            gsl_monte_miser_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_miser_free(state);
-                            break;
-                        }
-                        case 2:{
-                            gsl_monte_vegas_state *state =
-                                gsl_monte_vegas_alloc(dims);
-                            gsl_monte_vegas_integrate(
-                                &integrand, lower, upper,
-                                dims, par->integration_bins, random,
-                                state,
-                                &result, &error
-                            );
-                            gsl_monte_vegas_free(state);
-                            break;
-                        }
-                    }
-
-                    gsl_rng_free(random);
+                    signal_integrate_gsl(
+                        integrand,
+                        par->integration_method,
+                        dims,
+                        par->integration_bins,
+                        &result
+                    );
 
                     return (2*l + 1)*result
                     /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
