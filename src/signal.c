@@ -516,7 +516,7 @@ double coffe_integrate(
     switch (flag_integral){
         case NONINTEGRATED:{
             /* first check if we really need it */
-            int flag = 0;
+            int flag = COFFE_FALSE;
             if (
                 par->correlation_contrib.den ||
                 par->correlation_contrib.rsd ||
@@ -525,8 +525,8 @@ double coffe_integrate(
                 par->correlation_contrib.g1 ||
                 par->correlation_contrib.g2 ||
                 par->correlation_contrib.g3
-            ) ++flag;
-            if (flag == 0) return 0;
+            ) flag = COFFE_TRUE;
+            if (flag != COFFE_TRUE) return 0.0;
 
             /* if we do, check which one */
             switch (flag_output){
@@ -604,7 +604,7 @@ double coffe_integrate(
                 }
         }
         case SINGLE_INTEGRATED:{
-            int flag = 0;
+            int flag = COFFE_FALSE;
             if (
                 (par->correlation_contrib.len && par->correlation_contrib.den) ||
                 (par->correlation_contrib.len && par->correlation_contrib.rsd) ||
@@ -627,8 +627,8 @@ double coffe_integrate(
                 (par->correlation_contrib.g5 && par->correlation_contrib.g1) ||
                 (par->correlation_contrib.g5 && par->correlation_contrib.g2) ||
                 (par->correlation_contrib.g5 && par->correlation_contrib.g3)
-            ) ++flag;
-            if (flag == 0) return 0.0;
+            ) flag = COFFE_TRUE;
+            if (flag != COFFE_TRUE) return 0.0;
 
             switch(flag_output){
                 case CORRFUNC:{
@@ -731,13 +731,13 @@ double coffe_integrate(
             }
         }
         case DOUBLE_INTEGRATED:{
-            int flag = 0;
+            int flag = COFFE_FALSE;
             if (
                 par->correlation_contrib.len ||
                 par->correlation_contrib.g4 ||
                 par->correlation_contrib.g5
-            ) ++flag;
-            if (flag == 0) return 0;
+            ) flag = COFFE_TRUE;
+            if (flag != COFFE_TRUE) return 0.0;
 
             switch (flag_output){
                 case CORRFUNC:{
