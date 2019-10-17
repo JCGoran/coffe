@@ -147,8 +147,6 @@ struct coffe_parameters_t
 
     int bessel_bins; /* number of bins for the bessel integrals */
 
-    double H0; /* same as hardcoded COFFE_H0 in our units */
-
     double Omega0_cdm; /* omega parameter for cold dark matter */
 
     double Omega0_baryon; /* omega parameter for baryons */
