@@ -465,7 +465,7 @@ int coffe_integrals_init(
                     );
 
                 }
-                init_spline(
+                coffe_init_spline(
                     &(integral[j].result),
                     separations,
                     result,
@@ -474,7 +474,7 @@ int coffe_integrals_init(
                 );
                 separations[0] = 0.0;
                 result0[0] = 0.0;
-                init_spline(
+                coffe_init_spline(
                     &integral[j].renormalization0,
                     separations,
                     result0,
@@ -668,7 +668,7 @@ int coffe_integrals_init(
                     final_result[i] = result[i - len - 1];
                 }
 
-                init_spline(
+                coffe_init_spline(
                     &(integral[j].result),
                     final_sep,
                     final_result,
@@ -721,7 +721,7 @@ int coffe_integrals_init(
             final_sep[i] = sep[i - min_sep_len];
             final_result[i] = result[i - min_sep_len];
         }
-        init_spline(
+        coffe_init_spline(
             &(integral[9].result),
             final_sep,
             final_result,

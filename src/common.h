@@ -358,7 +358,7 @@ int copy_matrix_array(
     char *type
 );
 
-int init_spline(
+int coffe_init_spline(
     struct coffe_interpolation *interp,
     double *xi,
     double *yi,

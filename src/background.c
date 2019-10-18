@@ -271,7 +271,7 @@ int coffe_background_init(
             z_array[i] = z;
             w_array[i] = coffe_dark_energy_eos(par, z);
         }
-        init_spline(&ipar.w, z_array, w_array, bins + 1, 1);
+        coffe_init_spline(&ipar.w, z_array, w_array, bins + 1, 1);
         free(w_array);
 
         double *wint_array = (double *)coffe_malloc(sizeof(double)*(bins + 1));
@@ -280,7 +280,7 @@ int coffe_background_init(
             z_array[i] = z;
             wint_array[i] = integral_w(&ipar, z);
         }
-        init_spline(&ipar.wint, z_array, wint_array, bins + 1, 1);
+        coffe_init_spline(&ipar.wint, z_array, wint_array, bins + 1, 1);
         free(wint_array);
 
         double *xint_array = (double *)coffe_malloc(sizeof(double)*(bins + 1));
@@ -295,7 +295,7 @@ int coffe_background_init(
                 xint_array[i] = (ipar.Omega0_cdm + ipar.Omega0_baryon)/(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon));
             }
         }
-        init_spline(&ipar.xint, z_array, xint_array, bins + 1, 1);
+        coffe_init_spline(&ipar.xint, z_array, xint_array, bins + 1, 1);
         free(xint_array);
 
         free(z_array);
@@ -405,63 +405,63 @@ int coffe_background_init(
     }
 
     /* initializing the splines; all splines are a function of z */
-    init_spline(
+    coffe_init_spline(
         &bg->a,
         temp_bg->z,
         temp_bg->a,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->Hz,
         temp_bg->z,
         temp_bg->Hz,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->conformal_Hz,
         temp_bg->z,
         temp_bg->conformal_Hz,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->conformal_Hz_prime,
         temp_bg->z,
         temp_bg->conformal_Hz_prime,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->D1,
         temp_bg->z,
         temp_bg->D1,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->f,
         temp_bg->z,
         temp_bg->f,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->comoving_distance,
         temp_bg->z,
         temp_bg->comoving_distance,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->G1,
         temp_bg->z,
         temp_bg->G1,
         par->background_bins,
         par->interp_method
     );
-    init_spline(
+    coffe_init_spline(
         &bg->G2,
         temp_bg->z,
         temp_bg->G2,
@@ -470,7 +470,7 @@ int coffe_background_init(
     );
 
     /* inverse of the z, chi(z) spline (only one we need to invert) */
-    init_spline(
+    coffe_init_spline(
         &bg->z_as_chi,
         temp_bg->comoving_distance,
         temp_bg->z,

@@ -219,7 +219,7 @@ static int parse_bias_default(
 {
     double redshifts[] = {0, 25, 50, 75, 100};
     double values[] = {value, value, value, value, value};
-    init_spline(
+    coffe_init_spline(
         spline, redshifts, values,
         sizeof(redshifts)/sizeof(*redshifts),
         method
@@ -254,7 +254,7 @@ static int parse_bias(
             &values,
             &len
         );
-        init_spline(spline, redshifts, values, len, method);
+        coffe_init_spline(spline, redshifts, values, len, method);
         free(redshifts);
         free(values);
     }
@@ -413,7 +413,7 @@ static int parse_external_power_spectrum(
         k[i] = exp(psp.ln_k[i]) / par->h;
         pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
     }
-    init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+    coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
     free(k);
     free(pk);
@@ -471,7 +471,7 @@ int coffe_parse_default_parameters(
     const double pk[] = {
         #include "POWER_SPECTRUM_HEADER.dat"
     };
-    init_spline(
+    coffe_init_spline(
         &par->power_spectrum,
         (double *)k, (double *)pk, sizeof(k) / sizeof(*k),
         par->interp_method
@@ -490,7 +490,7 @@ int coffe_parse_default_parameters(
             k_norm[i] = par->power_spectrum.spline->x[i] / COFFE_H0;
             pk_norm[i] = par->power_spectrum.spline->y[i] * pow(COFFE_H0, 3);
         }
-        init_spline(
+        coffe_init_spline(
             &par->power_spectrum_norm,
             k_norm, pk_norm, len,
             par->interp_method
@@ -1027,7 +1027,7 @@ int coffe_parser_init(
             &pk_len
         );
 
-        init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+        coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
         free(k);
         free(pk);
@@ -1070,7 +1070,7 @@ int coffe_parser_init(
             k_norm[i] = par->power_spectrum.spline->x[i]/COFFE_H0;
             pk_norm[i] = par->power_spectrum.spline->y[i]*pow(COFFE_H0, 3);
         }
-        init_spline(
+        coffe_init_spline(
             &par->power_spectrum_norm,
             k_norm, pk_norm, len,
             par->interp_method

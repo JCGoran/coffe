@@ -241,7 +241,7 @@ int coffe_covariance_init(
         }
 
         /* interpolations of P(k) and P^2(k) */
-        init_spline(
+        coffe_init_spline(
             &integrand_pk,
             par->power_spectrum.spline->x,
             temp_spectrum_pk,
@@ -249,7 +249,7 @@ int coffe_covariance_init(
             5
         );
 
-        init_spline(
+        coffe_init_spline(
             &integrand_pk2,
             par->power_spectrum.spline->x,
             temp_spectrum_pk2,

@@ -489,7 +489,7 @@ int copy_matrix_array(
 }
 
 
-int init_spline(
+int coffe_init_spline(
     struct coffe_interpolation *interp,
     double *xi,
     double *yi,
