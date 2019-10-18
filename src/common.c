@@ -592,7 +592,7 @@ double common_wfunction(
     return par->w0 + par->wa*z/(1 + z);
 }
 
-double interp_spline(
+double coffe_interp_spline(
     struct coffe_interpolation *interp,
     double value
 )

@@ -39,7 +39,7 @@ double functions_nonintegrated(
     double sep
 )
 {
-    double chi_mean = interp_spline(&bg->comoving_distance, z_mean);
+    double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
     double chi1 = chi_mean - sep*mu/2.;
     double chi2 = chi_mean + sep*mu/2.;
     double costheta =
@@ -47,35 +47,35 @@ double functions_nonintegrated(
        /(2.*chi_mean*chi_mean - mu*mu*sep*sep/2.);
 
     double result = 0;
-    double z1 = interp_spline(&bg->z_as_chi, chi1);
-    double z2 = interp_spline(&bg->z_as_chi, chi2);
-    double f1 = interp_spline(&bg->f, z1);
-    double f2 = interp_spline(&bg->f, z2);
-    double fmean = interp_spline(&bg->f, z_mean);
-    double curlyH1 = interp_spline(&bg->conformal_Hz, z1); // dimensionless
-    double curlyH2 = interp_spline(&bg->conformal_Hz, z2); // dimensionless
-    double b1 = interp_spline(&par->matter_bias1, z1);
-    double b2 = interp_spline(&par->matter_bias2, z2);
-    double bz_mean1 = interp_spline(&par->matter_bias1, z_mean);
-    double bz_mean2 = interp_spline(&par->matter_bias2, z_mean);
-    double G1 = interp_spline(&bg->G1, z1);
-    double G2 = interp_spline(&bg->G2, z2);
-    double s1 = interp_spline(&par->magnification_bias1, z1);
-    double s2 = interp_spline(&par->magnification_bias2, z2);
-    double fevo1 = interp_spline(&par->evolution_bias1, z1);
-    double fevo2 = interp_spline(&par->evolution_bias2, z2);
-    double a1 = interp_spline(&bg->a, z1);
-    double a2 = interp_spline(&bg->a, z2);
+    double z1 = coffe_interp_spline(&bg->z_as_chi, chi1);
+    double z2 = coffe_interp_spline(&bg->z_as_chi, chi2);
+    double f1 = coffe_interp_spline(&bg->f, z1);
+    double f2 = coffe_interp_spline(&bg->f, z2);
+    double fmean = coffe_interp_spline(&bg->f, z_mean);
+    double curlyH1 = coffe_interp_spline(&bg->conformal_Hz, z1); // dimensionless
+    double curlyH2 = coffe_interp_spline(&bg->conformal_Hz, z2); // dimensionless
+    double b1 = coffe_interp_spline(&par->matter_bias1, z1);
+    double b2 = coffe_interp_spline(&par->matter_bias2, z2);
+    double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
+    double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
+    double G1 = coffe_interp_spline(&bg->G1, z1);
+    double G2 = coffe_interp_spline(&bg->G2, z2);
+    double s1 = coffe_interp_spline(&par->magnification_bias1, z1);
+    double s2 = coffe_interp_spline(&par->magnification_bias2, z2);
+    double fevo1 = coffe_interp_spline(&par->evolution_bias1, z1);
+    double fevo2 = coffe_interp_spline(&par->evolution_bias2, z2);
+    double a1 = coffe_interp_spline(&bg->a, z1);
+    double a2 = coffe_interp_spline(&bg->a, z2);
     /* den-den term */
     if (par->correlation_contrib.den){
         /* den-den modified by flatsky */
         if (par->flatsky){
             result += bz_mean1*bz_mean2
-               *interp_spline(&integral[0].result, sep);
+               *coffe_interp_spline(&integral[0].result, sep);
         }
         else{
         result += b1*b2
-           *interp_spline(&integral[0].result, sep);
+           *coffe_interp_spline(&integral[0].result, sep);
         }
     }
     /* rsd-rsd term */
@@ -83,23 +83,23 @@ double functions_nonintegrated(
         /* rsd-rsd modified by flatsky */
         if (par->flatsky){
             result +=
-                fmean*fmean*interp_spline(&integral[0].result, sep)/5.
+                fmean*fmean*coffe_interp_spline(&integral[0].result, sep)/5.
                 -
-                4*fmean*fmean*interp_spline(&integral[1].result, sep)/7.
+                4*fmean*fmean*coffe_interp_spline(&integral[1].result, sep)/7.
                *gsl_sf_legendre_P2(mu)
                 +
-                8*fmean*fmean*interp_spline(&integral[2].result, sep)/35.
+                8*fmean*fmean*coffe_interp_spline(&integral[2].result, sep)/35.
                *gsl_sf_legendre_Pl(4, mu);
         }
         else{
         result +=
             f1*f2*(1 + 2*pow(costheta, 2))/15
-           *interp_spline(&integral[0].result, sep)
+           *coffe_interp_spline(&integral[0].result, sep)
             -
             f1*f2/21.*(
                 (1 + 11.*pow(costheta, 2)) + 18*costheta*(pow(costheta, 2) - 1)*chi1*chi2/sep/sep
             )
-           *interp_spline(&integral[1].result, sep)
+           *coffe_interp_spline(&integral[1].result, sep)
             +
             f1*f2*(
                 4*(3*pow(costheta, 2) - 1)*(pow(chi1, 4) + pow(chi2, 4))/35./pow(sep, 4)
@@ -108,7 +108,7 @@ double functions_nonintegrated(
                     3*(3 + pow(costheta, 2))*chi1*chi2 - 8*(pow(chi1, 2) + pow(chi2, 2))*costheta
                 )/35./pow(sep, 4)
             )
-           *interp_spline(&integral[2].result, sep);
+           *coffe_interp_spline(&integral[2].result, sep);
         }
     }
     /* d1-d1 term */
@@ -117,7 +117,7 @@ double functions_nonintegrated(
             (
                 curlyH1*curlyH2*f1*f2*G1*G2
                *costheta/3.
-               *interp_spline(&integral[5].result, sep)
+               *coffe_interp_spline(&integral[5].result, sep)
                 +
                 curlyH1*curlyH2*f1*f2*G1*G2
                *(
@@ -125,7 +125,7 @@ double functions_nonintegrated(
                     +
                     pow(sep, 2)*costheta/3.
                 )
-               *interp_spline(&integral[6].result, sep)
+               *coffe_interp_spline(&integral[6].result, sep)
             );
     }
     /* d2-d2 term */
@@ -133,7 +133,7 @@ double functions_nonintegrated(
         result +=
             (3 - fevo1)*(3 - fevo2)*pow(curlyH1, 2)*pow(curlyH2, 2)*f1*f2
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -148,7 +148,7 @@ double functions_nonintegrated(
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(1 + G1)*(1 + G2)/4/a1/a2
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -163,7 +163,7 @@ double functions_nonintegrated(
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(5*s1 - 2)*(5*s2 - 2)/4/a1/a2
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -178,7 +178,7 @@ double functions_nonintegrated(
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(f1 - 1)*(f2 - 1)/4/a1/a2
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -197,22 +197,22 @@ double functions_nonintegrated(
         if (par->flatsky){
             result +=
                 (bz_mean1*fmean/3. + bz_mean2*fmean/3.)
-               *interp_spline(&integral[0].result, sep)
+               *coffe_interp_spline(&integral[0].result, sep)
                -
                 (2*bz_mean1*fmean/3. + 2*bz_mean2*fmean/3.)
-               *interp_spline(&integral[1].result, sep)
+               *coffe_interp_spline(&integral[1].result, sep)
                *gsl_sf_legendre_P2(mu);
         }
         else{
         result += (b1*f2/3. + b2*f1/3.)
-           *interp_spline(&integral[0].result, sep)
+           *coffe_interp_spline(&integral[0].result, sep)
            -
             (
                 b1*f2*(2./3. - (1. - pow(costheta, 2))*pow(chi1/sep, 2))
                 +
                 b2*f1*(2./3. - (1. - pow(costheta, 2))*pow(chi2/sep, 2))
             )
-           *interp_spline(&integral[1].result, sep);
+           *coffe_interp_spline(&integral[1].result, sep);
         }
     }
     /* den-d1 + d1-den term */
@@ -225,7 +225,7 @@ double functions_nonintegrated(
                 +
                 b2*f1*curlyH1*G1*(chi2*costheta - chi1)
             )
-           *interp_spline(&integral[3].result, sep);
+           *coffe_interp_spline(&integral[3].result, sep);
     }
     /* den-d2 + d2-den term */
     if (
@@ -237,7 +237,7 @@ double functions_nonintegrated(
                 +
                 (3 - fevo1)*b2*f1*pow(curlyH1, 2)
             )
-           *interp_spline(&integral[5].result, sep);
+           *coffe_interp_spline(&integral[5].result, sep);
     }
     /* den-g1 + g1-den term */
     if (
@@ -249,7 +249,7 @@ double functions_nonintegrated(
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(1 + G1)
             )
-           *interp_spline(&integral[5].result, sep);
+           *coffe_interp_spline(&integral[5].result, sep);
     }
     /* den-g2 + g2-den term */
     if (
@@ -261,7 +261,7 @@ double functions_nonintegrated(
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(5*s1 - 2)
             )
-           *interp_spline(&integral[5].result, sep);
+           *coffe_interp_spline(&integral[5].result, sep);
     }
     /* den-g3 + g3-den term */
     if (
@@ -273,7 +273,7 @@ double functions_nonintegrated(
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(f1 - 1)
             )
-           *interp_spline(&integral[5].result, sep);
+           *coffe_interp_spline(&integral[5].result, sep);
     }
     /* rsd-d1 + d1-rsd term */
     if (
@@ -286,7 +286,7 @@ double functions_nonintegrated(
                 +
                 f2*f1*curlyH1*G1*((1. + 2*pow(costheta, 2))*chi1 - 3*chi2*costheta)/5.
             )
-           *interp_spline(&integral[3].result, sep)
+           *coffe_interp_spline(&integral[3].result, sep)
             + (
                 f1*f2*curlyH2*G2*(
                     (1. - 3*costheta*costheta)*pow(chi2, 3)
@@ -308,7 +308,7 @@ double functions_nonintegrated(
                     2*pow(chi2, 3)*costheta
                 )/5
             )
-           *interp_spline(&integral[4].result, sep)/pow(sep, 2)
+           *coffe_interp_spline(&integral[4].result, sep)/pow(sep, 2)
         );
     }
     /* rsd-d2 + d2-rsd term */
@@ -322,13 +322,13 @@ double functions_nonintegrated(
                 +
                 (3 - fevo1)/3*f2*f1*pow(curlyH1, 2)
             )
-           *interp_spline(&integral[5].result, sep)
+           *coffe_interp_spline(&integral[5].result, sep)
             - (
                 (3 - fevo2)*f1*f2*pow(curlyH2, 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                 +
                 (3 - fevo1)*f2*f1*pow(curlyH1, 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *interp_spline(&integral[6].result, sep)
+           *coffe_interp_spline(&integral[6].result, sep)
         );
     }
     /* rsd-g1 + g1-rsd term */
@@ -341,13 +341,13 @@ double functions_nonintegrated(
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)
             )
-           *interp_spline(&integral[5].result, sep)
+           *coffe_interp_spline(&integral[5].result, sep)
             + (
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(1 + G2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *interp_spline(&integral[6].result, sep);
+           *coffe_interp_spline(&integral[6].result, sep);
     }
     /* rsd-g2 + g2-rsd term */
     if (
@@ -359,13 +359,13 @@ double functions_nonintegrated(
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)
             )
-           *interp_spline(&integral[5].result, sep)
+           *coffe_interp_spline(&integral[5].result, sep)
             + (
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(5*s2 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *interp_spline(&integral[6].result, sep);
+           *coffe_interp_spline(&integral[6].result, sep);
     }
     /* rsd-g3 + g3-rsd term */
     if (
@@ -377,13 +377,13 @@ double functions_nonintegrated(
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)
             )
-           *interp_spline(&integral[5].result, sep)
+           *coffe_interp_spline(&integral[5].result, sep)
             + (
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(f2 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi2, 2))
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *interp_spline(&integral[6].result, sep);
+           *coffe_interp_spline(&integral[6].result, sep);
 
     }
     /* d1-d2 + d2-d1 term */
@@ -396,7 +396,7 @@ double functions_nonintegrated(
                 +
                 (3 - fevo1)*curlyH2*pow(curlyH1, 2)*f2*f1*(chi1*costheta - chi2)
             )
-           *interp_spline(&integral[7].result, sep);
+           *coffe_interp_spline(&integral[7].result, sep);
     }
     /* d1-g1 + g1-d1 term */
     if (
@@ -408,7 +408,7 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(1 + G1)*(chi1*costheta - chi2)
             )
-           *interp_spline(&integral[7].result, sep);
+           *coffe_interp_spline(&integral[7].result, sep);
     }
     /* d1-g2 + g2-d1 term */
     if (
@@ -420,7 +420,7 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(5*s1 - 2)*(chi1*costheta - chi2)
             )
-           *interp_spline(&integral[7].result, sep);
+           *coffe_interp_spline(&integral[7].result, sep);
     }
     /* d1-g3 + g3-d1 term */
     if (
@@ -432,7 +432,7 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(f1 - 1.)*(chi1*costheta - chi2)
             )
-           *interp_spline(&integral[7].result, sep);
+           *coffe_interp_spline(&integral[7].result, sep);
     }
     /* d2-g1 + g1-d2 term */
     if (
@@ -445,7 +445,7 @@ double functions_nonintegrated(
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(1 + G1)
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -466,7 +466,7 @@ double functions_nonintegrated(
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(5*s1 - 2)
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -487,7 +487,7 @@ double functions_nonintegrated(
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(f1 - 1)
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -508,7 +508,7 @@ double functions_nonintegrated(
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(5*s1 - 2)
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -529,7 +529,7 @@ double functions_nonintegrated(
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(f1 - 1)
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
                 /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -550,7 +550,7 @@ double functions_nonintegrated(
                 (5*s2 - 2)*(f1 - 1)/a2/a1
             )
            *(
-                interp_spline(&integral[8].result, sep)
+                coffe_interp_spline(&integral[8].result, sep)
             /* renormalization term */
                -gsl_spline2d_eval(
                     integral[8].renormalization.spline,
@@ -562,7 +562,7 @@ double functions_nonintegrated(
     }
     if (gsl_finite(result)){
     return
-        result*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2);
+        result*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2);
     }
     else{
         fprintf(stderr,
@@ -592,7 +592,7 @@ double functions_single_integrated(
 {
     double result = 0;
 
-    double chi_mean = interp_spline(&bg->comoving_distance, z_mean);
+    double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
     double chi1 = chi_mean - sep*mu/2.;
     double chi2 = chi_mean + sep*mu/2.;
     double costheta =
@@ -604,24 +604,24 @@ double functions_single_integrated(
     double r22 = lambda1*lambda1 + chi2*chi2 - 2*chi2*lambda1*costheta;
     if (r21 < 0) r21 = 0;
     if (r22 < 0) r22 = 0;
-    double z1_const = interp_spline(&bg->z_as_chi, chi1);
-    double z2_const = interp_spline(&bg->z_as_chi, chi2);
-    double z1 = interp_spline(&bg->z_as_chi, lambda1);
-    double z2 = interp_spline(&bg->z_as_chi, lambda2);
+    double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
+    double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
+    double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
+    double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
 
-    double s1 = interp_spline(&par->magnification_bias1, z1_const);
-    double s2 = interp_spline(&par->magnification_bias2, z2_const);
-    double sz_mean1 = interp_spline(&par->magnification_bias1, z_mean);
-    double sz_mean2 = interp_spline(&par->magnification_bias2, z_mean);
-    double b1 = interp_spline(&par->matter_bias1, z1_const);
-    double b2 = interp_spline(&par->matter_bias2, z2_const);
-    double bz_mean1 = interp_spline(&par->matter_bias1, z_mean);
-    double bz_mean2 = interp_spline(&par->matter_bias2, z_mean);
+    double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
+    double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
+    double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
+    double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
+    double b1 = coffe_interp_spline(&par->matter_bias1, z1_const);
+    double b2 = coffe_interp_spline(&par->matter_bias2, z2_const);
+    double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
+    double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
 
     double ren1 = 0, ren2 = 0;
     if (par->divergent){
-        if (r21 == 0.0) ren1 = interp_spline(&integral[8].renormalization0, lambda2);
-        else ren1 = interp_spline(&integral[8].result, sqrt(r21))
+        if (r21 == 0.0) ren1 = coffe_interp_spline(&integral[8].renormalization0, lambda2);
+        else ren1 = coffe_interp_spline(&integral[8].result, sqrt(r21))
                     /* renormalization term */
                    -gsl_spline2d_eval(
                         integral[8].renormalization.spline,
@@ -629,8 +629,8 @@ double functions_single_integrated(
                         integral[8].renormalization.xaccel,
                         integral[8].renormalization.yaccel
                 );
-        if (r22 == 0.0) ren2 = interp_spline(&integral[8].renormalization0, lambda1);
-        else ren2 = interp_spline(&integral[8].result, sqrt(r22))
+        if (r22 == 0.0) ren2 = coffe_interp_spline(&integral[8].renormalization0, lambda1);
+        else ren2 = coffe_interp_spline(&integral[8].result, sqrt(r22))
                     /* renormalization term */
                    -gsl_spline2d_eval(
                         integral[8].renormalization.spline,
@@ -649,32 +649,32 @@ double functions_single_integrated(
         if (par->flatsky){
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/M_PI/4
-               *interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
+               *coffe_interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
                *((2 - 5*sz_mean1)*bz_mean2 + (2 - 5*sz_mean2)*bz_mean1)
-               *interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
+               *coffe_interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
         }
         else{
         if (r21 != 0.0 && r22 != 0.0){
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[3].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[3].result, sqrt(r21))
                        -chi1*chi1*lambda2*(1 - costheta*costheta)
-                       *interp_spline(&integral[1].result, sqrt(r21))
+                       *coffe_interp_spline(&integral[1].result, sqrt(r21))
                        /r21
                     )
                     +
-                    b2*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[3].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[3].result, sqrt(r22))
                        -chi2*chi2*lambda1*(1 - costheta*costheta)
-                       *interp_spline(&integral[1].result, sqrt(r22))
+                       *coffe_interp_spline(&integral[1].result, sqrt(r22))
                        /r22
                     )
                 );
@@ -683,20 +683,20 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*interp_spline(&integral[3].result, 0.0)
+                        2*chi1*coffe_interp_spline(&integral[3].result, 0.0)
                     )
                     +
-                    b2*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[3].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[3].result, sqrt(r22))
                        -chi2*chi2*lambda1*(1 - costheta*costheta)
-                       *interp_spline(&integral[1].result, sqrt(r22))
+                       *coffe_interp_spline(&integral[1].result, sqrt(r22))
                        /r22
                     )
                 );
@@ -705,21 +705,21 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[3].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[3].result, sqrt(r21))
                        -chi1*chi1*lambda2*(1 - costheta*costheta)
-                       *interp_spline(&integral[1].result, sqrt(r21))
+                       *coffe_interp_spline(&integral[1].result, sqrt(r21))
                        /r21
                     )
                     +
-                    b2*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*interp_spline(&integral[3].result, 0.0)
+                        2*chi2*coffe_interp_spline(&integral[3].result, 0.0)
                     )
                 );
         }
@@ -727,18 +727,18 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*chi2*interp_spline(&integral[3].result, 0.0)
+                        2*chi1*chi2*coffe_interp_spline(&integral[3].result, 0.0)
                     )
                     +
-                    b2*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*chi1*interp_spline(&integral[3].result, 0.0)
+                        2*chi2*chi1*coffe_interp_spline(&integral[3].result, 0.0)
                     )
                 );
         }
@@ -754,41 +754,41 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
                         (lambda2 - 6*chi1*costheta + 3*lambda2*(2*costheta*costheta - 1))
-                       *interp_spline(&integral[0].result, sqrt(r21))/15.
+                       *coffe_interp_spline(&integral[0].result, sqrt(r21))/15.
                        -(
                             6*chi1*chi1*chi1*costheta - chi1*chi1*lambda2*(9*costheta*costheta + 11)
                            +chi1*lambda2*lambda2*costheta*(3*(2*costheta*costheta - 1) + 19)
                            -2*lambda2*lambda2*lambda2*(3*(2*costheta*costheta - 1) + 1)
                         )
-                       *interp_spline(&integral[1].result, sqrt(r21))/r21/21.
+                       *coffe_interp_spline(&integral[1].result, sqrt(r21))/r21/21.
                     )
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
                         (lambda1 - 6*chi2*costheta + 3*lambda1*(2*costheta*costheta - 1))
-                       *interp_spline(&integral[0].result, sqrt(r22))/15.
+                       *coffe_interp_spline(&integral[0].result, sqrt(r22))/15.
                        -(
                             6*chi2*chi2*chi2*costheta - chi2*chi2*lambda1*(9*costheta*costheta + 11)
                            +chi2*lambda1*lambda1*costheta*(3*(2*costheta*costheta - 1) + 19)
                            -2*lambda1*lambda1*lambda1*(3*(2*costheta*costheta - 1) + 1)
                         )
-                       *interp_spline(&integral[1].result, sqrt(r22))/r22/21.
+                       *coffe_interp_spline(&integral[1].result, sqrt(r22))/r22/21.
                     )
                 );
             if (fabs(mu) < 0.999){
                 result +=
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
                        -(
                            -4*pow(chi1, 5)*costheta
@@ -798,12 +798,12 @@ double functions_single_integrated(
                            -pow(lambda2, 5)*(3*(2*costheta*costheta - 1) + 1)
                            +12*pow(chi1, 4)*lambda2
                         )
-                       *interp_spline(&integral[2].result, sqrt(r21))/r21/r21/35.
+                       *coffe_interp_spline(&integral[2].result, sqrt(r21))/r21/r21/35.
                     )
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
                        -(
                            -4*pow(chi2, 5)*costheta
@@ -813,7 +813,7 @@ double functions_single_integrated(
                            -pow(lambda1, 5)*(3*(2*costheta*costheta - 1) + 1)
                            +12*pow(chi2, 4)*lambda1
                         )
-                       *interp_spline(&integral[2].result, sqrt(r22))/r22/r22/35.
+                       *coffe_interp_spline(&integral[2].result, sqrt(r22))/r22/r22/35.
                     )
                 );
             }
@@ -821,15 +821,15 @@ double functions_single_integrated(
                 result +=
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
-                   *4.*(lambda2 + chi1)*interp_spline(&integral[2].result, sqrt(r21))/35.
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+                   *4.*(lambda2 + chi1)*coffe_interp_spline(&integral[2].result, sqrt(r21))/35.
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
-                   *4.*(lambda1 + chi2)*interp_spline(&integral[2].result, sqrt(r22))/35.
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+                   *4.*(lambda1 + chi2)*coffe_interp_spline(&integral[2].result, sqrt(r22))/35.
                 );
             }
         }
@@ -837,25 +837,25 @@ double functions_single_integrated(
             result +=
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - chi1/chi2)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - chi1/chi2)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                       -2*chi1*interp_spline(&integral[0].result, 0.0)/15.
+                       -2*chi1*coffe_interp_spline(&integral[0].result, 0.0)/15.
                     )
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
                         (lambda1 - 6*chi2*costheta + 3*lambda1*(2*costheta*costheta - 1))
-                       *interp_spline(&integral[0].result, sqrt(r22))/15.
+                       *coffe_interp_spline(&integral[0].result, sqrt(r22))/15.
                        -(
                             6*chi2*chi2*chi2*costheta - chi2*chi2*lambda1*(9*costheta*costheta + 11)
                            +chi2*lambda1*lambda1*costheta*(3*(2*costheta*costheta - 1) + 19)
                            -2*lambda1*lambda1*lambda1*(3*(2*costheta*costheta - 1) + 1)
                         )
-                       *interp_spline(&integral[1].result, sqrt(r22))/r22/21.
+                       *coffe_interp_spline(&integral[1].result, sqrt(r22))/r22/21.
                        -(
                            -4*pow(chi2, 5)*costheta
                            -pow(chi2, 3)*pow(lambda1, 2)*costheta*((2*costheta*costheta - 1) + 7)
@@ -864,7 +864,7 @@ double functions_single_integrated(
                            -pow(lambda1, 5)*(3*(2*costheta*costheta - 1) + 1)
                            +12*pow(chi2, 4)*lambda1
                         )
-                       *interp_spline(&integral[2].result, sqrt(r22))/r22/r22/35.
+                       *coffe_interp_spline(&integral[2].result, sqrt(r22))/r22/r22/35.
                     )
                 );
         }
@@ -873,18 +873,18 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
                         (lambda2 - 6*chi1*costheta + 3*lambda2*(2*costheta*costheta - 1))
-                       *interp_spline(&integral[0].result, sqrt(r21))/15.
+                       *coffe_interp_spline(&integral[0].result, sqrt(r21))/15.
                        -(
                             6*chi1*chi1*chi1*costheta - chi1*chi1*lambda2*(9*costheta*costheta + 11)
                            +chi1*lambda2*lambda2*costheta*(3*(2*costheta*costheta - 1) + 19)
                            -2*lambda2*lambda2*lambda2*(3*(2*costheta*costheta - 1) + 1)
                         )
-                       *interp_spline(&integral[1].result, sqrt(r21))/r21/21.
+                       *coffe_interp_spline(&integral[1].result, sqrt(r21))/r21/21.
                        -(
                            -4*pow(chi1, 5)*costheta
                            -pow(chi1, 3)*pow(lambda2, 2)*costheta*((2*costheta*costheta - 1) + 7)
@@ -893,14 +893,14 @@ double functions_single_integrated(
                            -pow(lambda2, 5)*(3*(2*costheta*costheta - 1) + 1)
                            +12*pow(chi1, 4)*lambda2
                         )
-                       *interp_spline(&integral[2].result, sqrt(r21))/r21/r21/35.
+                       *coffe_interp_spline(&integral[2].result, sqrt(r21))/r21/r21/35.
                     )
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - chi2/chi1)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - chi2/chi1)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                      -2*chi2*interp_spline(&integral[0].result, 0.0)/15.
+                      -2*chi2*coffe_interp_spline(&integral[0].result, 0.0)/15.
                     )
                 );
         }
@@ -908,18 +908,18 @@ double functions_single_integrated(
             result +=
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - chi1/chi2)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - chi1/chi2)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                      -2*chi1*interp_spline(&integral[0].result, 0.0)/15.
+                      -2*chi1*coffe_interp_spline(&integral[0].result, 0.0)/15.
                     )
                     +
-                    chi1*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - chi2/chi1)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - chi2/chi1)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                       -2*chi2*interp_spline(&integral[0].result, 0.0)/15.
+                       -2*chi2*coffe_interp_spline(&integral[0].result, 0.0)/15.
                     )
                 );
         }
@@ -934,38 +934,38 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
-                   *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)
+                   *coffe_interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
                         2*(costheta*(lambda2*lambda2 - 2*chi1*chi1) + chi1*lambda2*(2*(2*costheta*costheta - 1) - 1))
-                       *interp_spline(&integral[3].result, sqrt(r21))/15.
-                       +2*costheta*interp_spline(&integral[5].result, sqrt(r21))/3.
+                       *coffe_interp_spline(&integral[3].result, sqrt(r21))/15.
+                       +2*costheta*coffe_interp_spline(&integral[5].result, sqrt(r21))/3.
                        -(
                             4*pow(chi1, 4)*costheta
                            -pow(chi1, 3)*lambda2*(costheta*costheta + 9)
                            +chi1*chi1*lambda2*lambda2*costheta*(costheta*costheta + 5)
                            -2*chi1*pow(lambda2, 3)*((2*costheta*costheta - 1) - 2)
                            -2*pow(lambda2, 4)*costheta
-                        )*interp_spline(&integral[4].result, sqrt(r21))/r21/15.
+                        )*coffe_interp_spline(&integral[4].result, sqrt(r21))/r21/15.
                     )
                     +
-                    chi1*interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)
-                   *interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)
+                   *coffe_interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
                         2*(costheta*(lambda1*lambda1 - 2*chi2*chi2) + chi2*lambda1*(2*(2*costheta*costheta - 1) - 1))
-                       *interp_spline(&integral[3].result, sqrt(r22))/15.
-                       +2*costheta*interp_spline(&integral[5].result, sqrt(r22))/3.
+                       *coffe_interp_spline(&integral[3].result, sqrt(r22))/15.
+                       +2*costheta*coffe_interp_spline(&integral[5].result, sqrt(r22))/3.
                        -(
                             4*pow(chi2, 4)*costheta
                            -pow(chi2, 3)*lambda1*(costheta*costheta + 9)
                            +chi2*chi2*lambda1*lambda1*costheta*(costheta*costheta + 5)
                            -2*chi2*pow(lambda1, 3)*((2*costheta*costheta - 1) - 2)
                            -2*pow(lambda1, 4)*costheta
-                        )*interp_spline(&integral[4].result, sqrt(r22))/r22/15.
+                        )*coffe_interp_spline(&integral[4].result, sqrt(r22))/r22/15.
                     )
                 );
         }
@@ -974,29 +974,29 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
-                   *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)
+                   *coffe_interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                       2*interp_spline(&integral[5].result, 0.0)/3.
+                       2*coffe_interp_spline(&integral[5].result, 0.0)/3.
                     )
                     +
-                    chi1*interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)
-                   *interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)
+                   *coffe_interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
                         2*(costheta*(lambda1*lambda1 - 2*chi2*chi2) + chi2*lambda1*(2*(2*costheta*costheta - 1) - 1))
-                       *interp_spline(&integral[3].result, sqrt(r22))/15.
-                       +2*costheta*interp_spline(&integral[5].result, sqrt(r22))/3.
+                       *coffe_interp_spline(&integral[3].result, sqrt(r22))/15.
+                       +2*costheta*coffe_interp_spline(&integral[5].result, sqrt(r22))/3.
                        -(
                             4*pow(chi2, 4)*costheta
                            -pow(chi2, 3)*lambda1*(costheta*costheta + 9)
                            +chi2*chi2*lambda1*lambda1*costheta*(costheta*costheta + 5)
                            -2*chi2*pow(lambda1, 3)*((2*costheta*costheta - 1) - 2)
                            -2*pow(lambda1, 4)*costheta
-                        )*interp_spline(&integral[4].result, sqrt(r22))/r22/15.
+                        )*coffe_interp_spline(&integral[4].result, sqrt(r22))/r22/15.
                     )
                 );
         }
@@ -1005,29 +1005,29 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
-                   *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)
+                   *coffe_interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
                         2*(costheta*(lambda2*lambda2 - 2*chi1*chi1) + chi1*lambda2*(2*(2*costheta*costheta - 1) - 1))
-                       *interp_spline(&integral[3].result, sqrt(r21))/15.
-                       +2*costheta*interp_spline(&integral[5].result, sqrt(r21))/3.
+                       *coffe_interp_spline(&integral[3].result, sqrt(r21))/15.
+                       +2*costheta*coffe_interp_spline(&integral[5].result, sqrt(r21))/3.
                        -(
                             4*pow(chi1, 4)*costheta
                            -pow(chi1, 3)*lambda2*(costheta*costheta + 9)
                            +chi1*chi1*lambda2*lambda2*costheta*(costheta*costheta + 5)
                            -2*chi1*pow(lambda2, 3)*((2*costheta*costheta - 1) - 2)
                            -2*pow(lambda2, 4)*costheta
-                        )*interp_spline(&integral[4].result, sqrt(r21))/r21/15.
+                        )*coffe_interp_spline(&integral[4].result, sqrt(r21))/r21/15.
                     )
                     +
-                    chi1*interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)
-                   *interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)
+                   *coffe_interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                       2*interp_spline(&integral[5].result, 0.0)/3.
+                       2*coffe_interp_spline(&integral[5].result, 0.0)/3.
                     )
                 );
         }
@@ -1036,20 +1036,20 @@ double functions_single_integrated(
                 /* constant in front */
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
-                   *interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                    chi2*coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)
+                   *coffe_interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                       2*interp_spline(&integral[5].result, 0.0)/3.
+                       2*coffe_interp_spline(&integral[5].result, 0.0)/3.
                     )
                     +
-                    chi1*interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)
-                   *interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*interp_spline(&bg->D1, z2_const)
+                    chi1*coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)
+                   *coffe_interp_spline(&bg->G1, z2_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z2_const)
                     /* integrand */
-                   *(1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                       2*interp_spline(&integral[5].result, 0.0)/3.
+                       2*coffe_interp_spline(&integral[5].result, 0.0)/3.
                     )
                 );
         }
@@ -1063,25 +1063,25 @@ double functions_single_integrated(
             /* constant in front */
            -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                chi2*(3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
-               *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                chi2*(3 - coffe_interp_spline(&par->evolution_bias1, z1_const))*coffe_interp_spline(&bg->f, z1_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[7].result, sqrt(r21))
-                       -chi1*chi1*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[7].result, sqrt(r21))
+                       -chi1*chi1*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r21))
                     )
                 )
                 +
-                chi1*(3 - interp_spline(&par->evolution_bias2, z2_const))*interp_spline(&bg->f, z2_const)
-               *pow(interp_spline(&bg->conformal_Hz, z2_const), 2)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                chi1*(3 - coffe_interp_spline(&par->evolution_bias2, z2_const))*coffe_interp_spline(&bg->f, z2_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z2_const), 2)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[7].result, sqrt(r22))
-                       -chi2*chi2*lambda1*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r22))
+                       -chi2*chi2*lambda1*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r22))
                     )
                 )
             );
@@ -1095,23 +1095,23 @@ double functions_single_integrated(
             /* constant in front */
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
            *(
-                chi2*(1 + interp_spline(&bg->G1, z1_const))*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                chi2*(1 + coffe_interp_spline(&bg->G1, z1_const))*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[7].result, sqrt(r21))
-                       -chi1*chi1*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[7].result, sqrt(r21))
+                       -chi1*chi1*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r21))
                     )
                 )
                 +
-                chi1*(1 + interp_spline(&bg->G2, z2_const))*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                chi1*(1 + coffe_interp_spline(&bg->G2, z2_const))*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[7].result, sqrt(r22))
-                       -chi2*chi2*lambda1*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r22))
+                       -chi2*chi2*lambda1*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r22))
                     )
                 )
             );
@@ -1125,23 +1125,23 @@ double functions_single_integrated(
             /* constant in front */
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
            *(
-                chi2*(5*s1 - 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                chi2*(5*s1 - 2)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[7].result, sqrt(r21))
-                       -chi1*chi1*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[7].result, sqrt(r21))
+                       -chi1*chi1*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r21))
                     )
                 )
                 +
-                chi1*(5*s2 - 2)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                chi1*(5*s2 - 2)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[7].result, sqrt(r22))
-                       -chi2*chi2*lambda1*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r22))
+                       -chi2*chi2*lambda1*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r22))
                     )
                 )
             );
@@ -1155,23 +1155,23 @@ double functions_single_integrated(
             /* constant in front */
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/4.
            *(
-                chi2*(interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                chi2*(coffe_interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*interp_spline(&integral[7].result, sqrt(r21))
-                       -chi1*chi1*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r21))
+                        2*chi1*costheta*coffe_interp_spline(&integral[7].result, sqrt(r21))
+                       -chi1*chi1*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r21))
                     )
                 )
                 +
-                chi1*(interp_spline(&bg->f, z2_const) - 1)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                chi1*(coffe_interp_spline(&bg->f, z2_const) - 1)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                *(
                     /* integrand */
-                    (1 - x)*interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                    (1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*interp_spline(&integral[7].result, sqrt(r22))
-                       -chi2*chi2*lambda1*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r22))
+                        2*chi2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r22))
+                       -chi2*chi2*lambda1*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r22))
                     )
                 )
             );
@@ -1185,15 +1185,15 @@ double functions_single_integrated(
             /* constant in front */
            -3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                b1*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
-               *interp_spline(&integral[5].result, sqrt(r21))
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+               *coffe_interp_spline(&integral[5].result, sqrt(r21))
                +
-                b2*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
-               *interp_spline(&integral[5].result, sqrt(r22))
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+               *coffe_interp_spline(&integral[5].result, sqrt(r22))
             );
     }
     /* den-g5 + g5-den term */
@@ -1205,17 +1205,17 @@ double functions_single_integrated(
             /* constant in front */
            -3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                chi2*b1*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
+                chi2*b1*coffe_interp_spline(&bg->G2, z2_const)*coffe_interp_spline(&bg->D1, z1_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)
-               *interp_spline(&bg->D1, z2)*interp_spline(&bg->a, z2)
-               *interp_spline(&integral[5].result, sqrt(r21))
+               *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->f, z2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)*coffe_interp_spline(&bg->a, z2)
+               *coffe_interp_spline(&integral[5].result, sqrt(r21))
                +
-                chi1*b2*interp_spline(&bg->G1, z1_const)*interp_spline(&bg->D1, z2_const)
+                chi1*b2*coffe_interp_spline(&bg->G1, z1_const)*coffe_interp_spline(&bg->D1, z2_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->f, z1) - 1)
-               *interp_spline(&bg->D1, z1)*interp_spline(&bg->a, z1)
-               *interp_spline(&integral[5].result, sqrt(r22))
+               *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->f, z1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->a, z1)
+               *coffe_interp_spline(&integral[5].result, sqrt(r22))
             );
     }
     /* rsd-g4 + g4-rsd term */
@@ -1226,22 +1226,22 @@ double functions_single_integrated(
         result +=
             3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
+                coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                *(
                     (2*r21/3. + (costheta*costheta - 1)*lambda2*lambda2)
-                   *interp_spline(&integral[6].result, sqrt(r21))
-                   -interp_spline(&integral[5].result, sqrt(r21))/3.
+                   *coffe_interp_spline(&integral[6].result, sqrt(r21))
+                   -coffe_interp_spline(&integral[5].result, sqrt(r21))/3.
                 )
                +
-                interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
+                coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                *(
                     (2*r22/3. + (costheta*costheta - 1)*lambda1*lambda1)
-                   *interp_spline(&integral[6].result, sqrt(r22))
-                   -interp_spline(&integral[5].result, sqrt(r22))/3.
+                   *coffe_interp_spline(&integral[6].result, sqrt(r22))
+                   -coffe_interp_spline(&integral[5].result, sqrt(r22))/3.
                 )
             );
     }
@@ -1253,24 +1253,24 @@ double functions_single_integrated(
         result +=
             3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                chi2*interp_spline(&bg->f, z1_const)*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
+                chi2*coffe_interp_spline(&bg->f, z1_const)*coffe_interp_spline(&bg->G2, z2_const)*coffe_interp_spline(&bg->D1, z1_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->f, z2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                *(
                     (2*r21/3. + (costheta*costheta - 1)*lambda2*lambda2)
-                   *interp_spline(&integral[6].result, sqrt(r21))
-                   -interp_spline(&integral[5].result, sqrt(r21))/3.
+                   *coffe_interp_spline(&integral[6].result, sqrt(r21))
+                   -coffe_interp_spline(&integral[5].result, sqrt(r21))/3.
                 )
                +
-                chi1*interp_spline(&bg->f, z2_const)*interp_spline(&bg->G1, z1_const)*interp_spline(&bg->D1, z2_const)
+                chi1*coffe_interp_spline(&bg->f, z2_const)*coffe_interp_spline(&bg->G1, z1_const)*coffe_interp_spline(&bg->D1, z2_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->f, z1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+               *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->f, z1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                *(
                     (2*r22/3. + (costheta*costheta - 1)*lambda1*lambda1)
-                   *interp_spline(&integral[6].result, sqrt(r22))
-                   -interp_spline(&integral[5].result, sqrt(r22))/3.
+                   *coffe_interp_spline(&integral[6].result, sqrt(r22))
+                   -coffe_interp_spline(&integral[5].result, sqrt(r22))/3.
                 )
             );
     }
@@ -1282,13 +1282,13 @@ double functions_single_integrated(
         result +=
             3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*(lambda2*costheta - chi1)
-               *interp_spline(&integral[7].result, sqrt(r21))
+                coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*(lambda2*costheta - chi1)
+               *coffe_interp_spline(&integral[7].result, sqrt(r21))
                +
-                interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*(lambda1*costheta - chi2)
-               *interp_spline(&integral[7].result, sqrt(r22))
+                coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*(lambda1*costheta - chi2)
+               *coffe_interp_spline(&integral[7].result, sqrt(r22))
             );
     }
     /* d1-g5 + d1-g5 term */
@@ -1299,17 +1299,17 @@ double functions_single_integrated(
         result +=
             3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                chi2*interp_spline(&bg->conformal_Hz, z1_const)*interp_spline(&bg->f, z1_const)
-               *interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
-               *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*(lambda2*costheta - chi1)
-               *interp_spline(&integral[7].result, sqrt(r21))
+                chi2*coffe_interp_spline(&bg->conformal_Hz, z1_const)*coffe_interp_spline(&bg->f, z1_const)
+               *coffe_interp_spline(&bg->G2, z2_const)*coffe_interp_spline(&bg->D1, z1_const)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->f, z2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*(lambda2*costheta - chi1)
+               *coffe_interp_spline(&integral[7].result, sqrt(r21))
                +
-                chi1*interp_spline(&bg->conformal_Hz, z2_const)*interp_spline(&bg->f, z2_const)
-               *interp_spline(&bg->G1, z1_const)*interp_spline(&bg->D1, z2_const)
-               *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->f, z1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*(lambda1*costheta - chi2)
-               *interp_spline(&integral[7].result, sqrt(r22))
+                chi1*coffe_interp_spline(&bg->conformal_Hz, z2_const)*coffe_interp_spline(&bg->f, z2_const)
+               *coffe_interp_spline(&bg->G1, z1_const)*coffe_interp_spline(&bg->D1, z2_const)
+               *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->f, z1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*(lambda1*costheta - chi2)
+               *coffe_interp_spline(&integral[7].result, sqrt(r22))
             );
     }
     /* d2-g4 + g4-d2 term */
@@ -1320,14 +1320,14 @@ double functions_single_integrated(
         result +=
            -3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                (3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
-               *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*interp_spline(&bg->D1, z1_const)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                (3 - coffe_interp_spline(&par->evolution_bias1, z1_const))*coffe_interp_spline(&bg->f, z1_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z1_const), 2)*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                *ren1
                +
-                (3 - interp_spline(&par->evolution_bias2, z2_const))*interp_spline(&bg->f, z2_const)
-               *pow(interp_spline(&bg->conformal_Hz, z2_const), 2)*(2 - 5*s1)*interp_spline(&bg->D1, z2_const)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                (3 - coffe_interp_spline(&par->evolution_bias2, z2_const))*coffe_interp_spline(&bg->f, z2_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z2_const), 2)*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                *ren2
             );
     }
@@ -1339,16 +1339,16 @@ double functions_single_integrated(
         result +=
            -3*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                chi2*(3 - interp_spline(&par->evolution_bias1, z1_const))*interp_spline(&bg->f, z1_const)
-               *pow(interp_spline(&bg->conformal_Hz, z1_const), 2)*interp_spline(&bg->G2, z2_const)*interp_spline(&bg->D1, z1_const)
-               *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)
+                chi2*(3 - coffe_interp_spline(&par->evolution_bias1, z1_const))*coffe_interp_spline(&bg->f, z1_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z1_const), 2)*coffe_interp_spline(&bg->G2, z2_const)*coffe_interp_spline(&bg->D1, z1_const)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->f, z2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
                *ren1
                +
-                chi1*(3 - interp_spline(&par->evolution_bias2, z2_const))*interp_spline(&bg->f, z2_const)
-               *pow(interp_spline(&bg->conformal_Hz, z2_const), 2)*interp_spline(&bg->G1, z1_const)*interp_spline(&bg->D1, z2_const)
-               *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->f, z1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)
+                chi1*(3 - coffe_interp_spline(&par->evolution_bias2, z2_const))*coffe_interp_spline(&bg->f, z2_const)
+               *pow(coffe_interp_spline(&bg->conformal_Hz, z2_const), 2)*coffe_interp_spline(&bg->G1, z1_const)*coffe_interp_spline(&bg->D1, z2_const)
+               *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->f, z1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
                *ren2
             );
     }
@@ -1360,15 +1360,15 @@ double functions_single_integrated(
         result +=
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                (1 + interp_spline(&bg->G1, z1_const))*(2 - 5*s2)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+                (1 + coffe_interp_spline(&bg->G1, z1_const))*(2 - 5*s2)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
-                (1 + interp_spline(&bg->G2, z2_const))*(2 - 5*s1)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+                (1 + coffe_interp_spline(&bg->G2, z2_const))*(2 - 5*s1)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     /* g1-g5 + g5-g1 term */
@@ -1379,19 +1379,19 @@ double functions_single_integrated(
         result +=
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                chi2*(1 + interp_spline(&bg->G1, z1_const))*interp_spline(&bg->G2, z2_const)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+                chi2*(1 + coffe_interp_spline(&bg->G1, z1_const))*coffe_interp_spline(&bg->G2, z2_const)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, lambda2)
-               *(interp_spline(&bg->f, lambda2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
+               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
-                chi1*(1 + interp_spline(&bg->G2, z2_const))*interp_spline(&bg->G1, z1_const)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+                chi1*(1 + coffe_interp_spline(&bg->G2, z2_const))*coffe_interp_spline(&bg->G1, z1_const)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *interp_spline(&bg->conformal_Hz, lambda1)
-               *(interp_spline(&bg->f, lambda1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
+               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     /* g2-g4 + g4-g2 term */
@@ -1403,14 +1403,14 @@ double functions_single_integrated(
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
                 (5*s1 - 2)*(2 - 5*s2)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
                 (5*s2 - 2)*(2 - 5*s1)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     /* g2-g5 + g5-g2 term */
@@ -1421,19 +1421,19 @@ double functions_single_integrated(
         result +=
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                chi2*(5*s1 - 2)*interp_spline(&bg->G2, z2_const)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+                chi2*(5*s1 - 2)*coffe_interp_spline(&bg->G2, z2_const)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, lambda2)
-               *(interp_spline(&bg->f, lambda2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
+               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
-                chi1*(5*s2 - 2)*interp_spline(&bg->G1, z1_const)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+                chi1*(5*s2 - 2)*coffe_interp_spline(&bg->G1, z1_const)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *interp_spline(&bg->conformal_Hz, lambda1)
-               *(interp_spline(&bg->f, lambda1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
+               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     /* g3-g4 + g4-g3 term */
@@ -1444,15 +1444,15 @@ double functions_single_integrated(
         result +=
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                (interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+                (coffe_interp_spline(&bg->f, z1_const) - 1)*(2 - 5*s2)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
-                (interp_spline(&bg->f, z2_const) - 1)*(2 - 5*s1)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+                (coffe_interp_spline(&bg->f, z2_const) - 1)*(2 - 5*s1)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     /* g3-g5 + g5-g3 term */
@@ -1463,19 +1463,19 @@ double functions_single_integrated(
         result +=
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
            *(
-                chi2*(interp_spline(&bg->f, z1_const) - 1)*interp_spline(&bg->G2, z2_const)
-               *interp_spline(&bg->D1, z1_const)/interp_spline(&bg->a, z1_const)
+                chi2*(coffe_interp_spline(&bg->f, z1_const) - 1)*coffe_interp_spline(&bg->G2, z2_const)
+               *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *interp_spline(&bg->conformal_Hz, lambda2)
-               *(interp_spline(&bg->f, lambda2) - 1)
-               *interp_spline(&bg->D1, z2)/interp_spline(&bg->a, z2)*ren1
+               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
+               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
-                chi1*(interp_spline(&bg->f, z2_const) - 1)*interp_spline(&bg->G1, z1_const)
-               *interp_spline(&bg->D1, z2_const)/interp_spline(&bg->a, z2_const)
+                chi1*(coffe_interp_spline(&bg->f, z2_const) - 1)*coffe_interp_spline(&bg->G1, z1_const)
+               *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *interp_spline(&bg->conformal_Hz, lambda1)
-               *(interp_spline(&bg->f, lambda1) - 1)
-               *interp_spline(&bg->D1, z1)/interp_spline(&bg->a, z1)*ren2
+                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
+               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
     if (gsl_finite(result)){
@@ -1524,7 +1524,7 @@ double functions_double_integrated(
 {
     double result = 0;
 
-    double chi_mean = interp_spline(&bg->comoving_distance, z_mean);
+    double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
     double chi1 = chi_mean - sep*mu/2.;
     double chi2 = chi_mean + sep*mu/2.;
     double costheta =
@@ -1534,23 +1534,23 @@ double functions_double_integrated(
     double r2 = lambda1*lambda1 + lambda2*lambda2 - 2*lambda1*lambda2*costheta;
     if (r2 < 0) r2 = 0;
 
-    double z1_const = interp_spline(&bg->z_as_chi, chi1);
-    double z2_const = interp_spline(&bg->z_as_chi, chi2);
-    double z1 = interp_spline(&bg->z_as_chi, lambda1);
-    double z2 = interp_spline(&bg->z_as_chi, lambda2);
+    double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
+    double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
+    double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
+    double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
 
-    double s1 = interp_spline(&par->magnification_bias1, z1_const);
-    double s2 = interp_spline(&par->magnification_bias2, z2_const);
-    double sz_mean1 = interp_spline(&par->magnification_bias1, z_mean);
-    double sz_mean2 = interp_spline(&par->magnification_bias2, z_mean);
+    double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
+    double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
+    double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
+    double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
 
     double ren = 0;
     if (par->divergent){
         if (r2 <= pow(0.000001*COFFE_H0, 2)){
-            ren = interp_spline(&integral[8].renormalization0, lambda1);
+            ren = coffe_interp_spline(&integral[8].renormalization0, lambda1);
         }
         else{
-            ren = interp_spline(&integral[8].result, sqrt(r2))
+            ren = coffe_interp_spline(&integral[8].result, sqrt(r2))
                     /* renormalization term */
                    -gsl_spline2d_eval(
                         integral[8].renormalization.spline,
@@ -1570,9 +1570,9 @@ double functions_double_integrated(
             /* constant in front */
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)
             /* integrand */
-           *interp_spline(&integral[9].result, x1*temp_sep*sqrt(1 - mu*mu))
-           *pow(interp_spline(&bg->D1, interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
-           *pow(1 + interp_spline(&bg->z_as_chi, x1*chi_mean), 2) // (1 + z(lambda))^2
+           *coffe_interp_spline(&integral[9].result, x1*temp_sep*sqrt(1 - mu*mu))
+           *pow(coffe_interp_spline(&bg->D1, coffe_interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
+           *pow(1 + coffe_interp_spline(&bg->z_as_chi, x1*chi_mean), 2) // (1 + z(lambda))^2
            *pow(x1*(1 - x1), 2);
         }
         else{
@@ -1582,32 +1582,32 @@ double functions_double_integrated(
             9.*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)/4.*chi1*chi2
            *
             /* integrand */
-            interp_spline(&bg->D1, z1)
-           *interp_spline(&bg->D1, z2)
-           /interp_spline(&bg->a, z1)
-           /interp_spline(&bg->a, z2)
+            coffe_interp_spline(&bg->D1, z1)
+           *coffe_interp_spline(&bg->D1, z2)
+           /coffe_interp_spline(&bg->a, z1)
+           /coffe_interp_spline(&bg->a, z2)
            *(1 - x1)*(1 - x2)
            *(
                 2*(costheta*costheta - 1)*lambda1*lambda2
-               *interp_spline(&integral[0].result, sqrt(r2))/5.
+               *coffe_interp_spline(&integral[0].result, sqrt(r2))/5.
                +
                 4*costheta
-               *interp_spline(&integral[5].result, sqrt(r2))/3.
+               *coffe_interp_spline(&integral[5].result, sqrt(r2))/3.
                +
                 4*costheta*(r2 + 6*costheta*lambda1*lambda2)
-               *interp_spline(&integral[3].result, sqrt(r2))/15.
+               *coffe_interp_spline(&integral[3].result, sqrt(r2))/15.
                +
                 2*(costheta*costheta - 1)*lambda1*lambda2
                *(2*r2 + 3*costheta*lambda1*lambda2)
-               *interp_spline(&integral[1].result, sqrt(r2))/7./r2
+               *coffe_interp_spline(&integral[1].result, sqrt(r2))/7./r2
                +
                 2*costheta
                *(2*r2*r2 + 12*costheta*r2*lambda1*lambda2 + 15*(costheta*costheta - 1)*lambda1*lambda1*lambda2*lambda2)
-               *interp_spline(&integral[4].result, sqrt(r2))/15./r2
+               *coffe_interp_spline(&integral[4].result, sqrt(r2))/15./r2
                +
                 (costheta*costheta - 1)*lambda1*lambda2
                *(6*r2*r2 + 30*costheta*r2*lambda1*lambda2 + 35*(costheta*costheta - 1)*lambda1*lambda1*lambda2*lambda2)
-               *interp_spline(&integral[2].result, sqrt(r2))/35./r2/r2
+               *coffe_interp_spline(&integral[2].result, sqrt(r2))/35./r2/r2
             );
         }
         else{
@@ -1616,16 +1616,16 @@ double functions_double_integrated(
             9./4*pow((par->Omega0_cdm + par->Omega0_baryon), 2)*(2 - 5*s1)*(2 - 5*s2)*chi1*chi2
            *
             /* integrand */
-            interp_spline(&bg->D1, z1)
-           *interp_spline(&bg->D1, z2)
-           /interp_spline(&bg->a, z1)
-           /interp_spline(&bg->a, z2)
+            coffe_interp_spline(&bg->D1, z1)
+           *coffe_interp_spline(&bg->D1, z2)
+           /coffe_interp_spline(&bg->a, z1)
+           /coffe_interp_spline(&bg->a, z2)
            *(1 - x1)*(1 - x2)
            *(
-               4*interp_spline(&integral[5].result, 0.0)/3.
+               4*coffe_interp_spline(&integral[5].result, 0.0)/3.
                +
                 24.*lambda1*lambda2
-               *interp_spline(&integral[3].result, 0.0)/15.
+               *coffe_interp_spline(&integral[3].result, 0.0)/15.
             );
         }
         }
@@ -1637,10 +1637,10 @@ double functions_double_integrated(
         9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)
        *
             /* integrand */
-            interp_spline(&bg->D1, z1)
-           *interp_spline(&bg->D1, z2)
-           /interp_spline(&bg->a, z1)
-           /interp_spline(&bg->a, z2)
+            coffe_interp_spline(&bg->D1, z1)
+           *coffe_interp_spline(&bg->D1, z2)
+           /coffe_interp_spline(&bg->a, z1)
+           /coffe_interp_spline(&bg->a, z2)
            *ren;
     }
     /* g5-g5 term */
@@ -1648,19 +1648,19 @@ double functions_double_integrated(
         result +=
         /* constant in front */
         9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)
-       *interp_spline(&bg->G1, z1_const)
-       *interp_spline(&bg->G2, z2_const)
+       *coffe_interp_spline(&bg->G1, z1_const)
+       *coffe_interp_spline(&bg->G2, z2_const)
        *chi1*chi2
        *
         /* integrand */
-            interp_spline(&bg->D1, z1)
-           *interp_spline(&bg->D1, z2)
-           /interp_spline(&bg->a, z1)
-           /interp_spline(&bg->a, z2)
-           *interp_spline(&bg->conformal_Hz, z1)
-           *interp_spline(&bg->conformal_Hz, z2)
-           *(interp_spline(&bg->f, z1) - 1)
-           *(interp_spline(&bg->f, z2) - 1)
+            coffe_interp_spline(&bg->D1, z1)
+           *coffe_interp_spline(&bg->D1, z2)
+           /coffe_interp_spline(&bg->a, z1)
+           /coffe_interp_spline(&bg->a, z2)
+           *coffe_interp_spline(&bg->conformal_Hz, z1)
+           *coffe_interp_spline(&bg->conformal_Hz, z2)
+           *(coffe_interp_spline(&bg->f, z1) - 1)
+           *(coffe_interp_spline(&bg->f, z2) - 1)
            *ren;
     }
     /* g4-len + len-g4 term */
@@ -1674,19 +1674,19 @@ double functions_double_integrated(
                 9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     (2 - 5*s1)*(2 - 5*s2)
-                   *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                   *(1 - x2)/x2*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*lambda1*lambda2*costheta*interp_spline(&integral[7].result, sqrt(r2))
-                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r2))
+                        2*lambda1*lambda2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r2))
+                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r2))
                     )
                     +
                     (2 - 5*s1)*(2 - 5*s2)
-                   *(1 - x1)/x1*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                   *(1 - x1)/x1*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*lambda1*lambda2*costheta*interp_spline(&integral[7].result, sqrt(r2))
-                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r2))
+                        2*lambda1*lambda2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r2))
+                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r2))
                     )
                 );
         }
@@ -1695,14 +1695,14 @@ double functions_double_integrated(
                 9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
                     (2 - 5*s1)*(2 - 5*s2)
-                   *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
-                   *2*lambda1*lambda2*interp_spline(&integral[7].result, 0.0)
+                   *(1 - x2)/x2*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
+                   *2*lambda1*lambda2*coffe_interp_spline(&integral[7].result, 0.0)
                     +
                     (2 - 5*s1)*(2 - 5*s2)
-                   *(1 - x1)/x1*interp_spline(&bg->D1, z2)*interp_spline(&bg->D1, z1)
-                   /interp_spline(&bg->a, z2)/interp_spline(&bg->a, z1)
-                   *2*lambda1*lambda2*interp_spline(&integral[7].result, 0.0)
+                   *(1 - x1)/x1*coffe_interp_spline(&bg->D1, z2)*coffe_interp_spline(&bg->D1, z1)
+                   /coffe_interp_spline(&bg->a, z2)/coffe_interp_spline(&bg->a, z1)
+                   *2*lambda1*lambda2*coffe_interp_spline(&integral[7].result, 0.0)
                 );
         }
     }
@@ -1716,22 +1716,22 @@ double functions_double_integrated(
                 /* constant in front */
                 9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    (2 - 5*s2)*interp_spline(&bg->G1, z1_const)*chi1
-                   *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->conformal_Hz, z1) - 1)
-                   *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                    (2 - 5*s2)*coffe_interp_spline(&bg->G1, z1_const)*chi1
+                   *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->conformal_Hz, z1) - 1)
+                   *(1 - x2)/x2*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*lambda1*lambda2*costheta*interp_spline(&integral[7].result, sqrt(r2))
-                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r2))
+                        2*lambda1*lambda2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r2))
+                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r2))
                     )
                     +
-                    (2 - 5*s1)*interp_spline(&bg->G2, z2_const)*chi2
-                   *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->conformal_Hz, z2) - 1)
-                   *(1 - x1)/x1*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                    (2 - 5*s1)*coffe_interp_spline(&bg->G2, z2_const)*chi2
+                   *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->conformal_Hz, z2) - 1)
+                   *(1 - x1)/x1*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*lambda1*lambda2*costheta*interp_spline(&integral[7].result, sqrt(r2))
-                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*interp_spline(&integral[6].result, sqrt(r2))
+                        2*lambda1*lambda2*costheta*coffe_interp_spline(&integral[7].result, sqrt(r2))
+                       -lambda1*lambda1*lambda2*lambda2*(1 - costheta*costheta)*coffe_interp_spline(&integral[6].result, sqrt(r2))
                     )
                 );
         }
@@ -1739,17 +1739,17 @@ double functions_double_integrated(
             result +=
                 9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    (2 - 5*s2)*interp_spline(&bg->G1, z1_const)*chi1
-                   *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->conformal_Hz, z1) - 1)
-                   *(1 - x2)/x2*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
-                   *2*lambda1*lambda2*interp_spline(&integral[7].result, 0.0)
+                    (2 - 5*s2)*coffe_interp_spline(&bg->G1, z1_const)*chi1
+                   *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->conformal_Hz, z1) - 1)
+                   *(1 - x2)/x2*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
+                   *2*lambda1*lambda2*coffe_interp_spline(&integral[7].result, 0.0)
                     +
-                    (2 - 5*s1)*interp_spline(&bg->G2, z2_const)*chi2
-                   *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->conformal_Hz, z2) - 1)
-                   *(1 - x1)/x1*interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-                   /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
-                   *2*lambda1*lambda2*interp_spline(&integral[7].result, 0.0)
+                    (2 - 5*s1)*coffe_interp_spline(&bg->G2, z2_const)*chi2
+                   *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->conformal_Hz, z2) - 1)
+                   *(1 - x1)/x1*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+                   /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
+                   *2*lambda1*lambda2*coffe_interp_spline(&integral[7].result, 0.0)
                 );
         }
     }
@@ -1762,16 +1762,16 @@ double functions_double_integrated(
             /* constant in front */
             9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)
            *(
-                interp_spline(&bg->G2, z2_const)*(2 - 5*s1)*chi2
-               *interp_spline(&bg->conformal_Hz, z2)*(interp_spline(&bg->f, z2) - 1)
-               *interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-               /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                coffe_interp_spline(&bg->G2, z2_const)*(2 - 5*s1)*chi2
+               *coffe_interp_spline(&bg->conformal_Hz, z2)*(coffe_interp_spline(&bg->f, z2) - 1)
+               *coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+               /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                *ren
                +
-                interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*chi1
-               *interp_spline(&bg->conformal_Hz, z1)*(interp_spline(&bg->f, z1) - 1)
-               *interp_spline(&bg->D1, z1)*interp_spline(&bg->D1, z2)
-               /interp_spline(&bg->a, z1)/interp_spline(&bg->a, z2)
+                coffe_interp_spline(&bg->G1, z1_const)*(2 - 5*s2)*chi1
+               *coffe_interp_spline(&bg->conformal_Hz, z1)*(coffe_interp_spline(&bg->f, z1) - 1)
+               *coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2)
+               /coffe_interp_spline(&bg->a, z1)/coffe_interp_spline(&bg->a, z2)
                *ren
             );
     }

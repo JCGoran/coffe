@@ -86,8 +86,8 @@ static int corrfunc_check_range(
     double max_separation = (*separations)[*len - 1];
     double upper_limit =
         2*(
-            interp_spline(&bg->comoving_distance, z_mean + deltaz)
-           -interp_spline(&bg->comoving_distance, z_mean)
+            coffe_interp_spline(&bg->comoving_distance, z_mean + deltaz)
+           -coffe_interp_spline(&bg->comoving_distance, z_mean)
         )/COFFE_H0;
 
     size_t counter = 0;
@@ -147,7 +147,7 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("Calculating the angular correlation function...\n");
 
-        double chi_mean = interp_spline(&bg->comoving_distance, par->z_mean);
+        double chi_mean = coffe_interp_spline(&bg->comoving_distance, par->z_mean);
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
@@ -286,7 +286,7 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("Calculating the 2D correlation function...\n");
 
-        const double chi_mean = interp_spline(&bg->comoving_distance, par->z_mean);
+        const double chi_mean = coffe_interp_spline(&bg->comoving_distance, par->z_mean);
         if (chi_mean < 320.*COFFE_H0){
             fprintf(
                 stderr,

@@ -69,13 +69,13 @@ static int average_multipoles_check_range(
     double z1, z2;
     for (size_t i = 0; i<*len; ++i){
         double temp_sep = (*separations)[i]*COFFE_H0;
-        z1 = interp_spline(
+        z1 = coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, zmin) + temp_sep/2.
+            coffe_interp_spline(&bg->comoving_distance, zmin) + temp_sep/2.
         );
-        z2 = interp_spline(
+        z2 = coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, zmax) - temp_sep/2.
+            coffe_interp_spline(&bg->comoving_distance, zmax) - temp_sep/2.
         );
         if (z1 < z2 && z1 > zmin && z2 < zmax && gsl_finite(z1) && gsl_finite(z2)){
             ++counter;

@@ -129,7 +129,7 @@ struct integrals_divergent_params
 static double integrals_prefactor(double k, void *p)
 {
     struct integrals_params *test = (struct integrals_params *) p;
-    return pow(k, 2 + test->l - test->n)*interp_spline(&test->result, k);
+    return pow(k, 2 + test->l - test->n)*coffe_interp_spline(&test->result, k);
 }
 
 
@@ -153,24 +153,24 @@ static double integrals_bessel_integrand(
         switch (integrand->l){
             case 0:
                 result = k*k
-                   *interp_spline(&integrand->result, k)
+                   *coffe_interp_spline(&integrand->result, k)
                    *gsl_sf_bessel_j0(k*integrand->r);
                 break;
             case 2:
                 result = k*k
-                   *interp_spline(&integrand->result, k)
+                   *coffe_interp_spline(&integrand->result, k)
                    *gsl_sf_bessel_j2(k*integrand->r);
                 break;
             default:
                 result = k*k
-                   *interp_spline(&integrand->result, k)
+                   *coffe_interp_spline(&integrand->result, k)
                    *gsl_sf_bessel_jl(integrand->l, k*integrand->r);
                 break;
         }
     }
     else{
         result = k*k
-           *interp_spline(&integrand->result, k)
+           *coffe_interp_spline(&integrand->result, k)
            *gsl_sf_bessel_jl(integrand->l, k* integrand->r)
            /pow(k*integrand->r, integrand->n);
     }
@@ -244,7 +244,7 @@ static double integrals_renormalization0_integrand(
 )
 {
     struct integrals_params *integrand = (struct integrals_params *) p;
-    return interp_spline(&integrand->result, k)
+    return coffe_interp_spline(&integrand->result, k)
         *(1. - pow(gsl_sf_bessel_j0(k*integrand->r), 2))/k/k;
 }
 
@@ -315,7 +315,7 @@ static double integrals_renormalization_integrand(
 {
     struct integrals_divergent_params *integrand =
         (struct integrals_divergent_params *) p;
-    return interp_spline(&integrand->result, k)
+    return coffe_interp_spline(&integrand->result, k)
            *gsl_sf_bessel_j0(k*integrand->chi1)
            *gsl_sf_bessel_j0(k*integrand->chi2)/k/k;
 }
@@ -373,7 +373,7 @@ static double integrals_flatsky_integrand(double k, void *p)
 {
     struct integrals_params *integrand = (struct integrals_params *) p;
 
-    return k*interp_spline(&integrand->result, k)
+    return k*coffe_interp_spline(&integrand->result, k)
        *gsl_sf_bessel_J0(k*integrand->r);
 }
 
@@ -491,16 +491,16 @@ int coffe_integrals_init(
                 double chi_min = 0.;
                 double chi_max;
                 if (par->output_type == 0){
-                    chi_max = interp_spline(&bg->comoving_distance, par->z_mean);
+                    chi_max = coffe_interp_spline(&bg->comoving_distance, par->z_mean);
                 }
                 else if (par->output_type == 1 || par->output_type == 2){
-                    chi_max = interp_spline(&bg->comoving_distance, par->z_mean + par->deltaz); // dimensionless
+                    chi_max = coffe_interp_spline(&bg->comoving_distance, par->z_mean + par->deltaz); // dimensionless
                 }
                 else if (par->output_type == 3){
-                    chi_max = interp_spline(&bg->comoving_distance, par->z_max); // dimensionless
+                    chi_max = coffe_interp_spline(&bg->comoving_distance, par->z_max); // dimensionless
                 }
                 else if (par->output_type == 6){
-                    chi_max = interp_spline(&bg->comoving_distance, par->z_mean) + 300.*COFFE_H0;
+                    chi_max = coffe_interp_spline(&bg->comoving_distance, par->z_mean) + 300.*COFFE_H0;
                 }
                 else{
                     chi_max = 0.;

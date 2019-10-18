@@ -366,7 +366,7 @@ int init_spline(
     int interpolation_type
 );
 
-double interp_spline(
+double coffe_interp_spline(
     struct coffe_interpolation *interp,
     double value
 );

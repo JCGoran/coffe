@@ -237,14 +237,14 @@ static double average_multipoles_nonintegrated_integrand(
     double sep = params->sep;
 
     double z1 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
     double z2 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
     double z = (z2 - z1)*var[0] + z1;
@@ -255,7 +255,7 @@ static double average_multipoles_nonintegrated_integrand(
         value[0] = functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
     else{
@@ -263,7 +263,7 @@ static double average_multipoles_nonintegrated_integrand(
             par, bg, integral, z, mu, sep
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
 #else
@@ -271,14 +271,14 @@ static double average_multipoles_nonintegrated_integrand(
         return functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
     else{
         return functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
 #endif
 }
@@ -307,14 +307,14 @@ static double average_multipoles_single_integrated_integrand(
     double sep = params->sep;
 
     double z1 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
     double z2 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
     double z = (z2 - z1)*var[0] + z1;
@@ -326,7 +326,7 @@ static double average_multipoles_single_integrated_integrand(
         value[0] = functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
     else{
@@ -334,7 +334,7 @@ static double average_multipoles_single_integrated_integrand(
             par, bg, integral, z, mu, sep, x
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
 #else
@@ -342,14 +342,14 @@ static double average_multipoles_single_integrated_integrand(
         return functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
     else{
         return functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
 #endif
 }
@@ -376,14 +376,14 @@ static double average_multipoles_double_integrated_integrand(
     double sep = params->sep;
 
     double z1 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
     double z2 =
-        interp_spline(
+        coffe_interp_spline(
             &bg->z_as_chi,
-            interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
     double z = (z2 - z1)*var[0] + z1;
@@ -395,7 +395,7 @@ static double average_multipoles_double_integrated_integrand(
         value[0] = functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
     else{
@@ -403,7 +403,7 @@ static double average_multipoles_double_integrated_integrand(
             par, bg, integral, z, mu, sep, x1, x2
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
         return EXIT_SUCCESS;
     }
 #else
@@ -411,14 +411,14 @@ static double average_multipoles_double_integrated_integrand(
         return functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
     else{
         return functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
     }
 #endif
 }
@@ -534,7 +534,7 @@ double coffe_integrate(
                     return functions_nonintegrated(
                         par, bg, integral,
                         par->z_mean, mu, sep
-                    )/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    )/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                 }
                 case MULTIPOLES:{
                     double result, error;
@@ -562,7 +562,7 @@ double coffe_integrate(
                     gsl_integration_workspace_free(wspace);
                     #endif
                     return (2*l + 1)*result
-                        /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                        /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                 }
                 case AVERAGE_MULTIPOLES:{
                     const int dims = 2;
@@ -579,7 +579,7 @@ double coffe_integrate(
                         &nregions, &neval, &fail, result, error, prob
                     );
                     return (2*l + 1)*result[0]
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -595,7 +595,7 @@ double coffe_integrate(
                     );
 
                     return (2*l + 1)*result
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
 
                 }
@@ -658,7 +658,7 @@ double coffe_integrate(
                     gsl_integration_workspace_free(wspace);
                     #endif
 
-                    return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    return result/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                 }
                 case MULTIPOLES:{
                     const int dims = 2;
@@ -674,7 +674,7 @@ double coffe_integrate(
                         NULL, NULL,
                         &nregions, &neval, &fail, result, error, prob
                     );
-                    return (2*l + 1)*result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    return (2*l + 1)*result[0]/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -690,7 +690,7 @@ double coffe_integrate(
                     );
 
                     return (2*l + 1)*result
-                        /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                        /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
                 }
                 case AVERAGE_MULTIPOLES:{
@@ -707,7 +707,7 @@ double coffe_integrate(
                         &nregions, &neval, &fail, result, error, prob
                     );
                     return (2*l + 1)*result[0]
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -723,7 +723,7 @@ double coffe_integrate(
                     );
 
                     return (2*l + 1)*result
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
                 }
                 default:
@@ -754,7 +754,7 @@ double coffe_integrate(
                         NULL, NULL,
                         &nregions, &neval, &fail, result, error, prob
                     );
-                    return result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    return result[0]/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -769,7 +769,7 @@ double coffe_integrate(
                         &result
                     );
 
-                    return result/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    return result/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
                 }
                 case MULTIPOLES:{
@@ -786,7 +786,7 @@ double coffe_integrate(
                         NULL, NULL,
                         &nregions, &neval, &fail, result, error, prob
                     );
-                    return (2*l + 1)*result[0]/interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    return (2*l + 1)*result[0]/coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -802,7 +802,7 @@ double coffe_integrate(
                     );
 
                     return (2*l + 1)*result
-                        /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                        /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
                 }
                 case AVERAGE_MULTIPOLES:{
@@ -819,7 +819,7 @@ double coffe_integrate(
                         &nregions, &neval, &fail, result, error, prob
                     );
                     return (2*l + 1)*result[0]
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #else
                     double result;
                     gsl_monte_function integrand;
@@ -835,7 +835,7 @@ double coffe_integrate(
                     );
 
                     return (2*l + 1)*result
-                    /interp_spline(&bg->D1, 0)/interp_spline(&bg->D1, 0);
+                    /coffe_interp_spline(&bg->D1, 0)/coffe_interp_spline(&bg->D1, 0);
                     #endif
                 }
                 default:

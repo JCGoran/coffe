@@ -86,8 +86,8 @@ static int growth_rate_ode(
 {
     struct integration_params *par = (struct integration_params *) params;
     double z = 1./a - 1;
-    double w = interp_spline(&par->w, z);
-    double x = interp_spline(&par->xint, z);
+    double w = coffe_interp_spline(&par->w, z);
+    double x = coffe_interp_spline(&par->xint, z);
 
     f[0] = y[1];
     f[1] = -3./2*(1 - w/(1 + x))*y[1]/a
@@ -113,8 +113,8 @@ static int growth_rate_jac(
     gsl_matrix_view dfdy_mat =
         gsl_matrix_view_array(dfdy, 2, 2);
     double z = 1./a - 1;
-    double w = interp_spline(&par->w, z);
-    double x = interp_spline(&par->xint, z);
+    double w = coffe_interp_spline(&par->w, z);
+    double x = coffe_interp_spline(&par->xint, z);
     double x_der =
         gsl_spline_eval_deriv(par->xint.spline, z, par->xint.accel);
     gsl_matrix *m = &dfdy_mat.matrix;
@@ -142,7 +142,7 @@ static double integrand_w(
 )
 {
     struct integration_params *par = (struct integration_params *) p;
-    return (1 + interp_spline(&par->w, z))/(1 + z);
+    return (1 + coffe_interp_spline(&par->w, z))/(1 + z);
 }
 
 /**
@@ -155,7 +155,7 @@ static double integrand_x(
 )
 {
     struct integration_params *par = (struct integration_params *) p;
-    double result = interp_spline(&par->w, 1/a - 1)/a;
+    double result = coffe_interp_spline(&par->w, 1/a - 1)/a;
     return result;
 }
 
@@ -221,7 +221,7 @@ static double integrand_comoving(
     double integrand = 1./pow(
         (par->Omega0_cdm + par->Omega0_baryon)*pow(1 + z, 3)
        +par->Omega0_gamma*pow(1 + z, 4)
-       +par->Omega0_de*interp_spline(&par->wint, z),
+       +par->Omega0_de*coffe_interp_spline(&par->wint, z),
         1./2);
     return integrand;
 }
@@ -338,8 +338,8 @@ int coffe_background_init(
 
         z = 15.*i/(double)(par->background_bins - 1);
 
-        w = interp_spline(&ipar.w, z);
-        wint = interp_spline(&ipar.wint, z);
+        w = coffe_interp_spline(&ipar.w, z);
+        wint = coffe_interp_spline(&ipar.wint, z);
 
         (temp_bg->z)[i] = z;
         (temp_bg->a)[i] = 1./(1. + z);
@@ -378,29 +378,29 @@ int coffe_background_init(
                 (temp_bg->conformal_Hz_prime)[i]
                     /pow((temp_bg->conformal_Hz)[i], 2)
                     +
-                    (2 - 5*interp_spline(&par->magnification_bias1, z))
+                    (2 - 5*coffe_interp_spline(&par->magnification_bias1, z))
                    /(
                         (temp_bg->comoving_distance[i])
                        *(temp_bg->conformal_Hz)[i]
                     )
                     +
-                    5*interp_spline(&par->magnification_bias1, z)
+                    5*coffe_interp_spline(&par->magnification_bias1, z)
                     -
-                    interp_spline(&par->evolution_bias1, z);
+                    coffe_interp_spline(&par->evolution_bias1, z);
 
             (temp_bg->G2)[i] =
                 (temp_bg->conformal_Hz_prime)[i]
                     /pow((temp_bg->conformal_Hz)[i], 2)
                     +
-                    (2 - 5*interp_spline(&par->magnification_bias2, z))
+                    (2 - 5*coffe_interp_spline(&par->magnification_bias2, z))
                    /(
                         (temp_bg->comoving_distance[i])
                        *(temp_bg->conformal_Hz)[i]
                     )
                     +
-                    5*interp_spline(&par->magnification_bias2, z)
+                    5*coffe_interp_spline(&par->magnification_bias2, z)
                     -
-                    interp_spline(&par->evolution_bias2, z);
+                    coffe_interp_spline(&par->evolution_bias2, z);
         }
         else{
             (temp_bg->G1)[i] = 0;
