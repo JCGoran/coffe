@@ -385,7 +385,7 @@ int coffe_compare_descending(
     const void *b
 );
 
-double common_wfunction(
+double coffe_dark_energy_eos(
     struct coffe_parameters_t *par,
     double z
 );

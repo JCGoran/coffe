@@ -272,7 +272,7 @@ int coffe_background_init(
         for (size_t i = 0; i <= bins; ++i){
             z = z_max*i/(double)bins;
             z_array[i] = z;
-            w_array[i] = common_wfunction(par, z);
+            w_array[i] = coffe_dark_energy_eos(par, z);
         }
         init_spline(&ipar.w, z_array, w_array, bins + 1, 1);
         free(w_array);

@@ -579,12 +579,12 @@ int coffe_compare_descending(
 
 
 /**
-    function describing w(z)
+    function describing the dark energy EOS
     for now only w(z) = w0 + wa*(1 - a),
     but others straightforward to implement
 **/
 
-double common_wfunction(
+double coffe_dark_energy_eos(
     struct coffe_parameters_t *par,
     double z
 )
