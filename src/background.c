@@ -64,8 +64,6 @@ struct temp_background
 
     double *f; /* growth function f=d(log D)/d(log a) */
 
-    double *g; /* growth function g=(1+z)*D_1 */
-
     double *G1, *G2;
 
     double *comoving_distance; /* comoving distance (dimensionless) */
@@ -252,7 +250,6 @@ int coffe_background_init(
     temp_bg->conformal_Hz = (double *)coffe_malloc(sizeof(double)*par->background_bins);
     temp_bg->conformal_Hz_prime = (double *)coffe_malloc(sizeof(double)*par->background_bins);
     temp_bg->D1 = (double *)coffe_malloc(sizeof(double)*par->background_bins);
-    temp_bg->g = (double *)coffe_malloc(sizeof(double)*par->background_bins);
     temp_bg->f = (double *)coffe_malloc(sizeof(double)*par->background_bins);
     temp_bg->G1 = (double *)coffe_malloc(sizeof(double)*par->background_bins);
     temp_bg->G2 = (double *)coffe_malloc(sizeof(double)*par->background_bins);
@@ -362,7 +359,6 @@ int coffe_background_init(
         }
 
         (temp_bg->D1)[i] = initial_values[0];
-        (temp_bg->g)[i] = (1 + z)*(temp_bg->D1)[i];
         (temp_bg->f)[i] = initial_values[1]*(temp_bg->a)[i]/(temp_bg->D1)[i];
 
         gsl_integration_qag(
@@ -489,7 +485,6 @@ int coffe_background_init(
     free(temp_bg->conformal_Hz);
     free(temp_bg->conformal_Hz_prime);
     free(temp_bg->D1);
-    free(temp_bg->g);
     free(temp_bg->f);
     free(temp_bg->G1);
     free(temp_bg->G2);
