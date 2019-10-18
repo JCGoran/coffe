@@ -433,6 +433,190 @@ static int parse_external_power_spectrum(
 }
 #endif
 
+int coffe_parse_default_parameters(
+    struct coffe_parameters_t *par
+)
+{
+    par->Omega0_cdm = 0.25793;
+    par->Omega0_baryon = 0.0484;
+    par->Omega0_gamma = 9e-5;
+    par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
+    par->w0 = -1.0;
+    par->wa = 0.0;
+    #ifdef HAVE_CLASS
+    par->have_class = 0;
+    par->h = 0.6781;
+    par->k_pivot = 0.05;
+    par->ln_10_pow_10_A_s = 3.062;
+    par->n_s = 0.9677;
+    #endif
+
+    snprintf(par->file_sep, COFFE_MAX_STRLEN, "\0");
+    const double separations[] = {10., 20., 40., 100., 150.};
+    par->sep = coffe_malloc(
+        sizeof(double) * sizeof(separations) / sizeof(*separations)
+    );
+    for (int i = 0; i < sizeof(separations) / sizeof(*separations); ++i)
+        par->sep[i] = separations[i];
+    par->sep_len = sizeof(separations) / sizeof(*separations);
+    par->interp_method = 5;
+    snprintf(par->file_power_spectrum, COFFE_MAX_STRLEN, "\0");
+    /*
+        turns out you can do this
+        https://stackoverflow.com/a/1662202
+    */
+    const double k[] = {
+        #include "WAVENUMBER_HEADER.dat"
+    };
+    const double pk[] = {
+        #include "POWER_SPECTRUM_HEADER.dat"
+    };
+    init_spline(
+        &par->power_spectrum,
+        (double *)k, (double *)pk, sizeof(k) / sizeof(*k),
+        par->interp_method
+    );
+    par->k_min = par->power_spectrum.spline->x[0];
+    par->k_max = par->power_spectrum.spline->x[
+        par->power_spectrum.spline->size - 1
+    ];
+    {
+        size_t len = par->power_spectrum.spline->size;
+        double *k_norm =
+            (double *)coffe_malloc(sizeof(double)*len);
+        double *pk_norm =
+            (double *)coffe_malloc(sizeof(double)*len);
+        for (size_t i = 0; i<len; ++i){
+            k_norm[i] = par->power_spectrum.spline->x[i] / COFFE_H0;
+            pk_norm[i] = par->power_spectrum.spline->y[i] * pow(COFFE_H0, 3);
+        }
+        init_spline(
+            &par->power_spectrum_norm,
+            k_norm, pk_norm, len,
+            par->interp_method
+        );
+        par->k_min_norm = par->k_min / COFFE_H0;
+        par->k_max_norm = par->k_max / COFFE_H0;
+        free(k_norm);
+        free(pk_norm);
+    }
+
+    parse_bias_default(
+        1.0, &par->matter_bias1, par->interp_method
+    );
+    par->read_matter_bias1 = 0;
+    snprintf(par->file_matter_bias1, COFFE_MAX_STRLEN, "\0");
+
+    parse_bias_default(
+        1.0, &par->matter_bias2, par->interp_method
+    );
+    par->read_matter_bias2 = 0;
+    snprintf(par->file_matter_bias2, COFFE_MAX_STRLEN, "\0");
+
+    parse_bias_default(
+        0.0, &par->magnification_bias1, par->interp_method
+    );
+    par->read_magnification_bias1 = 0;
+    snprintf(par->file_magnification_bias1, COFFE_MAX_STRLEN, "\0");
+
+    parse_bias_default(
+        0.0, &par->magnification_bias2, par->interp_method
+    );
+    par->read_magnification_bias2 = 0;
+    snprintf(par->file_magnification_bias2, COFFE_MAX_STRLEN, "\0");
+
+    parse_bias_default(
+        0.0, &par->evolution_bias1, par->interp_method
+    );
+    par->read_evolution_bias1 = 0;
+    snprintf(par->file_evolution_bias1, COFFE_MAX_STRLEN, "\0");
+
+    parse_bias_default(
+        0.0, &par->evolution_bias2, par->interp_method
+    );
+    par->read_evolution_bias2 = 0;
+    snprintf(par->file_evolution_bias2, COFFE_MAX_STRLEN, "\0");
+
+    par->output_type = 2;
+    par->covariance_density = NULL;
+    par->covariance_density_len = 0;
+    par->covariance_z_mean = NULL;
+    par->covariance_z_mean_len = 0;
+    par->covariance_deltaz = NULL;
+    par->covariance_deltaz_len = 0;
+    par->covariance_pixelsize = 0.0;
+    par->covariance_zmin = NULL;
+    par->covariance_zmin_len = 0;
+    par->covariance_zmax = NULL;
+    par->covariance_zmax_len = 0;
+    par->covariance_minimum_separation = 0.0;
+
+    snprintf(par->output_path, COFFE_MAX_STRLEN, "./");
+    snprintf(par->output_prefix, COFFE_MAX_STRLEN, "$TIME");
+    snprintf(
+        par->timestamp,
+        COFFE_MAX_STRLEN,
+        "%s",
+        coffe_get_time()
+    );
+
+    par->correlation_contrib.den = 1;
+    par->correlation_contrib.rsd = 1;
+    par->correlation_contrib.d1 = 0;
+    par->correlation_contrib.d2 = 0;
+    par->correlation_contrib.g1 = 0;
+    par->correlation_contrib.g2 = 0;
+    par->correlation_contrib.g3 = 0;
+    par->correlation_contrib.len = 0;
+    par->correlation_contrib.g4 = 0;
+    par->correlation_contrib.g5 = 0;
+
+    par->mu = NULL;
+    par->mu_len = 0;
+
+    par->divergent = 0;
+
+    par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
+    par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
+    par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
+    par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
+    par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
+    par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
+    par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
+    par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
+
+    par->type_bg = NULL;
+    par->type_bg_len = 0;
+
+    par->background_bins = 10000;
+    par->bessel_bins = 10000;
+
+    par->z_mean = 1.0;
+    par->deltaz = 0.2;
+
+    par->z_min = 0.9;
+    par->z_max = 1.1;
+
+    const double multipoles[] = {0, 2, 4};
+    par->multipole_values = coffe_malloc(
+        sizeof(double) * sizeof(multipoles) / sizeof(*multipoles)
+    );
+    for (int i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i)
+        par->multipole_values[i] = multipoles[i];
+    par->multipole_values_len = sizeof(multipoles) / sizeof(*multipoles);
+
+    par->flatsky = 0;
+
+    par->theta_len = 0;
+
+    par->verbose = 0;
+
+    par->conf = NULL;
+
+    return EXIT_SUCCESS;
+}
+
+
 /**
     parses all the settings from the input file
     (given by argv[1]) into the structure <par>
@@ -443,6 +627,7 @@ int coffe_parser_init(
     struct coffe_parameters_t *par
 )
 {
+    coffe_parse_default_parameters(par);
     config_t *conf = (config_t *)coffe_malloc(sizeof(config_t));
 
     config_init(conf);
