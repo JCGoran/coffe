@@ -607,10 +607,6 @@ int coffe_parameters_free(
     if (par->conf != NULL)
         config_destroy(par->conf);
     par->conf = NULL;
-    for (size_t i = 0; i<(size_t)par->correlation_contributions_len; ++i){
-        free(par->correlation_contributions[i]);
-    }
-    free(par->correlation_contributions);
 
     free_spline(&par->power_spectrum);
     free_spline(&par->power_spectrum_norm);

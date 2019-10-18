@@ -125,10 +125,6 @@ struct coffe_correlation_contributions
 
 struct coffe_parameters_t
 {
-    char **correlation_contributions; /* correlation contributions to calculate */
-
-    int correlation_contributions_len; /* number of correlation contributions to calculate */
-
     int output_type; /* correlation function (angular or full sky), or multipoles, or redshift averaged multipoles */
 
     double *mu; /* value for the angles */

@@ -725,10 +725,12 @@ int coffe_parser_init(
     }
 
     /* parsing the contributions to the correlation function and covariance */
+    char **correlation_contributions = NULL;
+    int correlation_contributions_len = 0;
     parse_string_array(
         conf, "correlation_contributions",
-        &par->correlation_contributions,
-        &par->correlation_contributions_len
+        &correlation_contributions,
+        &correlation_contributions_len
     );
 
     par->correlation_contrib.den = 0;
@@ -742,28 +744,32 @@ int coffe_parser_init(
     par->correlation_contrib.g4 = 0;
     par->correlation_contrib.g5 = 0;
 
-    for (int i = 0; i<par->correlation_contributions_len; ++i){
-        if (strcmp(par->correlation_contributions[i], "den") == 0)
+    for (int i = 0; i<correlation_contributions_len; ++i){
+        if (strcmp(correlation_contributions[i], "den") == 0)
             par->correlation_contrib.den = 1;
-        else if (strcmp(par->correlation_contributions[i], "rsd") == 0)
+        else if (strcmp(correlation_contributions[i], "rsd") == 0)
             par->correlation_contrib.rsd = 1;
-        else if (strcmp(par->correlation_contributions[i], "len") == 0)
+        else if (strcmp(correlation_contributions[i], "len") == 0)
             par->correlation_contrib.len = 1;
-        else if (strcmp(par->correlation_contributions[i], "d1") == 0)
+        else if (strcmp(correlation_contributions[i], "d1") == 0)
             par->correlation_contrib.d1 = 1;
-        else if (strcmp(par->correlation_contributions[i], "d2") == 0)
+        else if (strcmp(correlation_contributions[i], "d2") == 0)
             par->correlation_contrib.d1 = 1;
-        else if (strcmp(par->correlation_contributions[i], "g1") == 0)
+        else if (strcmp(correlation_contributions[i], "g1") == 0)
             par->correlation_contrib.g1 = 1;
-        else if (strcmp(par->correlation_contributions[i], "g2") == 0)
+        else if (strcmp(correlation_contributions[i], "g2") == 0)
             par->correlation_contrib.g2 = 1;
-        else if (strcmp(par->correlation_contributions[i], "g3") == 0)
+        else if (strcmp(correlation_contributions[i], "g3") == 0)
             par->correlation_contrib.g3 = 1;
-        else if (strcmp(par->correlation_contributions[i], "g4") == 0)
+        else if (strcmp(correlation_contributions[i], "g4") == 0)
             par->correlation_contrib.g4 = 1;
-        else if (strcmp(par->correlation_contributions[i], "g5") == 0)
+        else if (strcmp(correlation_contributions[i], "g5") == 0)
             par->correlation_contrib.g5 = 1;
     }
+
+    for (int i = 0; i < correlation_contributions_len; ++i)
+        free(correlation_contributions[i]);
+    free(correlation_contributions);
 
     par->divergent = 0;
 

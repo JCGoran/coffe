@@ -79,6 +79,26 @@ static int output_make_path(char *path)
     return EXIT_SUCCESS;
 }
 
+static int output_correlation_contributions_header(
+    struct coffe_correlation_contributions cc,
+    char *header
+)
+{
+    if (header != NULL){
+        if (cc.den) strncat(header, "den ", COFFE_MAX_STRLEN);
+        if (cc.rsd) strncat(header, "rsd ", COFFE_MAX_STRLEN);
+        if (cc.d1) strncat(header, "d1 ", COFFE_MAX_STRLEN);
+        if (cc.d2) strncat(header, "d2 ", COFFE_MAX_STRLEN);
+        if (cc.g1) strncat(header, "g1 ", COFFE_MAX_STRLEN);
+        if (cc.g2) strncat(header, "g2 ", COFFE_MAX_STRLEN);
+        if (cc.g3) strncat(header, "g3 ", COFFE_MAX_STRLEN);
+        if (cc.g4) strncat(header, "g4 ", COFFE_MAX_STRLEN);
+        if (cc.g5) strncat(header, "g5 ", COFFE_MAX_STRLEN);
+        if (cc.len) strncat(header, "len ", COFFE_MAX_STRLEN);
+    }
+
+    return EXIT_SUCCESS;
+}
 
 /**
     specially to output the background functions
@@ -242,10 +262,7 @@ int coffe_output_init(
     /* correlation function (angular) */
     if (par->output_type == 0){
         snprintf(header, COFFE_MAX_STRLEN, "# z_mean = %f\n# correlation contributions: ", par->z_mean);
-        for (int i = 0; i<par->correlation_contributions_len; ++i){
-            strncat(header, par->correlation_contributions[i], COFFE_MAX_STRLEN);
-            strncat(header, " ", COFFE_MAX_STRLEN);
-        }
+        output_correlation_contributions_header(par->correlation_contrib, header);
         strncat(header, "\n", COFFE_MAX_STRLEN);
         strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
         snprintf(filepath, COFFE_MAX_STRLEN, "%sang_corrfunc.dat", prefix);
@@ -264,10 +281,7 @@ int coffe_output_init(
                 "# mu = %f\n# z_mean = %f\n# correlation contributions: ",
                 par->mu[i], par->z_mean
             );
-            for (int j = 0; j<par->correlation_contributions_len; ++j){
-                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
-                strncat(header, " ", COFFE_MAX_STRLEN);
-            }
+            output_correlation_contributions_header(par->correlation_contrib, header);
             strncat(header, "\n", COFFE_MAX_STRLEN);
             strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
             snprintf(filepath, COFFE_MAX_STRLEN, "%scorrfunc%d.dat", prefix, i);
@@ -287,10 +301,7 @@ int coffe_output_init(
                 "# l = %d\n# z_mean = %f\n# correlation contributions: ",
                 par->multipole_values[i], par->z_mean
             );
-            for (int j = 0; j<par->correlation_contributions_len; ++j){
-                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
-                strncat(header, " ", COFFE_MAX_STRLEN);
-            }
+            output_correlation_contributions_header(par->correlation_contrib, header);
             strncat(header, "\n", COFFE_MAX_STRLEN);
             strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
             snprintf(filepath, COFFE_MAX_STRLEN, "%smultipoles%d.dat", prefix, par->multipole_values[i]);
@@ -310,10 +321,7 @@ int coffe_output_init(
                 "# l = %d\n# z_min = %f, z_max = %f\n# correlation contributions: ",
                 par->multipole_values[i], par->z_min, par->z_max
             );
-            for (int j = 0; j<par->correlation_contributions_len; ++j){
-                strncat(header, par->correlation_contributions[j], COFFE_MAX_STRLEN);
-                strncat(header, " ", COFFE_MAX_STRLEN);
-            }
+            output_correlation_contributions_header(par->correlation_contrib, header);
             strncat(header, "\n", COFFE_MAX_STRLEN);
             strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
             snprintf(filepath, COFFE_MAX_STRLEN,"%savg_multipoles%d.dat", prefix, par->multipole_values[i]);
