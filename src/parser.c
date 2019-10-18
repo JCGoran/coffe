@@ -1083,7 +1083,12 @@ int coffe_parser_init(
 
 
     /* saving the timestamp */
-    sprintf(par->timestamp, "%s", coffe_get_time());
+    snprintf(
+        par->timestamp,
+        COFFE_MAX_STRLEN,
+        "%s",
+        coffe_get_time()
+    );
 
     par->conf = conf;
 

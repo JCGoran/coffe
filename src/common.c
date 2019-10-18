@@ -53,14 +53,16 @@ void *coffe_malloc(size_t len)
 
 char *coffe_get_time(void)
 {
-    char *timestamp = (char *)malloc(sizeof(char)*30);
+    char *timestamp = (char *)malloc(sizeof(char) * COFFE_MAX_STRLEN);
     time_t ltime;
     ltime = time(NULL);
     struct tm *tm;
     tm = localtime(&ltime);
 
-    sprintf(
-        timestamp,"%04d-%02d-%02d-%02d-%02d-%02d",
+    snprintf(
+        timestamp,
+        COFFE_MAX_STRLEN,
+        "%04d-%02d-%02d-%02d-%02d-%02d",
         /* see http://www.cplusplus.com/reference/ctime/tm/ for the offsets */
         tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
     );
