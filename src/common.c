@@ -542,7 +542,7 @@ int init_spline(
 }
 
 
-int free_spline(
+int coffe_free_spline(
     struct coffe_interpolation *interp
 )
 {
@@ -608,14 +608,14 @@ int coffe_parameters_free(
         config_destroy(par->conf);
     par->conf = NULL;
 
-    free_spline(&par->power_spectrum);
-    free_spline(&par->power_spectrum_norm);
-    free_spline(&par->matter_bias1);
-    free_spline(&par->matter_bias2);
-    free_spline(&par->magnification_bias1);
-    free_spline(&par->magnification_bias2);
-    free_spline(&par->evolution_bias1);
-    free_spline(&par->evolution_bias2);
+    coffe_free_spline(&par->power_spectrum);
+    coffe_free_spline(&par->power_spectrum_norm);
+    coffe_free_spline(&par->matter_bias1);
+    coffe_free_spline(&par->matter_bias2);
+    coffe_free_spline(&par->magnification_bias1);
+    coffe_free_spline(&par->magnification_bias2);
+    coffe_free_spline(&par->evolution_bias1);
+    coffe_free_spline(&par->evolution_bias2);
 
     for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
         free(par->type_bg[i]);

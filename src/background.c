@@ -518,15 +518,15 @@ int coffe_background_free(
     struct coffe_background_t *bg
 )
 {
-    free_spline(&bg->z_as_chi);
-    free_spline(&bg->a);
-    free_spline(&bg->Hz);
-    free_spline(&bg->conformal_Hz);
-    free_spline(&bg->conformal_Hz_prime);
-    free_spline(&bg->D1);
-    free_spline(&bg->f);
-    free_spline(&bg->G1);
-    free_spline(&bg->G2);
-    free_spline(&bg->comoving_distance);
+    coffe_free_spline(&bg->z_as_chi);
+    coffe_free_spline(&bg->a);
+    coffe_free_spline(&bg->Hz);
+    coffe_free_spline(&bg->conformal_Hz);
+    coffe_free_spline(&bg->conformal_Hz_prime);
+    coffe_free_spline(&bg->D1);
+    coffe_free_spline(&bg->f);
+    coffe_free_spline(&bg->G1);
+    coffe_free_spline(&bg->G2);
+    coffe_free_spline(&bg->comoving_distance);
     return EXIT_SUCCESS;
 }

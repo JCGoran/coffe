@@ -749,18 +749,18 @@ int coffe_integrals_free(
 )
 {
     for (size_t i = 0; i<8; ++i){
-        free_spline(&integral[i].result);
+        coffe_free_spline(&integral[i].result);
     }
     if (integral[8].n == 4 && integral[8].l == 0){
-        free_spline(&integral[8].result);
-        free_spline(&integral[8].renormalization0);
+        coffe_free_spline(&integral[8].result);
+        coffe_free_spline(&integral[8].renormalization0);
         gsl_spline2d_free(integral[8].renormalization.spline);
         gsl_interp_accel_free(integral[8].renormalization.xaccel);
         gsl_interp_accel_free(integral[8].renormalization.yaccel);
     }
     // code for flatsky
     if (integral[9].n == -10 && integral[9].l == -10){
-        free_spline(&integral[9].result);
+        coffe_free_spline(&integral[9].result);
     }
     return EXIT_SUCCESS;
 }

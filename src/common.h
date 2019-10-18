@@ -371,7 +371,7 @@ double coffe_interp_spline(
     double value
 );
 
-int free_spline(
+int coffe_free_spline(
     struct coffe_interpolation *interp
 );
 
