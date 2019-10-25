@@ -437,18 +437,18 @@ int coffe_parse_default_parameters(
     struct coffe_parameters_t *par
 )
 {
-    par->Omega0_cdm = 0.25793;
-    par->Omega0_baryon = 0.0484;
+    par->Omega0_cdm = 0.25;
+    par->Omega0_baryon = 0.05;
     par->Omega0_gamma = 9e-5;
     par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
     par->w0 = -1.0;
     par->wa = 0.0;
     #ifdef HAVE_CLASS
     par->have_class = 0;
-    par->h = 0.6781;
+    par->h = 0.67;
     par->k_pivot = 0.05;
-    par->ln_10_pow_10_A_s = 3.062;
-    par->n_s = 0.9677;
+    par->ln_10_pow_10_A_s = 3.06;
+    par->n_s = 0.96;
     #endif
 
     snprintf(par->file_sep, COFFE_MAX_STRLEN, "\0");
@@ -476,10 +476,8 @@ int coffe_parse_default_parameters(
         (double *)k, (double *)pk, sizeof(k) / sizeof(*k),
         par->interp_method
     );
-    par->k_min = par->power_spectrum.spline->x[0];
-    par->k_max = par->power_spectrum.spline->x[
-        par->power_spectrum.spline->size - 1
-    ];
+    par->k_min = 1e-5;
+    par->k_max = 300.;
     {
         size_t len = par->power_spectrum.spline->size;
         double *k_norm =
@@ -561,7 +559,7 @@ int coffe_parse_default_parameters(
     );
 
     par->correlation_contrib.den = 1;
-    par->correlation_contrib.rsd = 1;
+    par->correlation_contrib.rsd = 0;
     par->correlation_contrib.d1 = 0;
     par->correlation_contrib.d2 = 0;
     par->correlation_contrib.g1 = 0;
