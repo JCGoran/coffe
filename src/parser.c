@@ -584,6 +584,7 @@ int coffe_parse_default_parameters(
     par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
     par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
     par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
+    par->nonzero_terms[8].n = -1, par->nonzero_terms[8].l = -1;
 
     par->type_bg = NULL;
     par->type_bg_len = 0;
