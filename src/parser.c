@@ -437,6 +437,8 @@ int coffe_parse_default_parameters(
     struct coffe_parameters_t *par
 )
 {
+    par->nthreads = 1;
+    /* cosmological parameters */
     par->Omega0_cdm = 0.25;
     par->Omega0_baryon = 0.05;
     par->Omega0_gamma = 9e-5;
@@ -451,16 +453,16 @@ int coffe_parse_default_parameters(
     par->n_s = 0.96;
     #endif
 
-    snprintf(par->file_sep, COFFE_MAX_STRLEN, "\0");
+    par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 150.};
     par->sep = coffe_malloc(
         sizeof(double) * sizeof(separations) / sizeof(*separations)
     );
-    for (int i = 0; i < sizeof(separations) / sizeof(*separations); ++i)
+    for (size_t i = 0; i < sizeof(separations) / sizeof(*separations); ++i)
         par->sep[i] = separations[i];
     par->sep_len = sizeof(separations) / sizeof(*separations);
     par->interp_method = 5;
-    snprintf(par->file_power_spectrum, COFFE_MAX_STRLEN, "\0");
+    par->file_power_spectrum[0] = 0;
     /*
         turns out you can do this
         https://stackoverflow.com/a/1662202
@@ -473,7 +475,7 @@ int coffe_parse_default_parameters(
     };
     coffe_init_spline(
         &par->power_spectrum,
-        (double *)k, (double *)pk, sizeof(k) / sizeof(*k),
+        k, pk, sizeof(k) / sizeof(*k),
         par->interp_method
     );
     par->k_min = 1e-5;
@@ -484,7 +486,7 @@ int coffe_parse_default_parameters(
             (double *)coffe_malloc(sizeof(double)*len);
         double *pk_norm =
             (double *)coffe_malloc(sizeof(double)*len);
-        for (size_t i = 0; i<len; ++i){
+        for (size_t i = 0; i < len; ++i){
             k_norm[i] = par->power_spectrum.spline->x[i] / COFFE_H0;
             pk_norm[i] = par->power_spectrum.spline->y[i] * pow(COFFE_H0, 3);
         }
@@ -503,37 +505,37 @@ int coffe_parse_default_parameters(
         1.0, &par->matter_bias1, par->interp_method
     );
     par->read_matter_bias1 = 0;
-    snprintf(par->file_matter_bias1, COFFE_MAX_STRLEN, "\0");
+    par->file_matter_bias1[0] = 0;
 
     parse_bias_default(
         1.0, &par->matter_bias2, par->interp_method
     );
     par->read_matter_bias2 = 0;
-    snprintf(par->file_matter_bias2, COFFE_MAX_STRLEN, "\0");
+    par->file_matter_bias2[0] = 0;
 
     parse_bias_default(
         0.0, &par->magnification_bias1, par->interp_method
     );
     par->read_magnification_bias1 = 0;
-    snprintf(par->file_magnification_bias1, COFFE_MAX_STRLEN, "\0");
+    par->file_magnification_bias1[0] = 0;
 
     parse_bias_default(
         0.0, &par->magnification_bias2, par->interp_method
     );
     par->read_magnification_bias2 = 0;
-    snprintf(par->file_magnification_bias2, COFFE_MAX_STRLEN, "\0");
+    par->file_magnification_bias2[0] = 0;
 
     parse_bias_default(
         0.0, &par->evolution_bias1, par->interp_method
     );
     par->read_evolution_bias1 = 0;
-    snprintf(par->file_evolution_bias1, COFFE_MAX_STRLEN, "\0");
+    par->file_evolution_bias1[0] = 0;
 
     parse_bias_default(
         0.0, &par->evolution_bias2, par->interp_method
     );
     par->read_evolution_bias2 = 0;
-    snprintf(par->file_evolution_bias2, COFFE_MAX_STRLEN, "\0");
+    par->file_evolution_bias2[0] = 0;
 
     par->output_type = 2;
     par->covariance_density = NULL;
@@ -542,6 +544,8 @@ int coffe_parse_default_parameters(
     par->covariance_z_mean_len = 0;
     par->covariance_deltaz = NULL;
     par->covariance_deltaz_len = 0;
+    par->covariance_fsky = NULL;
+    par->covariance_fsky_len = 0;
     par->covariance_pixelsize = 0.0;
     par->covariance_zmin = NULL;
     par->covariance_zmin_len = 0;
@@ -589,6 +593,10 @@ int coffe_parse_default_parameters(
 
     par->background_bins = 10000;
     par->bessel_bins = 10000;
+    #ifndef HAVE_CUBA
+    par->integration_method = 2;
+    #endif
+    par->integration_bins = 750000;
 
     par->z_mean = 1.0;
     par->deltaz = 0.2;
@@ -600,7 +608,7 @@ int coffe_parse_default_parameters(
     par->multipole_values = coffe_malloc(
         sizeof(double) * sizeof(multipoles) / sizeof(*multipoles)
     );
-    for (int i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i)
+    for (size_t i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i)
         par->multipole_values[i] = multipoles[i];
     par->multipole_values_len = sizeof(multipoles) / sizeof(*multipoles);
 
