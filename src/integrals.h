@@ -32,13 +32,13 @@ struct coffe_integrals_t
 **/
 
 int coffe_integrals_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[]
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    struct coffe_integrals_t *integral
 );
 
 int coffe_integrals_free(
-    struct coffe_integrals_t integral[]
+    struct coffe_integrals_t *integral
 );
 
 #endif

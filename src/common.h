@@ -342,7 +342,7 @@ int free_double_matrix(
 
 int write_matrix(
     char *filename,
-    double **values,
+    const double **values,
     size_t len1,
     size_t len2,
     const char *header,
@@ -360,14 +360,14 @@ int copy_matrix_array(
 
 int coffe_init_spline(
     struct coffe_interpolation *interp,
-    double *xi,
-    double *yi,
-    size_t bins,
-    int interpolation_type
+    const double *xi,
+    const double *yi,
+    const size_t bins,
+    const int interpolation_type
 );
 
 double coffe_interp_spline(
-    struct coffe_interpolation *interp,
+    const struct coffe_interpolation *interp,
     double value
 );
 
@@ -386,7 +386,7 @@ int coffe_compare_descending(
 );
 
 double coffe_dark_energy_eos(
-    struct coffe_parameters_t *par,
+    const struct coffe_parameters_t *par,
     double z
 );
 

@@ -46,7 +46,7 @@ struct coffe_background_t
 
 
 int coffe_background_init(
-    struct coffe_parameters_t *par,
+    const struct coffe_parameters_t *par,
     struct coffe_background_t *bg
 );
 

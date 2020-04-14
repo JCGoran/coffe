@@ -31,13 +31,13 @@ static double corrfunc_single_integrated_integrand(
 #endif
 )
 {
-    struct coffe_integration_parameters_t *test =
-        (struct coffe_integration_parameters_t *) p;
-    struct coffe_background_t *bg = test->bg;
-    struct coffe_parameters_t *par = test->par;
-    struct coffe_integrals_t *integral = test->integral;
-    double mu = test->mu;
-    double sep = test->sep;
+    const struct coffe_integration_parameters_t *test =
+        (const struct coffe_integration_parameters_t *) p;
+    const struct coffe_background_t *bg = test->bg;
+    const struct coffe_parameters_t *par = test->par;
+    const struct coffe_integrals_t *integral = test->integral;
+    const double mu = test->mu;
+    const double sep = test->sep;
     return
         functions_single_integrated(
             par, bg, integral,
@@ -58,14 +58,14 @@ static double corrfunc_double_integrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *test =
-        (struct coffe_integration_parameters_t *) p;
-    struct coffe_background_t *bg = test->bg;
-    struct coffe_parameters_t *par = test->par;
-    struct coffe_integrals_t *integral = test->integral;
-    double mu = test->mu;
-    double sep = test->sep;
-    double x1 = var[0], x2 = var[1];
+    const struct coffe_integration_parameters_t *test =
+        (const struct coffe_integration_parameters_t *) p;
+    const struct coffe_background_t *bg = test->bg;
+    const struct coffe_parameters_t *par = test->par;
+    const struct coffe_integrals_t *integral = test->integral;
+    const double mu = test->mu;
+    const double sep = test->sep;
+    const double x1 = var[0], x2 = var[1];
 #ifdef HAVE_CUBA
     value[0] =
 #else
@@ -94,15 +94,15 @@ static double multipoles_nonintegrated_integrand(
 #endif
 )
 {
-    struct coffe_integration_parameters_t *all_params =
-        (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = all_params->par;
-    struct coffe_background_t *bg = all_params->bg;
-    struct coffe_integrals_t *integral = all_params->integral;
-    double sep = all_params->sep;
-    int l = all_params->l;
+    const struct coffe_integration_parameters_t *all_params =
+        (const struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = all_params->par;
+    const struct coffe_background_t *bg = all_params->bg;
+    const struct coffe_integrals_t *integral = all_params->integral;
+    const double sep = all_params->sep;
+    const int l = all_params->l;
 
-    double mu = 2*x - 1;
+    const double mu = 2*x - 1;
     if (l == 0){
         return functions_nonintegrated(
             par, bg, integral,
@@ -130,13 +130,13 @@ static double multipoles_single_integrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = params->par;
-    struct coffe_background_t *bg = params->bg;
-    struct coffe_integrals_t *integral = params->integral;
-    double sep = params->sep;
+    const struct coffe_integration_parameters_t *params = (const struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = params->par;
+    const struct coffe_background_t *bg = params->bg;
+    const struct coffe_integrals_t *integral = params->integral;
+    const double sep = params->sep;
 
-    double mu = 2*var[0] - 1, x = var[1];
+    const double mu = 2*var[0] - 1, x = var[1];
 #ifdef HAVE_CUBA
     if (params->l == 0){
         value[0] = functions_single_integrated(
@@ -179,13 +179,13 @@ static double multipoles_double_integrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = params->par;
-    struct coffe_background_t *bg = params->bg;
-    struct coffe_integrals_t *integral = params->integral;
-    double sep = params->sep;
+    const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = params->par;
+    const struct coffe_background_t *bg = params->bg;
+    const struct coffe_integrals_t *integral = params->integral;
+    const double sep = params->sep;
 
-    double mu = 2*var[0] - 1, x1 = var[1], x2 = var[2];
+    const double mu = 2*var[0] - 1, x1 = var[1], x2 = var[2];
 #ifdef HAVE_CUBA
     if (params->l == 0){
         value[0] = functions_double_integrated(
@@ -230,25 +230,25 @@ static double average_multipoles_nonintegrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = params->par;
-    struct coffe_background_t *bg = params->bg;
-    struct coffe_integrals_t *integral = params->integral;
-    double sep = params->sep;
+    const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = params->par;
+    const struct coffe_background_t *bg = params->bg;
+    const struct coffe_integrals_t *integral = params->integral;
+    const double sep = params->sep;
 
-    double z1 =
+    const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
-    double z2 =
+    const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
-    double z = (z2 - z1)*var[0] + z1;
-    double mu = 2*var[1] - 1;
+    const double z = (z2 - z1)*var[0] + z1;
+    const double mu = 2*var[1] - 1;
 
 #ifdef HAVE_CUBA
     if (params->l == 0){
@@ -300,26 +300,26 @@ static double average_multipoles_single_integrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = params->par;
-    struct coffe_background_t *bg = params->bg;
-    struct coffe_integrals_t *integral = params->integral;
-    double sep = params->sep;
+    const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = params->par;
+    const struct coffe_background_t *bg = params->bg;
+    const struct coffe_integrals_t *integral = params->integral;
+    const double sep = params->sep;
 
-    double z1 =
+    const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
-    double z2 =
+    const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
-    double z = (z2 - z1)*var[0] + z1;
-    double mu = 2*var[1] - 1;
-    double x = var[2];
+    const double z = (z2 - z1)*var[0] + z1;
+    const double mu = 2*var[1] - 1;
+    const double x = var[2];
 
 #ifdef HAVE_CUBA
     if (params->l == 0){
@@ -369,26 +369,26 @@ static double average_multipoles_double_integrated_integrand(
 )
 #endif
 {
-    struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
-    struct coffe_parameters_t *par = params->par;
-    struct coffe_background_t *bg = params->bg;
-    struct coffe_integrals_t *integral = params->integral;
-    double sep = params->sep;
+    const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = params->par;
+    const struct coffe_background_t *bg = params->bg;
+    const struct coffe_integrals_t *integral = params->integral;
+    const double sep = params->sep;
 
-    double z1 =
+    const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
         );
-    double z2 =
+    const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
             coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
         );
 
-    double z = (z2 - z1)*var[0] + z1;
-    double mu = 2*var[1] - 1;
-    double x1 = var[2], x2 = var[3];
+    const double z = (z2 - z1)*var[0] + z1;
+    const double mu = 2*var[1] - 1;
+    const double x1 = var[2], x2 = var[3];
 
 #ifdef HAVE_CUBA
     if (params->l == 0){
@@ -426,16 +426,15 @@ static double average_multipoles_double_integrated_integrand(
 #ifndef HAVE_CUBA
 static int signal_integrate_gsl(
     gsl_monte_function integrand,
-    int integration_method,
-    int dims,
-    int integration_bins,
+    const int integration_method,
+    const int dims,
+    const int integration_bins,
     double *result
 )
 {
-    gsl_rng *random;
     gsl_rng_env_setup();
     const gsl_rng_type *rng = gsl_rng_default;
-    random = gsl_rng_alloc(rng);
+    gsl_rng *random = gsl_rng_alloc(rng);
     double lower[dims];
     double upper[dims];
     double error;
@@ -546,7 +545,7 @@ double coffe_integrate(
                         &error, NULL
                     );
                     #else
-                    double prec = 1E-5;
+                    const double prec = 1E-5;
                     gsl_function integrand;
                     integrand.function = &multipoles_nonintegrated_integrand;
                     integrand.params = &test;
@@ -642,7 +641,7 @@ double coffe_integrate(
                         &error, NULL
                     );
                     #else
-                    double prec = 1E-5;
+                    const double prec = 1E-5;
                     gsl_function integrand;
                     integrand.function = &corrfunc_single_integrated_integrand;
                     integrand.params = &test;

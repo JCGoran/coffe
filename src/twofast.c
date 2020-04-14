@@ -152,7 +152,7 @@ static double complex twofast_mql(double t, double q, int l, double alpha)
        *cexp(twofast_lgamma((1 + l + n)/2) - twofast_lgamma((2 + l - n)/2));
     if (gsl_finite(unl)) return cpow(alpha, t*I - q)*unl;
     else{
-        fprintf(stderr, "ERROR: file %s, function %s\n", __FILE__, __func__);
+        fprintf(stderr, "ERROR: file %s, function %s\ninputs: t = %e, q = %e, l = %d, alpha = %e\n", __FILE__, __func__, t, q, l, alpha);
         exit(EXIT_FAILURE);
     }
 }

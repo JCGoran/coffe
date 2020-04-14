@@ -430,7 +430,7 @@ int coffe_output_init(
     if (par->flatsky){
         snprintf(
             header, COFFE_MAX_STRLEN,
-            "# flatsky\n",
+            "# flatsky\n"
         );
         snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral9.dat", prefix);
         write_ncol_null(

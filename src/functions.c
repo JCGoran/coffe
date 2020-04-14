@@ -31,41 +31,41 @@
 **/
 
 double functions_nonintegrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double sep
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double sep
 )
 {
-    double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
-    double chi1 = chi_mean - sep*mu/2.;
-    double chi2 = chi_mean + sep*mu/2.;
-    double costheta =
+    const double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
+    const double chi1 = chi_mean - sep*mu/2.;
+    const double chi2 = chi_mean + sep*mu/2.;
+    const double costheta =
         (2.*chi_mean*chi_mean - sep*sep + mu*mu*sep*sep/2.)
        /(2.*chi_mean*chi_mean - mu*mu*sep*sep/2.);
 
     double result = 0;
-    double z1 = coffe_interp_spline(&bg->z_as_chi, chi1);
-    double z2 = coffe_interp_spline(&bg->z_as_chi, chi2);
-    double f1 = coffe_interp_spline(&bg->f, z1);
-    double f2 = coffe_interp_spline(&bg->f, z2);
-    double fmean = coffe_interp_spline(&bg->f, z_mean);
-    double curlyH1 = coffe_interp_spline(&bg->conformal_Hz, z1); // dimensionless
-    double curlyH2 = coffe_interp_spline(&bg->conformal_Hz, z2); // dimensionless
-    double b1 = coffe_interp_spline(&par->matter_bias1, z1);
-    double b2 = coffe_interp_spline(&par->matter_bias2, z2);
-    double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
-    double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
-    double G1 = coffe_interp_spline(&bg->G1, z1);
-    double G2 = coffe_interp_spline(&bg->G2, z2);
-    double s1 = coffe_interp_spline(&par->magnification_bias1, z1);
-    double s2 = coffe_interp_spline(&par->magnification_bias2, z2);
-    double fevo1 = coffe_interp_spline(&par->evolution_bias1, z1);
-    double fevo2 = coffe_interp_spline(&par->evolution_bias2, z2);
-    double a1 = coffe_interp_spline(&bg->a, z1);
-    double a2 = coffe_interp_spline(&bg->a, z2);
+    const double z1 = coffe_interp_spline(&bg->z_as_chi, chi1);
+    const double z2 = coffe_interp_spline(&bg->z_as_chi, chi2);
+    const double f1 = coffe_interp_spline(&bg->f, z1);
+    const double f2 = coffe_interp_spline(&bg->f, z2);
+    const double fmean = coffe_interp_spline(&bg->f, z_mean);
+    const double curlyH1 = coffe_interp_spline(&bg->conformal_Hz, z1); // dimensionless
+    const double curlyH2 = coffe_interp_spline(&bg->conformal_Hz, z2); // dimensionless
+    const double b1 = coffe_interp_spline(&par->matter_bias1, z1);
+    const double b2 = coffe_interp_spline(&par->matter_bias2, z2);
+    const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
+    const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
+    const double G1 = coffe_interp_spline(&bg->G1, z1);
+    const double G2 = coffe_interp_spline(&bg->G2, z2);
+    const double s1 = coffe_interp_spline(&par->magnification_bias1, z1);
+    const double s2 = coffe_interp_spline(&par->magnification_bias2, z2);
+    const double fevo1 = coffe_interp_spline(&par->evolution_bias1, z1);
+    const double fevo2 = coffe_interp_spline(&par->evolution_bias2, z2);
+    const double a1 = coffe_interp_spline(&bg->a, z1);
+    const double a2 = coffe_interp_spline(&bg->a, z2);
     /* den-den term */
     if (par->correlation_contrib.den){
         /* den-den modified by flatsky */
@@ -581,42 +581,42 @@ double functions_nonintegrated(
 }
 
 double functions_single_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double sep,
-    double x
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double sep,
+    const double x
 )
 {
     double result = 0;
 
     double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
-    double chi1 = chi_mean - sep*mu/2.;
-    double chi2 = chi_mean + sep*mu/2.;
-    double costheta =
+    const double chi1 = chi_mean - sep*mu/2.;
+    const double chi2 = chi_mean + sep*mu/2.;
+    const double costheta =
         (2*chi_mean*chi_mean - sep*sep + mu*mu*sep*sep/2.)
        /(2*chi_mean*chi_mean - mu*mu*sep*sep/2.);
-    double lambda1 = chi1*x, lambda2 = chi2*x;
+    const double lambda1 = chi1*x, lambda2 = chi2*x;
 
     double r21 = lambda2*lambda2 + chi1*chi1 - 2*chi1*lambda2*costheta;
     double r22 = lambda1*lambda1 + chi2*chi2 - 2*chi2*lambda1*costheta;
     if (r21 < 0) r21 = 0;
     if (r22 < 0) r22 = 0;
-    double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
-    double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
-    double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
-    double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
+    const double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
+    const double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
+    const double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
+    const double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
 
-    double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
-    double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
-    double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
-    double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
-    double b1 = coffe_interp_spline(&par->matter_bias1, z1_const);
-    double b2 = coffe_interp_spline(&par->matter_bias2, z2_const);
-    double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
-    double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
+    const double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
+    const double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
+    const double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
+    const double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
+    const double b1 = coffe_interp_spline(&par->matter_bias1, z1_const);
+    const double b2 = coffe_interp_spline(&par->matter_bias2, z2_const);
+    const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
+    const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
 
     double ren1 = 0, ren2 = 0;
     if (par->divergent){
@@ -1512,37 +1512,37 @@ double functions_single_integrated(
 
 
 double functions_double_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double sep,
-    double x1,
-    double x2
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double sep,
+    const double x1,
+    const double x2
 )
 {
     double result = 0;
 
-    double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
-    double chi1 = chi_mean - sep*mu/2.;
-    double chi2 = chi_mean + sep*mu/2.;
-    double costheta =
+    const double chi_mean = coffe_interp_spline(&bg->comoving_distance, z_mean);
+    const double chi1 = chi_mean - sep*mu/2.;
+    const double chi2 = chi_mean + sep*mu/2.;
+    const double costheta =
         (2*chi_mean*chi_mean - sep*sep + mu*mu*sep*sep/2.)
        /(2*chi_mean*chi_mean - mu*mu*sep*sep/2.);
-    double lambda1 = chi1*x1, lambda2 = chi2*x2;
+    const double lambda1 = chi1*x1, lambda2 = chi2*x2;
     double r2 = lambda1*lambda1 + lambda2*lambda2 - 2*lambda1*lambda2*costheta;
     if (r2 < 0) r2 = 0;
 
-    double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
-    double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
-    double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
-    double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
+    const double z1_const = coffe_interp_spline(&bg->z_as_chi, chi1);
+    const double z2_const = coffe_interp_spline(&bg->z_as_chi, chi2);
+    const double z1 = coffe_interp_spline(&bg->z_as_chi, lambda1);
+    const double z2 = coffe_interp_spline(&bg->z_as_chi, lambda2);
 
-    double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
-    double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
-    double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
-    double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
+    const double s1 = coffe_interp_spline(&par->magnification_bias1, z1_const);
+    const double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
+    const double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
+    const double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
 
     double ren = 0;
     if (par->divergent){

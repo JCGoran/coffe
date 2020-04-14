@@ -120,9 +120,8 @@ int main(int argc, char *argv[])
 
     coffe_parser_init(settings_file, &par);
 
-    if (par.verbose){
+    if (par.verbose)
         printf("Number of threads in use: %d\n", par.nthreads);
-    }
 
     coffe_background_init(&par, &bg);
 
