@@ -243,7 +243,7 @@ static void twofast_fft_input(
     for (size_t i = 0; i<N2; ++i){
         output_y[i] =
             twofast_window(
-                input_x_mod[N2 - 1 + i],
+                input_x_mod[N2 - 2 + i],
                 kmin,
                 k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
                 exp(0.46)*kmin,
