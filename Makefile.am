@@ -5,6 +5,8 @@ bin_PROGRAMS = coffe # make all
 coffe_SOURCES = \
     src/common.c \
     src/covariance.c \
+    src/utils.c \
+    src/twobessel.c \
     src/errors.c \
     src/parser.c \
     src/twofast.c \
