@@ -158,6 +158,135 @@ static double covariance_integral(
 
 
 /**
+    2d FFTlog integration
+**/
+static int covariance_integrate_fftlog(
+    const struct coffe_interpolation *spline,
+    const double power,
+    const int l1,
+    const int l2,
+    const size_t sampling_points,
+    const double *separations,
+    const size_t npixels_max,
+    const double k_min_norm,
+    const double k_max_norm,
+    double *result
+)
+{
+
+    /* setting the config */
+    config covariance_config;
+    covariance_config.nu1 = 1.01;
+    covariance_config.nu2 = 1.01;
+    covariance_config.c_window_width = 0.25;
+    covariance_config.l1 = l1;
+    covariance_config.l2 = l2;
+
+    /* step size */
+    const double step = log(
+        k_max_norm / k_min_norm
+    ) / sampling_points;
+
+    /* first point of order: logarithmically sample k and P(k) */
+    double *k_sampled, **pk_sampled;
+    /* memory alloc */
+    k_sampled = coffe_malloc(sizeof(double) * sampling_points);
+    pk_sampled = coffe_malloc(sizeof(double *) * sampling_points);
+
+    for (size_t i = 0; i < sampling_points; ++i){
+        /* k sampled in log space */
+        k_sampled[i] = k_min_norm * pow(k_max_norm / k_min_norm, (double)i / sampling_points);
+        pk_sampled[i] = coffe_malloc(sizeof(double) * sampling_points);
+        /* off-diagonal elements are 0 */
+        for (size_t j = 0; j < sampling_points; ++j)
+            pk_sampled[i][j] = 0;
+        /* diagonal elements equal to k^3 P(k) / dlnk */
+        pk_sampled[i][i] =
+            pow(k_sampled[i], 3)
+           *pow(coffe_interp_spline(spline, k_sampled[i]), power)
+           /step;
+    }
+
+    /* separations */
+    double *r1, *r2;
+    r1 = coffe_malloc(sampling_points * sizeof(double));
+    r2 = coffe_malloc(sampling_points * sizeof(double));
+
+    /* the result as a 2D array */
+    double **result_pk = coffe_malloc(sampling_points * sizeof(double *));
+    for(size_t i = 0; i < sampling_points; ++i)
+        result_pk[i] = coffe_malloc(sampling_points * sizeof(double));
+
+    /* integral of P(k) */
+    two_sph_bessel(
+        k_sampled, k_sampled, pk_sampled,
+        sampling_points, sampling_points, &covariance_config,
+        r1, r2, result_pk
+    );
+
+    /* we don't need x_sampled and y_sampled anymore */
+    free(k_sampled);
+    for (size_t i = 0; i < sampling_points; ++i)
+        free(pk_sampled[i]);
+    free(pk_sampled);
+
+    /* realigning 2D array into 1D for GSL interpolation */
+    double *result2d_pk = coffe_malloc(sizeof(double) * sampling_points * sampling_points);
+
+    for (size_t m = 0; m < sampling_points; ++m){
+        for (size_t n = 0; n < sampling_points; ++n){
+            result2d_pk[n * sampling_points + m] = result_pk[m][n];
+        }
+    }
+
+    /* we don't need result_pk anymore */
+    for (size_t i = 0; i < sampling_points; ++i)
+        free(result_pk[i]);
+    free(result_pk);
+
+    gsl_spline2d *spline_pk = gsl_spline2d_alloc(
+        /* TODO should we use something other than bicubic? */
+        gsl_interp2d_bicubic,
+        sampling_points, sampling_points
+    );
+    gsl_interp_accel *xaccel_pk = gsl_interp_accel_alloc();
+    gsl_interp_accel *yaccel_pk = gsl_interp_accel_alloc();
+
+    /* NOTE here result2d should be a 1D array!!! */
+    gsl_spline2d_init(
+        spline_pk,
+        r1, r2, result2d_pk,
+        sampling_points, sampling_points
+    );
+
+    /* we don't need r1, r2, result2d_pk anymore */
+    free(r1);
+    free(r2);
+    free(result2d_pk);
+
+    for (size_t m = 0; m < npixels_max; ++m){
+        for (size_t n = 0; n < npixels_max; ++n){
+            /* this one is dimensionless */
+            result[npixels_max * n + m] =
+                gsl_spline2d_eval(
+                    spline_pk,
+                    COFFE_H0 * separations[m],
+                    COFFE_H0 * separations[n],
+                    xaccel_pk, yaccel_pk
+                );
+        }
+    }
+
+    /* final memory cleanup */
+    gsl_spline2d_free(spline_pk);
+    gsl_interp_accel_free(xaccel_pk);
+    gsl_interp_accel_free(yaccel_pk);
+
+    return EXIT_SUCCESS;
+}
+
+
+/**
     computes the covariance of either multipoles or redshift averaged
     multipoles
 **/
@@ -332,206 +461,90 @@ int coffe_covariance_init(
                 (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
             }
         }
-#ifndef HAVE_FFTLOG2
-        /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
-            for (size_t j = i; j<par->multipole_values_len; ++j){
-                #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
-                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                           *covariance_integral(
-                                &integrand_pk,
-                                separations[m], separations[n],
-                                par->multipole_values[i], par->multipole_values[j],
-                                par->k_min, par->k_max, par->covariance_pixelsize
-                            )/M_PI;
+        if (par->covariance_integration_method == 1){
+            /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
+            for (size_t i = 0; i<par->multipole_values_len; ++i){
+                for (size_t j = i; j<par->multipole_values_len; ++j){
+                    #pragma omp parallel for num_threads(par->nthreads) collapse(2)
+                    for (size_t m = 0; m<npixels_max; ++m){
+                        for (size_t n = 0; n<npixels_max; ++n){
+                            integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
+                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                               *covariance_integral(
+                                    &integrand_pk,
+                                    separations[m], separations[n],
+                                    par->multipole_values[i], par->multipole_values[j],
+                                    par->k_min, par->k_max, par->covariance_pixelsize
+                                )/M_PI;
+                        }
                     }
-                }
-                #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
-                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                           *covariance_integral(
-                                &integrand_pk2,
-                                separations[m], separations[n],
-                                par->multipole_values[i], par->multipole_values[j],
-                                par->k_min, par->k_max, par->covariance_pixelsize
-                            )/2./M_PI;
+                    #pragma omp parallel for num_threads(par->nthreads) collapse(2)
+                    for (size_t m = 0; m<npixels_max; ++m){
+                        for (size_t n = 0; n<npixels_max; ++n){
+                            integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
+                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                               *covariance_integral(
+                                    &integrand_pk2,
+                                    separations[m], separations[n],
+                                    par->multipole_values[i], par->multipole_values[j],
+                                    par->k_min, par->k_max, par->covariance_pixelsize
+                                )/2./M_PI;
+                        }
                     }
                 }
             }
         }
-#else
-        fprintf(stderr, "Using 2D FFTlog\n");
-        /* here we do the 2DFFTlog */
-        config covariance_config;
-        covariance_config.nu1 = 1.01;
-        covariance_config.nu2 = 1.01;
-        covariance_config.c_window_width = 0.25;
+        else if (par->covariance_integration_method == 2){
+            fprintf(stderr, "Using 2D FFTlog\n");
+            /* here we do the 2DFFTlog */
 
-        /* first point of order: logarithmically sample k and P(k) */
-        const size_t sampling_points = 10000;
-        double *k_sampled, **pk_sampled, **pk2_sampled;
-        /* memory alloc */
-        k_sampled = coffe_malloc(sizeof(double) * sampling_points);
-        pk_sampled = coffe_malloc(sizeof(double *) * sampling_points);
-        pk2_sampled = coffe_malloc(sizeof(double *) * sampling_points);
-        /* step size */
-        const double dlnk = log(
-            par->k_max_norm / par->k_min_norm
-        ) / sampling_points;
-        for (size_t i = 0; i < sampling_points; ++i){
-            /* k sampled in log space */
-            k_sampled[i] =
-                par->k_min_norm * pow(
-                    par->k_max_norm / par->k_min_norm,
-                    (double)i / sampling_points
-                );
-            pk_sampled[i] = coffe_malloc(sizeof(double) * sampling_points);
-            pk2_sampled[i] = coffe_malloc(sizeof(double) * sampling_points);
-            /* off-diagonal elements are 0 */
-            for (size_t j = 0; j < sampling_points; ++j){
-                pk_sampled[i][j] = 0;
-                pk2_sampled[i][j] = 0;
-            }
-            /* diagonal elements equal to k^3 P(k) / dlnk */
-            pk_sampled[i][i] = pow(k_sampled[i], 3) * coffe_interp_spline(
-                &par->power_spectrum_norm,
-                k_sampled[i]
-            ) / dlnk;
-            pk2_sampled[i][i] = pow(k_sampled[i], 3) * pow(
-                coffe_interp_spline(
-                    &par->power_spectrum_norm,
-                    k_sampled[i]
-                ), 2) / dlnk;
+            /* first point of order: logarithmically sample k and P(k) */
+            const size_t sampling_points = par->covariance_integration_bins;
 
-        }
+            /* compute the whole thing (just the upper half to save time and space) */
+            for (size_t i = 0; i<par->multipole_values_len; ++i){
+                for (size_t j = i; j<par->multipole_values_len; ++j){
+                    covariance_integrate_fftlog(
+                        &par->power_spectrum_norm,
+                        1,
+                        par->multipole_values[i],
+                        par->multipole_values[j],
+                        sampling_points,
+                        separations,
+                        npixels_max,
+                        par->k_min_norm,
+                        par->k_max_norm,
+                        integral_pk[i * par->multipole_values_len + j]
+                    );
 
-        double *r1, *r2;
+                    covariance_integrate_fftlog(
+                        &par->power_spectrum_norm,
+                        2,
+                        par->multipole_values[i],
+                        par->multipole_values[j],
+                        sampling_points,
+                        separations,
+                        npixels_max,
+                        par->k_min_norm,
+                        par->k_max_norm,
+                        integral_pk2[i * par->multipole_values_len + j]
+                    );
 
-        r1 = coffe_malloc(sampling_points * sizeof(double));
-        r2 = coffe_malloc(sampling_points * sizeof(double));
-
-        double **result_pk, *result2d_pk;
-        double **result_pk2, *result2d_pk2;
-
-        result_pk = coffe_malloc(sampling_points * sizeof(double *));
-        result_pk2 = coffe_malloc(sampling_points * sizeof(double *));
-
-        for(size_t i = 0; i < sampling_points; ++i){
-            result_pk[i] = coffe_malloc(sampling_points * sizeof(double));
-            result_pk2[i] = coffe_malloc(sampling_points * sizeof(double));
-        }
-
-        result2d_pk = coffe_malloc(sizeof(double) * sampling_points * sampling_points);
-        result2d_pk2 = coffe_malloc(sizeof(double) * sampling_points * sampling_points);
-
-        /* compute the whole thing (just the upper half to save time and space) */
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
-            for (size_t j = i; j<par->multipole_values_len; ++j){
-                covariance_config.l1 = par->multipole_values[i];
-                covariance_config.l2 = par->multipole_values[j];
-
-                /* integral of P(k) */
-                two_sph_bessel(
-                    k_sampled, k_sampled, pk_sampled,
-                    sampling_points, sampling_points, &covariance_config,
-                    r1, r2, result_pk
-                );
-                /* integral of P(k)^2 */
-                two_sph_bessel(
-                    k_sampled, k_sampled, pk2_sampled,
-                    sampling_points, sampling_points, &covariance_config,
-                    r1, r2, result_pk2
-                );
-
-                /* TODO figure out how to 2D interpolate the actual value at the limits */
-                gsl_spline2d *spline_pk, *spline_pk2;
-                gsl_interp_accel *xaccel_pk, *yaccel_pk;
-                gsl_interp_accel *xaccel_pk2, *yaccel_pk2;
-
-                spline_pk = gsl_spline2d_alloc(
-                    gsl_interp2d_bicubic,
-                    sampling_points, sampling_points
-                );
-                xaccel_pk = gsl_interp_accel_alloc();
-                yaccel_pk = gsl_interp_accel_alloc();
-
-                spline_pk2 = gsl_spline2d_alloc(
-                    gsl_interp2d_bicubic,
-                    sampling_points, sampling_points
-                );
-                xaccel_pk2 = gsl_interp_accel_alloc();
-                yaccel_pk2 = gsl_interp_accel_alloc();
-
-                for (size_t m = 0; m < sampling_points; ++m){
-                    for (size_t n = 0; n < sampling_points; ++n){
-                        result2d_pk[n * sampling_points + m] = result_pk[m][n];
-                        result2d_pk2[n * sampling_points + m] = result_pk2[m][n];
+                    for (size_t m = 0; m < npixels_max; ++m){
+                        for (size_t n = 0; n < npixels_max; ++n){
+                            /* this one is dimensionless */
+                            integral_pk[i * par->multipole_values_len + j][npixels_max * n + m] *=
+                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                               * 2. / M_PI / M_PI;
+                            /* this one is not so we need to put a conversion factor */
+                            integral_pk2[i * par->multipole_values_len + j][npixels_max * n + m] *=
+                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                               / M_PI / M_PI / pow(COFFE_H0, 3);
+                        }
                     }
                 }
-
-                /* NOTE here result2d should be a 1D array!!! */
-                gsl_spline2d_init(
-                    spline_pk,
-                    r1, r2, result2d_pk,
-                    sampling_points, sampling_points
-                );
-                gsl_spline2d_init(
-                    spline_pk2,
-                    r1, r2, result2d_pk2,
-                    sampling_points, sampling_points
-                );
-
-                /* TODO figure out how to match the alignment for my own array */
-                for (size_t m = 0; m < npixels_max; ++m){
-                    for (size_t n = 0; n < npixels_max; ++n){
-                        /* this one is dimensionless */
-                        integral_pk[i * par->multipole_values_len + j][npixels_max * n + m] =
-                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                           *gsl_spline2d_eval(
-                                spline_pk,
-                                COFFE_H0 * separations[m], COFFE_H0 * separations[n],
-                                xaccel_pk, yaccel_pk
-                            ) * 2. / M_PI / M_PI;
-                        /* this one is not so we need to put a conversion factor */
-                        integral_pk2[i * par->multipole_values_len + j][npixels_max * n + m] =
-                            (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                           *gsl_spline2d_eval(
-                                spline_pk2,
-                                COFFE_H0 * separations[m], COFFE_H0 * separations[n],
-                                xaccel_pk2, yaccel_pk2
-                            ) / M_PI / M_PI / pow(COFFE_H0, 3);
-                    }
-                }
-
-                gsl_spline2d_free(spline_pk);
-                gsl_interp_accel_free(xaccel_pk);
-                gsl_interp_accel_free(yaccel_pk);
-                gsl_spline2d_free(spline_pk2);
-                gsl_interp_accel_free(xaccel_pk2);
-                gsl_interp_accel_free(yaccel_pk2);
             }
         }
-
-        /* memory cleanup */
-        free(r1);
-        free(r2);
-        for (size_t i = 0; i < sampling_points; ++i){
-            free(result_pk[i]);
-            free(result_pk2[i]);
-            free(pk_sampled[i]);
-            free(pk2_sampled[i]);
-        }
-        free(k_sampled);
-        free(result_pk);
-        free(result_pk2);
-        free(result2d_pk);
-        free(result2d_pk2);
-#endif
 
         /* allocating memory for the final result */
         if (par->output_type == 4){

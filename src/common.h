@@ -248,6 +248,10 @@ struct coffe_parameters_t
 
     double covariance_minimum_separation;
 
+    int covariance_integration_method;
+
+    int covariance_integration_bins;
+
     /* for redshift averaged multipoles */
     double z_min, z_max;
 

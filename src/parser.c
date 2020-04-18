@@ -462,6 +462,8 @@ int coffe_parse_default_parameters(
         par->sep[i] = separations[i];
     par->sep_len = sizeof(separations) / sizeof(*separations);
     par->interp_method = 5;
+    par->covariance_integration_method = 1;
+    par->covariance_integration_bins = 2000;
     par->file_power_spectrum[0] = 0;
     /*
         turns out you can do this
@@ -748,6 +750,25 @@ int coffe_parser_init(
 
     /* number of points for the 2-3-4D integration */
     parse_int(conf, "integration_sampling", &par->integration_bins, COFFE_TRUE);
+
+    /* integration method for covariance */
+    parse_int(conf, "covariance_integration_method", &par->covariance_integration_method, COFFE_TRUE);
+    if (
+        par->covariance_integration_method != 1 &&
+        par->covariance_integration_method != 2
+    ){
+        print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_method");
+        exit(EXIT_FAILURE);
+    }
+
+    if (par->covariance_integration_method == 2){
+        /* integration method for covariance (only for FFT log) */
+        parse_int(conf, "covariance_integration_bins", &par->covariance_integration_bins, COFFE_TRUE);
+        if (par->covariance_integration_bins <= 0){
+            print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_bins");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     /* parsing the w parameter */
     parse_double(conf, "w0", &par->w0, COFFE_TRUE);
