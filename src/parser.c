@@ -557,12 +557,16 @@ int coffe_parse_default_parameters(
 
     snprintf(par->output_path, COFFE_MAX_STRLEN, "./");
     snprintf(par->output_prefix, COFFE_MAX_STRLEN, "$TIME");
-    snprintf(
-        par->timestamp,
-        COFFE_MAX_STRLEN,
-        "%s",
-        coffe_get_time()
-    );
+    {
+        char *temp_time = coffe_get_time();
+        snprintf(
+            par->timestamp,
+            COFFE_MAX_STRLEN,
+            "%s",
+            temp_time
+        );
+        free(temp_time);
+    }
 
     par->correlation_contrib.den = 1;
     par->correlation_contrib.rsd = 0;
@@ -1111,12 +1115,16 @@ int coffe_parser_init(
 
 
     /* saving the timestamp */
-    snprintf(
-        par->timestamp,
-        COFFE_MAX_STRLEN,
-        "%s",
-        coffe_get_time()
-    );
+    {
+        char *temp_time = coffe_get_time();
+        snprintf(
+            par->timestamp,
+            COFFE_MAX_STRLEN,
+            "%s",
+            temp_time
+        );
+        free(temp_time);
+    }
 
     par->conf = conf;
 
