@@ -77,7 +77,7 @@ char *coffe_get_time(void)
 **/
 
 int read_1col(
-    char *filename,
+    const char *filename,
     double **values,
     size_t *len
 )
@@ -140,7 +140,7 @@ int read_1col(
 **/
 
 int read_2col(
-    char *filename,
+    const char *filename,
     double **values1,
     double **values2,
     size_t *len
@@ -209,7 +209,7 @@ int read_2col(
 **/
 
 int write_1col(
-    char *filename,
+    const char *filename,
     double *values,
     size_t len,
     const char *header
@@ -244,9 +244,9 @@ int write_1col(
 **/
 
 int write_2col(
-    char *filename,
-    double *values1,
-    double *values2,
+    const char *filename,
+    const double *values1,
+    const double *values2,
     size_t len,
     const char *header,
     const char *sep
@@ -284,11 +284,11 @@ int write_2col(
 
 int write_ncol(
     size_t ncolumns,
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 )
 {
@@ -302,11 +302,11 @@ int write_ncol(
 
     va_start(args, values);
     double **all_values = (double **)coffe_malloc(sizeof(double *)*ncolumns);
-    all_values[0] = values;
+    all_values[0] = (double *)values;
 
     for (size_t i = 1; i<ncolumns; ++i){
         values = va_arg(args, double *);
-        all_values[i] = values;
+        all_values[i] = (double *)values;
     }
     va_end(args);
 
@@ -335,11 +335,11 @@ int write_ncol(
 **/
 
 int write_ncol_null(
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 )
 {
@@ -347,12 +347,12 @@ int write_ncol_null(
     va_start(args, values);
     size_t counter = 0;
     double **all_values = (double **)coffe_malloc(sizeof(double *)*COFFE_MAX_ALLOCABLE);
-    all_values[0] = values;
+    all_values[0] = (double *)values;
 
     while (values != NULL){
         values = va_arg(args, double *);
         ++counter;
-        all_values[counter] = values;
+        all_values[counter] = (double *)values;
     }
     va_end(args);
 
@@ -388,7 +388,7 @@ int write_ncol_null(
 **/
 
 int write_matrix(
-    char *filename,
+    const char *filename,
     const double **values,
     size_t len1,
     size_t len2,
@@ -460,11 +460,11 @@ int free_double_matrix(
 
 int copy_matrix_array(
     double **destination,
-    double **source,
+    const double **source,
     size_t rows,
     size_t columns,
     size_t index,
-    char *type
+    const char *type
 )
 {
     if (strcmp(type, "row") == 0){
@@ -655,7 +655,7 @@ int coffe_parameters_free(
 }
 
 double coffe_resolution_window(
-    const double x
+    double x
 )
 {
     return 3.0 * gsl_sf_bessel_j1(x) / x;

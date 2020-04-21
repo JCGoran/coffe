@@ -68,7 +68,7 @@ static double covariance_volume_integrand(
 /**
     finds the maximum of a double array
 **/
-static size_t covariance_find_maximum(size_t array[], size_t len)
+static size_t covariance_find_maximum(const size_t array[], size_t len)
 {
     size_t max = array[0];
 
@@ -441,7 +441,7 @@ int coffe_covariance_init(
                 cov_ramp->sep_len[i] = npixels[i];
             }
         }
-        size_t npixels_max = covariance_find_maximum(npixels, par->covariance_density_len);
+        const size_t npixels_max = covariance_find_maximum(npixels, par->covariance_density_len);
 
         /* all of the separations */
         double *separations = (double *)coffe_malloc(sizeof(double) * npixels_max);
@@ -640,28 +640,28 @@ int coffe_covariance_init(
                 f = coffe_interp_spline(&bg->f, z_mean);
 
             /* b^2 + 2/3 b f + f^2/5 */
-            double c0 = pow(matter_bias1, 2) + 2 * matter_bias1 * f / 3. + pow(f, 2) / 5.;
+            const double c0 = pow(matter_bias1, 2) + 2 * matter_bias1 * f / 3. + pow(f, 2) / 5.;
             /* 4/3 b f + 4/7 f^2 */
-            double c2 = 4 * matter_bias1 * f / 3. + 4 * pow(f, 2) / 7.;
+            const double c2 = 4 * matter_bias1 * f / 3. + 4 * pow(f, 2) / 7.;
             /* 8/35 f^2 */
-            double c4 = 8 * pow(f, 2) / 35.;
+            const double c4 = 8 * pow(f, 2) / 35.;
 
-            double c0bar =
+            const double c0bar =
                 c0*c0 + c2*c2/5. + c4*c4/9.;
-            double c2bar =
+            const double c2bar =
                 2*c2*(7*c0 + c2)/7. + 4*c2*c4/7. + 100*c4*c4/693.;
-            double c4bar =
+            const double c4bar =
                 18*c2*c2/35. + 2*c0*c4 + 40*c2*c4/77. + 162*c4*c4/1001.;
-            double c6bar =
+            const double c6bar =
                 10*c4*(9*c2 + 2*c4)/99.;
-            double c8bar =
+            const double c8bar =
                 490*c4*c4/1287.;
 
-            double D10 = coffe_interp_spline(&bg->D1, 0);
-            double D1z = coffe_interp_spline(&bg->D1, z_mean);
+            const double D10 = coffe_interp_spline(&bg->D1, 0);
+            const double D1z = coffe_interp_spline(&bg->D1, z_mean);
 
-            double coeff_array[] = {c0, c2, c4};
-            double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
+            const double coeff_array[] = {c0, c2, c4};
+            const double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
             double coeff_sum = 0;
             double coeffbar_sum = 0;
 
