@@ -413,6 +413,14 @@ static int parse_external_power_spectrum(
         k[i] = exp(psp.ln_k[i]) / par->h;
         pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
     }
+    if (par->have_window){
+        for (size_t i = 0; i < pk_len; ++i)
+            pk[i] *= pow(
+                coffe_resolution_window(par->window_size * k[i]),
+                2
+            );
+    }
+
     coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
     free(k);
@@ -555,6 +563,9 @@ int coffe_parse_default_parameters(
     par->covariance_zmax = NULL;
     par->covariance_zmax_len = 0;
     par->covariance_minimum_separation = 0.0;
+
+    par->have_window = 0;
+    par->window_size = 0;
 
     snprintf(par->output_path, COFFE_MAX_STRLEN, "./");
     snprintf(par->output_prefix, COFFE_MAX_STRLEN, "$TIME");
@@ -1038,6 +1049,19 @@ int coffe_parser_init(
     parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
     parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
 
+    /* parsing the window */
+    parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
+
+    /* parsing the size of the window (in Mpc/h) */
+    if (par->have_window){
+        parse_double(conf, "window_size", &par->window_size, COFFE_TRUE);
+        /* boundary checking */
+        if (par->window_size <= 0.0 || par->window_size >= 1000.){
+            print_error_verbose(PROG_VALUE_ERROR, "window_size");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS
 
@@ -1067,6 +1091,14 @@ int coffe_parser_init(
             &pk,
             &pk_len
         );
+
+        if (par->have_window){
+            for (size_t i = 0; i < pk_len; ++i)
+                pk[i] *= pow(
+                    coffe_resolution_window(par->window_size * k[i]),
+                    2
+                );
+        }
 
         coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 

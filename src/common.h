@@ -254,6 +254,10 @@ struct coffe_parameters_t
 
     int covariance_interpolation_method;
 
+    int have_window;
+
+    double window_size;
+
     /* for redshift averaged multipoles */
     double z_min, z_max;
 
@@ -398,6 +402,10 @@ double coffe_dark_energy_eos(
 
 int coffe_parameters_free(
     struct coffe_parameters_t *par
+);
+
+double coffe_resolution_window(
+    const double x
 );
 
 #endif

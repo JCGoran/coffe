@@ -32,7 +32,7 @@
 struct covariance_params
 {
     struct coffe_interpolation *power_spectrum;
-    double chi1, chi2, resolution;
+    double chi1, chi2;
     int l1, l2;
 };
 
@@ -91,16 +91,6 @@ static int covariance_complex(int l1, int l2)
     else return 0;
 }
 
-/**
-    the window function for the resolution cutoff
-**/
-static double covariance_window(
-    double x
-)
-{
-    return 1.0;//3.0 * gsl_sf_bessel_j1(x) / x;
-}
-
 
 /**
     integrand P(k) (or P(k)^2) * k^2 * j_l1(k\chi_1) * j_l2(k\chi_2)
@@ -114,8 +104,7 @@ static double covariance_integrand(
     return
         coffe_interp_spline(test->power_spectrum, k)*k*k
        *gsl_sf_bessel_jl(test->l1, k*test->chi1)
-       *gsl_sf_bessel_jl(test->l2, k*test->chi2)
-       *pow(covariance_window(k * test->resolution), 4);
+       *gsl_sf_bessel_jl(test->l2, k*test->chi2);
 }
 
 
@@ -126,8 +115,7 @@ static double covariance_integral(
     struct coffe_interpolation *power_spectrum,
     double chi1, double chi2,
     int l1, int l2,
-    double kmin, double kmax,
-    double resolution
+    double kmin, double kmax
 )
 {
     struct covariance_params test;
@@ -136,7 +124,6 @@ static double covariance_integral(
     test.chi2 = chi2;
     test.l1 = l1;
     test.l2 = l2;
-    test.resolution = resolution;
 
     double result, error, prec = 1E-9;
     gsl_function integrand;
@@ -487,7 +474,7 @@ int coffe_covariance_init(
                                     &integrand_pk,
                                     separations[m], separations[n],
                                     par->multipole_values[i], par->multipole_values[j],
-                                    par->k_min, par->k_max, par->covariance_pixelsize
+                                    par->k_min, par->k_max
                                 )/M_PI;
                         }
                     }
@@ -500,7 +487,7 @@ int coffe_covariance_init(
                                     &integrand_pk2,
                                     separations[m], separations[n],
                                     par->multipole_values[i], par->multipole_values[j],
-                                    par->k_min, par->k_max, par->covariance_pixelsize
+                                    par->k_min, par->k_max
                                 )/2./M_PI;
                         }
                     }

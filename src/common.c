@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_sf_bessel.h>
 
 #include "common.h"
 #include "errors.h"
@@ -651,4 +652,11 @@ int coffe_parameters_free(
         free(par->covariance_density);
     }
     return EXIT_SUCCESS;
+}
+
+double coffe_resolution_window(
+    const double x
+)
+{
+    return 3.0 * gsl_sf_bessel_j1(x) / x;
 }
