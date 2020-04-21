@@ -660,3 +660,104 @@ double coffe_resolution_window(
 {
     return 3.0 * gsl_sf_bessel_j1(x) / x;
 }
+
+
+/**
+    reads file <filename> into arrays <values1>..<valuesN>
+    of length <len>
+**/
+
+int read_ncol(
+    const char *filename,
+    const size_t N,
+    size_t *len,
+    double **values,
+    ...
+)
+{
+    int error = 0;
+    FILE *data = fopen(filename, "r");
+    if (data == NULL){
+        print_error_verbose(PROG_OPEN_ERROR, filename);
+        return EXIT_FAILURE;
+    }
+
+    /* number of lines in the file */
+    size_t n = 0;
+    char c, temp_string[COFFE_MAX_STRLEN];
+    char *temp_token;
+
+    /* first we get how many lines are in the file, also including comments */
+    while ((c=fgetc(data)) != EOF){
+        if (c == '\n') ++n;
+    }
+
+    error = fseek(data, 0, SEEK_SET);
+    if (error){
+        print_error_verbose(PROG_POS_ERROR, filename);
+        return EXIT_FAILURE;
+    }
+
+    /* get a line into temp_string */
+    size_t counter = 0;
+    for (size_t i = 0; i<n; ++i){
+        fgets(temp_string, COFFE_MAX_STRLEN, data);
+        if (temp_string[0] != '#') ++counter;
+    }
+
+    /* number of lines in the file */
+    *len = counter;
+
+    error = fseek(data, 0, SEEK_SET);
+    if (error){
+        print_error_verbose(PROG_POS_ERROR, filename);
+        return EXIT_FAILURE;
+    }
+
+    /* we need to store <N> pointers to <values> */
+    double **pointers = (double **)coffe_malloc(sizeof(double *) * N);
+
+    for (size_t i = 0; i < N; ++i)
+        /* allocating memory for <values> */
+        pointers[i] = (double *)coffe_malloc(sizeof(double) * counter);
+
+    /* kind of recycling <counter> here */
+    counter = 0;
+
+    for (size_t i = 0; i < n; ++i){
+        fgets(temp_string, COFFE_MAX_STRLEN, data);
+        if (temp_string[0] != '#'){
+            temp_token = strtok(temp_string, ",\t: ");
+            for (size_t j = 0; j < N; ++j){
+                /* <pointers[j]> should hopefully be the address of <values> */
+                if (temp_token != NULL)
+                    *(pointers[j] + counter) = atof(temp_token);
+                temp_token = strtok(NULL, ",\t: ");
+            }
+            ++counter;
+        }
+    }
+
+    /* here we need to do the varg trick */
+    va_list args;
+
+    /* now we re-assign the pointers */
+    va_start(args, values);
+    for (size_t i = 0; i < N; ++i){
+        *values = pointers[i];
+        values = va_arg(args, double **);
+    }
+    va_end(args);
+
+    /* memory cleanup of <pointers> */
+    for (size_t i = 0; i < N; ++i)
+        pointers[i] = NULL;
+    free(pointers);
+
+    error = fclose(data);
+    if (error){
+        print_error_verbose(PROG_CLOSE_ERROR, filename);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}

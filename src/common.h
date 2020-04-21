@@ -408,4 +408,12 @@ double coffe_resolution_window(
     double x
 );
 
+int read_ncol(
+    const char *filename,
+    const size_t N,
+    size_t *len,
+    double **values,
+    ...
+);
+
 #endif
