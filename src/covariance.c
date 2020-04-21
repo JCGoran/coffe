@@ -170,6 +170,7 @@ static int covariance_integrate_fftlog(
     const size_t npixels_max,
     const double k_min_norm,
     const double k_max_norm,
+    const int interpolation_method,
     double *result
 )
 {
@@ -244,10 +245,22 @@ static int covariance_integrate_fftlog(
         free(result_pk[i]);
     free(result_pk);
 
+    gsl_interp2d_type *T;
+    switch (interpolation_method){
+        case 1:
+            T = (gsl_interp2d_type *)gsl_interp2d_bilinear;
+            break;
+        case 2:
+            T = (gsl_interp2d_type *)gsl_interp2d_bicubic;
+            break;
+        default:
+            T = (gsl_interp2d_type *)gsl_interp2d_bicubic;
+            break;
+    }
+
     gsl_spline2d *spline_pk = gsl_spline2d_alloc(
         /* TODO should we use something other than bicubic? */
-        gsl_interp2d_bicubic,
-        sampling_points, sampling_points
+        T, sampling_points, sampling_points
     );
     gsl_interp_accel *xaccel_pk = gsl_interp_accel_alloc();
     gsl_interp_accel *yaccel_pk = gsl_interp_accel_alloc();
@@ -514,6 +527,7 @@ int coffe_covariance_init(
                         npixels_max,
                         par->k_min_norm,
                         par->k_max_norm,
+                        par->covariance_interpolation_method,
                         integral_pk[i * par->multipole_values_len + j]
                     );
 
@@ -527,6 +541,7 @@ int coffe_covariance_init(
                         npixels_max,
                         par->k_min_norm,
                         par->k_max_norm,
+                        par->covariance_interpolation_method,
                         integral_pk2[i * par->multipole_values_len + j]
                     );
 

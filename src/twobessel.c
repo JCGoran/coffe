@@ -57,6 +57,7 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N1*(halfN2+1) );
 	plan_forward = fftw_plan_dft_r2c_2d(N1, N2, Pb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
+	fftw_destroy_plan(plan_forward);
 	free(Pb);
 
 	c_window_2d(out, config->c_window_width, halfN1, halfN2);
@@ -83,6 +84,8 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);
+	fftw_destroy_plan(plan_backward);
+	fftw_free(out);
 
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
@@ -90,9 +93,6 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 		}
 	}
 
-	fftw_destroy_plan(plan_forward);
-	fftw_destroy_plan(plan_backward);
-	fftw_free(out);
 	free(out_ifft);
 }
 
@@ -143,6 +143,7 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N1*(halfN2+1) );
 	plan_forward = fftw_plan_dft_r2c_2d(N1, N2, Pb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
+	fftw_destroy_plan(plan_forward);
 	free(Pb);
 
 	c_window_2d(out, config->c_window_width, halfN1, halfN2);
@@ -169,6 +170,8 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);
+	fftw_destroy_plan(plan_backward);
+	fftw_free(out);
 
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
@@ -176,9 +179,6 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 		}
 	}
 
-	fftw_destroy_plan(plan_forward);
-	fftw_destroy_plan(plan_backward);
-	fftw_free(out);
 	free(out_ifft);
 }
 
@@ -229,6 +229,7 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N1*(halfN2+1) );
 	plan_forward = fftw_plan_dft_r2c_2d(N1, N2, Pb, out, FFTW_ESTIMATE);
 	fftw_execute(plan_forward);
+	fftw_destroy_plan(plan_forward);
 	free(Pb);
 
 	c_window_2d(out, config->c_window_width, halfN1, halfN2);
@@ -255,6 +256,8 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);
+	fftw_destroy_plan(plan_backward);
+	fftw_free(out);
 
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
@@ -262,8 +265,5 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 		}
 	}
 
-	fftw_destroy_plan(plan_forward);
-	fftw_destroy_plan(plan_backward);
-	fftw_free(out);
 	free(out_ifft);
 }

@@ -464,6 +464,7 @@ int coffe_parse_default_parameters(
     par->interp_method = 5;
     par->covariance_integration_method = 1;
     par->covariance_integration_bins = 2000;
+    par->covariance_interpolation_method = 2;
     par->file_power_spectrum[0] = 0;
     /*
         turns out you can do this
@@ -770,6 +771,14 @@ int coffe_parser_init(
         parse_int(conf, "covariance_integration_bins", &par->covariance_integration_bins, COFFE_TRUE);
         if (par->covariance_integration_bins <= 0){
             print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_bins");
+            exit(EXIT_FAILURE);
+        }
+        parse_int(conf, "covariance_interpolation_method", &par->covariance_interpolation_method, COFFE_TRUE);
+        if (
+            par->covariance_interpolation_method != 1 &&
+            par->covariance_interpolation_method != 2
+        ){
+            print_error_verbose(PROG_VALUE_ERROR, "covariance_interpolation_method");
             exit(EXIT_FAILURE);
         }
     }
