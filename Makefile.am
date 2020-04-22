@@ -21,9 +21,9 @@ coffe_SOURCES = \
     src/output.c \
     src/main.c
 
-TESTS = background_test integrals_test multipoles_test
+TESTS = background_test integrals_test multipoles_test covariance_test
 
-check_PROGRAMS = background_test integrals_test multipoles_test
+check_PROGRAMS = background_test integrals_test multipoles_test covariance_test
 
 background_test_SOURCES = \
     tests/test_background.c \
@@ -32,8 +32,9 @@ background_test_SOURCES = \
     src/parser.c \
     src/tanhsinh.c \
     src/background.c
-background_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic -std=c99
+background_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
 background_test_LDFLAGS = $(LDFLAGS)
+background_test_AM_CFLAGS = $(AM_CFLAGS)
 
 integrals_test_SOURCES = \
     tests/test_integrals.c \
@@ -44,8 +45,9 @@ integrals_test_SOURCES = \
     src/background.c \
     src/twofast.c \
     src/integrals.c
-integrals_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic -std=c99
+integrals_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
 integrals_test_LDFLAGS = $(LDFLAGS)
+integrals_test_AM_CFLAGS = $(AM_CFLAGS)
 
 multipoles_test_SOURCES = \
     tests/test_multipoles.c \
@@ -58,7 +60,23 @@ multipoles_test_SOURCES = \
     src/integrals.c \
     src/functions.c \
     src/signal.c
-multipoles_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic -std=c99
+multipoles_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
 multipoles_test_LDFLAGS = $(LDFLAGS)
+multipoles_test_AM_CFLAGS = $(AM_CFLAGS)
 
-
+covariance_test_SOURCES = \
+    tests/test_covariance.c \
+    src/common.c \
+    src/errors.c \
+    src/parser.c \
+    src/tanhsinh.c \
+    src/background.c \
+    src/twofast.c \
+    src/integrals.c \
+    src/functions.c \
+    src/twobessel.c \
+    src/utils.c \
+    src/covariance.c
+covariance_test_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
+covariance_test_LDFLAGS = $(LDFLAGS)
+covariance_test_AM_CFLAGS = $(AM_CFLAGS)

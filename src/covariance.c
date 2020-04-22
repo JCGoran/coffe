@@ -427,7 +427,7 @@ int coffe_covariance_init(
 
         for (size_t i = 0; i<par->covariance_density_len; ++i){
             npixels[i] = (size_t)(
-                (upper_limit[i] - par->covariance_minimum_separation) / par->covariance_pixelsize
+                upper_limit[i] / par->covariance_pixelsize
             );
 
             if (par->output_type == 4){
