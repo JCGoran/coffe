@@ -13,6 +13,7 @@ static int coffe_test_background(
     const struct coffe_background_t *bg
 )
 {
+    int error_flag = 0;
     const double z[] = {
         #include "BENCHMARK_Z.dat"
     };
@@ -22,11 +23,12 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(Hz));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 Hz[i] / COFFE_H0,
                 coffe_interp_spline(&bg->Hz, z[i])
-            )
+            ),
+            &error_flag
         );
 
     /* test conformal H(z) */
@@ -35,11 +37,12 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(conformal_Hz));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 conformal_Hz[i] / COFFE_H0,
                 coffe_interp_spline(&bg->conformal_Hz, z[i])
-            )
+            ),
+            &error_flag
         );
 
     /* test conformal_Hz_prime */
@@ -48,11 +51,12 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(conformal_Hz_prime));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 conformal_Hz_prime[i] / COFFE_H0 / COFFE_H0,
                 coffe_interp_spline(&bg->conformal_Hz_prime, z[i])
-            )
+            ),
+            &error_flag
         );
 
     /* test D1 */
@@ -61,11 +65,12 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(D1));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 D1[i],
                 coffe_interp_spline(&bg->D1, z[i])
-            )
+            ),
+            &error_flag
         );
 
     /* test f */
@@ -74,11 +79,12 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(f));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 f[i],
                 coffe_interp_spline(&bg->f, z[i])
-            )
+            ),
+            &error_flag
         );
 
     /* test comoving_distance */
@@ -87,16 +93,18 @@ static int coffe_test_background(
     };
     assert(sizeof(z) == sizeof(comoving_distance));
     for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 comoving_distance[i] * COFFE_H0,
                 coffe_interp_spline(&bg->comoving_distance, z[i])
-            )
+            ),
+            &error_flag
         );
 
-    COFFE_TESTS_PRINT_SUCCESS;
+    if (!error_flag)
+        COFFE_TESTS_PRINT_SUCCESS;
 
-    return EXIT_SUCCESS;
+    return error_flag;
 }
 
 int main(void)
@@ -113,7 +121,11 @@ int main(void)
 
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
-    coffe_test_background(&bg);
 
-    return 0;
+    const int error_flag = coffe_test_background(&bg);
+
+    coffe_parameters_free(&par);
+    coffe_background_free(&bg);
+
+    return error_flag;
 }

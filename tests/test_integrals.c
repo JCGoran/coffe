@@ -14,7 +14,7 @@ static int coffe_test_integrals(
     const struct coffe_integrals_t *integrals
 )
 {
-
+    int error_flag = 0;
     /* compiling with benchmarked values */
     const double xvalue[] = {
         #include "BENCHMARK_INTEGRALS_X.dat"
@@ -48,11 +48,17 @@ static int coffe_test_integrals(
 
     for (int integral = 0; integral <= 7; ++integral){
         for (int i = 0; i < sizeof(xvalue) / sizeof(*xvalue) - 1; ++i){
-            assert(
-                approx_equal(
-                    yvalue[integral][i],
-                    coffe_interp_spline(&integrals[integral].result, xvalue[i])
-                )
+            const double x = xvalue[i];
+            const double y_expected = yvalue[integral][i];
+            const double y_obtained = coffe_interp_spline(&integrals[integral].result, xvalue[i]);
+            fprintf(
+                stderr,
+                "Integral %d, separation %e, value %e\n",
+                integral, x, y_obtained
+            );
+            weak_assert(
+                approx_equal(y_expected, y_obtained),
+                &error_flag
             );
         }
     }
@@ -67,13 +73,14 @@ static int coffe_test_integrals(
     assert(sizeof(divergent_x) == sizeof(divergent_y));
 
     for (int i = 0; i < sizeof(divergent_x) / sizeof(*divergent_x) - 1; ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 divergent_y[i],
                 coffe_interp_spline(
                     &integrals[8].result, divergent_x[i]
                 )
-            )
+            ),
+            &error_flag
         );
 
     /* test renormalization */
@@ -91,7 +98,7 @@ static int coffe_test_integrals(
     assert(sizeof(ren_x) == sizeof(ren_z));
 
     for (int i = 0; i < sizeof(ren_x) / sizeof(*ren_x); ++i)
-        assert(
+        weak_assert(
             approx_equal(
                 ren_z[i] * pow(COFFE_H0, 4),
                 gsl_spline2d_eval(
@@ -100,12 +107,14 @@ static int coffe_test_integrals(
                     integrals[8].renormalization.xaccel,
                     integrals[8].renormalization.yaccel
                 )
-            )
+            ),
+            &error_flag
         );
 
-    COFFE_TESTS_PRINT_SUCCESS;
+    if (!error_flag)
+        COFFE_TESTS_PRINT_SUCCESS;
 
-    return EXIT_SUCCESS;
+    return error_flag;
 }
 
 int main(void)
@@ -125,7 +134,12 @@ int main(void)
 
     struct coffe_integrals_t integrals[10];
     coffe_integrals_init(&par, &bg, integrals);
-    coffe_test_integrals(integrals);
 
-    return 0;
+    const int error_flag = coffe_test_integrals(integrals);
+
+    coffe_parameters_free(&par);
+    coffe_background_free(&bg);
+    coffe_integrals_free(integrals);
+
+    return error_flag;
 }

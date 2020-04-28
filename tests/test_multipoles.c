@@ -88,8 +88,10 @@ static int coffe_test_multipoles(
     const struct coffe_integrals_t *integral
 )
 {
+    /* no errors initially */
+    int error_flag = 0;
     /* disabling GSL's stupid error handler */
-     gsl_error_handler_t *default_handler =
+    gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
 
     /* compiling with benchmarked values */
@@ -229,32 +231,34 @@ static int coffe_test_multipoles(
         change_signal(&par->correlation_contrib, names[j], NULL);
         for (int i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i){
             for (int k = 0; k < sizeof(xvalue) / sizeof(*xvalue); ++k){
-                fprintf(
-                    stderr,
-                    "Status: multipole %d, separation %.3f, type %s\n",
-                    multipoles[i], xvalue[k], names[j]
-                );
-                assert(
-                    approx_equal(
-                        yvalue[counter][k],
-                        coffe_integrate(
+                const double x = xvalue[k] * COFFE_H0;
+                const double y_expected = yvalue[counter][k];
+                const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            xvalue[k] * COFFE_H0, 0, multipoles[i],
+                            x, 0, multipoles[i],
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            xvalue[k] * COFFE_H0, 0, multipoles[i],
+                            x, 0, multipoles[i],
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            xvalue[k] * COFFE_H0, 0, multipoles[i],
+                            x, 0, multipoles[i],
                             DOUBLE_INTEGRATED, MULTIPOLES
-                        )
-                    )
+                        );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type %s\n",
+                    multipoles[i], x, names[j]
+                );
+                weak_assert(
+                    approx_equal(y_expected, y_obtained),
+                    &error_flag
                 );
             }
             ++counter;
@@ -262,9 +266,10 @@ static int coffe_test_multipoles(
         reset_signal(&par->correlation_contrib);
     }
 
-    COFFE_TESTS_PRINT_SUCCESS;
+    if (!error_flag)
+        COFFE_TESTS_PRINT_SUCCESS;
 
-    return EXIT_SUCCESS;
+    return error_flag;
 }
 
 int main(void)
@@ -285,7 +290,11 @@ int main(void)
     struct coffe_integrals_t integrals[10];
     coffe_integrals_init(&par, &bg, integrals);
 
-    coffe_test_multipoles(&par, &bg, integrals);
+    const int error_flag = coffe_test_multipoles(&par, &bg, integrals);
 
-    return 0;
+    coffe_parameters_free(&par);
+    coffe_background_free(&bg);
+    coffe_integrals_free(integrals);
+
+    return error_flag;
 }

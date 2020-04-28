@@ -24,6 +24,8 @@ static int coffe_test_covariance(
     const struct coffe_covariance_t *covariance
 )
 {
+    /* no errors initially */
+    int error_flag = 0;
     /* disabling GSL's stupid error handler */
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
@@ -50,13 +52,12 @@ static int coffe_test_covariance(
                 covariance->sep_len[0] * covariance->sep_len[0] == size
             );
 
-            printf("Sizes correspond\n");
-
             const size_t obtained_size = covariance->sep_len[0];
 
             for (size_t i = 0; i < obtained_size; ++i){
                 for (size_t j = 0; j < obtained_size; ++j){
-                    printf(
+                    fprintf(
+                        stderr,
                         "l1 = %d, l2 = %d\n"
                         "r1 = %.3e, r2 = %.3e, expected = %.3e, obtained = %.3e\n",
                         covariance->l[mp1], covariance->l[mp2],
@@ -64,11 +65,12 @@ static int coffe_test_covariance(
                         result[i * obtained_size + j],
                         covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
                     );
-                    assert(
+                    weak_assert(
                         approx_equal(
                             result[i * obtained_size + j],
                             covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
-                        )
+                        ),
+                        &error_flag
                     );
                 }
             }
@@ -79,9 +81,10 @@ static int coffe_test_covariance(
         }
     }
 
-    COFFE_TESTS_PRINT_SUCCESS;
+    if (!error_flag)
+        COFFE_TESTS_PRINT_SUCCESS;
 
-    return EXIT_SUCCESS;
+    return error_flag;
 }
 
 int main(void)
@@ -117,8 +120,6 @@ int main(void)
     par.nthreads = omp_get_num_procs();
     #endif
 
-    fprintf(stderr, "Threads in use: %d\n", par.nthreads);
-
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
@@ -129,9 +130,11 @@ int main(void)
     struct coffe_covariance_t covariance, dummy;
     coffe_covariance_init(&par, &bg, &covariance, &dummy);
 
-    coffe_test_covariance(&covariance);
+    const int error_flag = coffe_test_covariance(&covariance);
 
+    coffe_parameters_free(&par);
+    coffe_background_free(&bg);
     coffe_covariance_free(&covariance);
 
-    return 0;
+    return error_flag;
 }

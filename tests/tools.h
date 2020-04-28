@@ -1,6 +1,6 @@
 #ifndef COFFE_TESTS_PRINT_SUCCESS
 #define COFFE_TESTS_PRINT_SUCCESS \
-    printf("All tests in `%s` passed successfully\n", __func__);
+    fprintf(stderr, "All tests in `%s` passed successfully\n", __func__);
 #endif
 
 /* our desired accuracy */
@@ -11,7 +11,7 @@
 #define COFFE_ABS_EPSILON (1e-10)
 #endif
 
-/* 0 if equal, else 1 */
+/* 1 if equal, else 0 */
 static int approx_equal(
     const double a,
     const double b
@@ -36,3 +36,14 @@ static int approx_equal(
     }
 }
 
+/* a version of assert that DOESN'T exit on error */
+void weak_assert(
+    const int value,
+    int *error_flag
+)
+{
+    if (!value){
+        if (!(*error_flag))
+            *error_flag = 1;
+    }
+}
