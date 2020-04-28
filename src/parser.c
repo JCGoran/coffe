@@ -512,6 +512,7 @@ int coffe_parse_default_parameters(
         free(pk_norm);
     }
 
+    par->matter_bias_analytic = 0;
     parse_bias_default(
         1.0, &par->matter_bias1, par->interp_method
     );
@@ -799,27 +800,55 @@ int coffe_parser_init(
     parse_double(conf, "wa", &par->wa, COFFE_TRUE);
 
     /* parsing the matter bias */
-    parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
-    parse_bias(
-        conf,
-        "input_matter_bias1",
-        par->file_matter_bias1,
-        "matter_bias1",
-        &par->matter_bias1,
-        par->interp_method,
-        par->read_matter_bias1
-    );
+    parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
+    if (!par->matter_bias_analytic){
+        parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
+        parse_bias(
+            conf,
+            "input_matter_bias1",
+            par->file_matter_bias1,
+            "matter_bias1",
+            &par->matter_bias1,
+            par->interp_method,
+            par->read_matter_bias1
+        );
 
-    parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
-    parse_bias(
-        conf,
-        "input_matter_bias2",
-        par->file_matter_bias2,
-        "matter_bias2",
-        &par->matter_bias2,
-        par->interp_method,
-        par->read_matter_bias2
-    );
+        parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
+        parse_bias(
+            conf,
+            "input_matter_bias2",
+            par->file_matter_bias2,
+            "matter_bias2",
+            &par->matter_bias2,
+            par->interp_method,
+            par->read_matter_bias2
+        );
+    }
+    else{
+        /* need to hack this up */
+        const size_t bins = 1024;
+        const double redshift_max = 10.;
+        double *x = (double *)coffe_malloc(sizeof(double) * bins);
+        double *y = (double *)coffe_malloc(sizeof(double) * bins);
+        for (size_t i = 0; i < bins; ++i){
+            x[i] = (double)i * redshift_max / bins;
+            y[i] = coffe_galaxy_bias(x[i]);
+        }
+        coffe_init_spline(
+            &par->matter_bias1,
+            x, y, bins,
+            par->interp_method
+        );
+
+        coffe_init_spline(
+            &par->matter_bias2,
+            x, y, bins,
+            par->interp_method
+        );
+
+        free(x);
+        free(y);
+    }
 
     /* parsing the magnification bias (s) */
     parse_int(conf, "read_magnification_bias1", &par->read_magnification_bias1, COFFE_FALSE);

@@ -595,6 +595,23 @@ double coffe_dark_energy_eos(
     return par->w0 + par->wa*z/(1 + z);
 }
 
+
+/**
+    function describing the galaxy bias analytically;
+    by default, it is a fit of the form:
+    b(z) = A * z^2 + B * z + C
+    to the bias as described in GC of 1910.09273,
+    table 3, but one can adapt it for their own needs
+**/
+
+double coffe_galaxy_bias(
+    const double z
+)
+{
+    const double A = -0.179886, B = 1.15485, C = 0.484564;
+    return A * z * z + B * z + C;
+}
+
 double coffe_interp_spline(
     const struct coffe_interpolation *interp,
     double value

@@ -194,6 +194,8 @@ struct coffe_parameters_t
 
     int read_magnification_bias1, read_magnification_bias2;
 
+    int matter_bias_analytic;
+
     char file_magnification_bias1[COFFE_MAX_STRLEN], file_magnification_bias2[COFFE_MAX_STRLEN];
 
     struct coffe_interpolation magnification_bias1, magnification_bias2;
@@ -415,5 +417,10 @@ int read_ncol(
     double **values,
     ...
 );
+
+double coffe_galaxy_bias(
+    const double z
+);
+
 
 #endif
