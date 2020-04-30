@@ -254,7 +254,7 @@ static int coffe_test_multipoles(
                 fprintf(
                     stderr,
                     "l = %d, separation = %.3f, type %s\n",
-                    multipoles[i], x, names[j]
+                    multipoles[i], xvalue[k], names[j]
                 );
                 weak_assert(
                     approx_equal(y_expected, y_obtained),
