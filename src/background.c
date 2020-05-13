@@ -301,7 +301,7 @@ int coffe_background_init(
         free(z_array);
     }
 
-    double h = 1E-16, prec = 1E-5;
+    double h = 1E-6, prec = 1E-5;
 
     double temp_comoving_result, temp_error;
     double a_initial, z, w, wint;

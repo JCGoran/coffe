@@ -610,7 +610,7 @@ int coffe_parse_default_parameters(
     par->type_bg = NULL;
     par->type_bg_len = 0;
 
-    par->background_bins = 2000;
+    par->background_bins = 10000;
     par->bessel_bins = 10000;
     #ifndef HAVE_CUBA
     par->integration_method = 2;
