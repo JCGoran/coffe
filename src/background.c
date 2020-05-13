@@ -20,7 +20,7 @@
 #include <time.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_errno.h>
-#include <gsl/gsl_odeiv.h>
+#include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_matrix.h>
 
 #include "common.h"
@@ -301,20 +301,22 @@ int coffe_background_init(
         free(z_array);
     }
 
+    double h = 1E-16, prec = 1E-5;
+
     double temp_comoving_result, temp_error;
     double a_initial, z, w, wint;
-    gsl_odeiv_system sys =
+    gsl_odeiv2_system sys =
         {growth_rate_ode, growth_rate_jac, 2, &ipar};
 
-    const gsl_odeiv_step_type *step_type =
-        gsl_odeiv_step_rk8pd;
+    const gsl_odeiv2_step_type *step_type =
+        gsl_odeiv2_step_rk2;
 
-    gsl_odeiv_step *step =
-        gsl_odeiv_step_alloc(step_type, 2);
-    gsl_odeiv_control *control =
-        gsl_odeiv_control_y_new(1E-6, 0.0);
-    gsl_odeiv_evolve *evolve =
-        gsl_odeiv_evolve_alloc(2);
+    gsl_odeiv2_step *step =
+        gsl_odeiv2_step_alloc(step_type, 2);
+    gsl_odeiv2_control *control =
+        gsl_odeiv2_control_y_new(0.0, h);
+    gsl_odeiv2_evolve *evolve =
+        gsl_odeiv2_evolve_alloc(2);
 
     gsl_integration_workspace *space =
         gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
@@ -325,8 +327,6 @@ int coffe_background_init(
 
     /* initial values for the differential equation (D_1 and D_1') */
     double initial_values[2] = {0.05, 1.0};
-
-    double h = 1E-6, prec = 1E-5;
 
     for (int i = 0; i<par->background_bins; ++i){
         a_initial = 0.05;
@@ -351,7 +351,7 @@ int coffe_background_init(
         )/pow(1 + z, 2)/2.; // in units H0^2
 
         while (a_initial < (temp_bg->a)[i]){
-            gsl_odeiv_evolve_apply(
+            gsl_odeiv2_evolve_apply(
                 evolve, control, step,
                 &sys, &a_initial, (temp_bg->a)[i],
                 &h, initial_values
@@ -490,9 +490,9 @@ int coffe_background_init(
     free(temp_bg->G2);
     free(temp_bg->comoving_distance);
     free(temp_bg);
-    gsl_odeiv_step_free(step);
-    gsl_odeiv_control_free(control);
-    gsl_odeiv_evolve_free(evolve);
+    gsl_odeiv2_step_free(step);
+    gsl_odeiv2_control_free(control);
+    gsl_odeiv2_evolve_free(evolve);
     gsl_integration_workspace_free(space);
     gsl_spline_free(ipar.w.spline), gsl_interp_accel_free(ipar.w.accel);
     gsl_spline_free(ipar.wint.spline), gsl_interp_accel_free(ipar.wint.accel);
