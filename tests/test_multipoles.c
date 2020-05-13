@@ -19,6 +19,7 @@
 #ifndef NAMES_MAXSIZE
 #define NAMES_MAXSIZE 10
 #endif
+#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
 static void change_signal(
     struct coffe_correlation_contributions *signal,
@@ -227,7 +228,7 @@ static int coffe_test_multipoles(
 
     int counter = 0;
 
-    for (int j = 0; j < sizeof(names[NAMES_MAXSIZE]) / sizeof(*(names[NAMES_MAXSIZE])); ++j){
+    for (int j = 0; j < LEN(names); ++j){
         change_signal(&par->correlation_contrib, names[j], NULL);
         for (int i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i){
             for (int k = 0; k < sizeof(xvalue) / sizeof(*xvalue); ++k){
