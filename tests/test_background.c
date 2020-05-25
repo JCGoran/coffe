@@ -14,15 +14,20 @@ static int coffe_test_background(
 )
 {
     int error_flag = 0;
-    const double z[] = {
-        #include "BENCHMARK_Z.dat"
-    };
-    /* test H(z) */
-    const double Hz[] = {
-        #include "BENCHMARK_HZ.dat"
-    };
-    assert(sizeof(z) == sizeof(Hz));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+    size_t size;
+    double *z, *a, *Hz, *conformal_Hz, *conformal_Hz_prime, *D1, *f, *comoving_distance;
+
+    /* load the file */
+    read_ncol(
+        "tests/benchmarks/benchmark_background.dat",
+        8, &size,
+        &z, &a, &Hz, &conformal_Hz,
+        &conformal_Hz_prime, &D1, &f, &comoving_distance
+    );
+
+    for (size_t i = 0; i < size; ++i){
+
+        /* test H(z) */
         weak_assert(
             approx_equal(
                 Hz[i] / COFFE_H0,
@@ -31,12 +36,7 @@ static int coffe_test_background(
             &error_flag
         );
 
-    /* test conformal H(z) */
-    const double conformal_Hz[] = {
-        #include "BENCHMARK_CONFORMAL_HZ.dat"
-    };
-    assert(sizeof(z) == sizeof(conformal_Hz));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+        /* test conformal H(z) */
         weak_assert(
             approx_equal(
                 conformal_Hz[i] / COFFE_H0,
@@ -45,12 +45,7 @@ static int coffe_test_background(
             &error_flag
         );
 
-    /* test conformal_Hz_prime */
-    const double conformal_Hz_prime[] = {
-        #include "BENCHMARK_CONFORMAL_HZ_PRIME.dat"
-    };
-    assert(sizeof(z) == sizeof(conformal_Hz_prime));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+        /* test conformal_Hz_prime */
         weak_assert(
             approx_equal(
                 conformal_Hz_prime[i] / COFFE_H0 / COFFE_H0,
@@ -59,12 +54,7 @@ static int coffe_test_background(
             &error_flag
         );
 
-    /* test D1 */
-    const double D1[] = {
-        #include "BENCHMARK_D1.dat"
-    };
-    assert(sizeof(z) == sizeof(D1));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+        /* test D1 */
         weak_assert(
             approx_equal(
                 D1[i],
@@ -73,12 +63,7 @@ static int coffe_test_background(
             &error_flag
         );
 
-    /* test f */
-    const double f[] = {
-        #include "BENCHMARK_F.dat"
-    };
-    assert(sizeof(z) == sizeof(f));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+        /* test f */
         weak_assert(
             approx_equal(
                 f[i],
@@ -87,12 +72,7 @@ static int coffe_test_background(
             &error_flag
         );
 
-    /* test comoving_distance */
-    const double comoving_distance[] = {
-        #include "BENCHMARK_COMOVING_DISTANCE.dat"
-    };
-    assert(sizeof(z) == sizeof(comoving_distance));
-    for (int i = 0; i < sizeof(z) / sizeof(*z); ++i)
+        /* test comoving_distance */
         weak_assert(
             approx_equal(
                 comoving_distance[i] * COFFE_H0,
@@ -100,6 +80,7 @@ static int coffe_test_background(
             ),
             &error_flag
         );
+    }
 
     if (!error_flag)
         COFFE_TESTS_PRINT_SUCCESS;
