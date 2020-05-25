@@ -15,45 +15,37 @@ static int coffe_test_integrals(
 )
 {
     int error_flag = 0;
-    /* compiling with benchmarked values */
-    const double xvalue[] = {
-        #include "BENCHMARK_INTEGRALS_X.dat"
-    };
-    const double yvalue[8][sizeof(xvalue) / sizeof(*xvalue)] = {
-    {
-        #include "BENCHMARK_INTEGRALS0_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS1_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS2_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS3_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS4_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS5_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS6_Y.dat"
-    },
-    {
-        #include "BENCHMARK_INTEGRALS7_Y.dat"
-    }
-    };
+    const size_t size_files = 8;
+    size_t size;
+    double *xvalue, *yvalue[size_files];
 
-    for (int integral = 0; integral <= 7; ++integral){
-        for (int i = 0; i < sizeof(xvalue) / sizeof(*xvalue) - 1; ++i){
+    /* load the files */
+    for (size_t i = 0; i < size_files; ++i){
+        const size_t size_name = 256;
+        char name[size_name];
+        snprintf(
+            name,
+            size_name,
+            "tests/benchmarks/benchmark_integral%zu.dat",
+            i
+        );
+        read_ncol(
+            name,
+            2, &size,
+            &xvalue,
+            &yvalue[i]
+        );
+    }
+
+    /* compare the standard integrals (ones computes with 2FAST) */
+    for (size_t integral = 0; integral < size_files; ++integral){
+        for (size_t i = 0; i < size - 1; ++i){
             const double x = xvalue[i];
             const double y_expected = yvalue[integral][i];
             const double y_obtained = coffe_interp_spline(&integrals[integral].result, xvalue[i]);
             fprintf(
                 stderr,
-                "Integral %d, separation %e, value %e\n",
+                "Integral %zu, separation %e, value %e\n",
                 integral, x, y_obtained
             );
             weak_assert(
@@ -72,7 +64,7 @@ static int coffe_test_integrals(
     };
     assert(sizeof(divergent_x) == sizeof(divergent_y));
 
-    for (int i = 0; i < sizeof(divergent_x) / sizeof(*divergent_x) - 1; ++i)
+    for (size_t i = 0; i < sizeof(divergent_x) / sizeof(*divergent_x) - 1; ++i)
         weak_assert(
             approx_equal(
                 divergent_y[i],
@@ -97,7 +89,7 @@ static int coffe_test_integrals(
     assert(sizeof(ren_x) == sizeof(ren_y));
     assert(sizeof(ren_x) == sizeof(ren_z));
 
-    for (int i = 0; i < sizeof(ren_x) / sizeof(*ren_x); ++i)
+    for (size_t i = 0; i < sizeof(ren_x) / sizeof(*ren_x); ++i)
         weak_assert(
             approx_equal(
                 ren_z[i] * pow(COFFE_H0, 4),
