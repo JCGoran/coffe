@@ -95,174 +95,68 @@ static int coffe_test_multipoles(
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
 
-    /* compiling with benchmarked values */
-    const double xvalue[] = {
-        10, 20, 40, 100, 150
-    };
     const char names[][NAMES_MAXSIZE] = {
         "den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"
     };
     const int multipoles[] = {0, 2, 4};
-    const double yvalue[][sizeof(xvalue) / sizeof(*xvalue)] = {
-    {
-        #include "benchmark_multipoles0_den.dat"
-    },
-    {
-        #include "benchmark_multipoles2_den.dat"
-    },
-    {
-        #include "benchmark_multipoles4_den.dat"
-    },
-    {
-        #include "benchmark_multipoles0_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles2_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles4_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles0_d1.dat"
-    },
-    {
-        #include "benchmark_multipoles2_d1.dat"
-    },
-    {
-        #include "benchmark_multipoles4_d1.dat"
-    },
-    {
-        #include "benchmark_multipoles0_d2.dat"
-    },
-    {
-        #include "benchmark_multipoles2_d2.dat"
-    },
-    {
-        #include "benchmark_multipoles4_d2.dat"
-    },
-    {
-        #include "benchmark_multipoles0_g1.dat"
-    },
-    {
-        #include "benchmark_multipoles2_g1.dat"
-    },
-    {
-        #include "benchmark_multipoles4_g1.dat"
-    },
-    {
-        #include "benchmark_multipoles0_g2.dat"
-    },
-    {
-        #include "benchmark_multipoles2_g2.dat"
-    },
-    {
-        #include "benchmark_multipoles4_g2.dat"
-    },
-    {
-        #include "benchmark_multipoles0_g3.dat"
-    },
-    {
-        #include "benchmark_multipoles2_g3.dat"
-    },
-    {
-        #include "benchmark_multipoles4_g3.dat"
-    },
-    {
-        #include "benchmark_multipoles0_g4.dat"
-    },
-    {
-        #include "benchmark_multipoles2_g4.dat"
-    },
-    {
-        #include "benchmark_multipoles4_g4.dat"
-    },
-    {
-        #include "benchmark_multipoles0_g5.dat"
-    },
-    {
-        #include "benchmark_multipoles2_g5.dat"
-    },
-    {
-        #include "benchmark_multipoles4_g5.dat"
-    },
-    {
-        #include "benchmark_multipoles0_len.dat"
-    },
-    {
-        #include "benchmark_multipoles2_len.dat"
-    },
-    {
-        #include "benchmark_multipoles4_len.dat"
-    }
 
-    /*
-    {
-        #include "benchmark_multipoles0_den_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles2_den_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles4_den_rsd.dat"
-    },
-    {
-        #include "benchmark_multipoles0_den_rsd_len.dat"
-    },
-    {
-        #include "benchmark_multipoles2_den_rsd_len.dat"
-    },
-    {
-        #include "benchmark_multipoles4_den_rsd_len.dat"
-    },
-    {
-        #include "benchmark_multipoles0_den.dat"
-    }
-    {
-        #include "benchmark_multipoles0_den.dat"
-    }
-    {
-        #include "benchmark_multipoles0_den.dat"
-    }
-    */
-    };
-
-    int counter = 0;
-
+    /* test of individual contributions */
     for (int j = 0; j < LEN(names); ++j){
-        change_signal(&par->correlation_contrib, names[j], NULL);
-        for (int i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i){
-            for (int k = 0; k < sizeof(xvalue) / sizeof(*xvalue); ++k){
+        const char *type = names[j];
+        change_signal(&par->correlation_contrib, type, NULL);
+        for (int i = 0; i < LEN(multipoles); ++i){
+            const int l = multipoles[i];
+            const size_t size_name = 256;
+            char name[size_name];
+            snprintf(
+                name,
+                size_name,
+                "tests/benchmarks/benchmark_%s_multipoles%d.dat",
+                type,
+                l
+            );
+
+            double *xvalue, *yvalue;
+            size_t size;
+            /* reading the benchmark file */
+            read_ncol(
+                name,
+                2,
+                &size,
+                &xvalue, &yvalue
+            );
+
+            for (size_t k = 0; k < size; ++k){
                 const double x = xvalue[k] * COFFE_H0;
-                const double y_expected = yvalue[counter][k];
+                const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, multipoles[i],
+                            x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, multipoles[i],
+                            x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, multipoles[i],
+                            x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
                 fprintf(
                     stderr,
                     "l = %d, separation = %.3f, type %s\n",
-                    multipoles[i], xvalue[k], names[j]
+                    l, xvalue[k], type
                 );
                 weak_assert(
                     approx_equal(y_expected, y_obtained),
                     &error_flag
                 );
             }
-            ++counter;
         }
         reset_signal(&par->correlation_contrib);
     }
