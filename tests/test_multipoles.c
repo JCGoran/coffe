@@ -62,6 +62,20 @@ static void change_signal(
         if (strcmp(contrib, "g5") == 0){
             signal->g5 = 1;
         }
+        /* special keyword "all" */
+        if (strcmp(contrib, "all") == 0){
+            signal->den = 1;
+            signal->rsd = 1;
+            signal->d1 = 1;
+            signal->d2 = 1;
+            signal->g1 = 1;
+            signal->g2 = 1;
+            signal->g3 = 1;
+            signal->g4 = 1;
+            signal->g5 = 1;
+            signal->len = 1;
+        }
+
         contrib = va_arg(args, char *);
     }
     va_end(args);
@@ -96,7 +110,7 @@ static int coffe_test_multipoles(
         gsl_set_error_handler_off();
 
     const char names[][NAMES_MAXSIZE] = {
-        "den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"
+        "den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len", "all"
     };
     const int multipoles[] = {0, 2, 4};
 
