@@ -55,16 +55,24 @@ static int coffe_test_integrals(
         }
     }
 
-    /* the divergent integral isn't computed with 2FAST */
-    const double divergent_x[] = {
-        #include "BENCHMARK_INTEGRALS8_X.dat"
-    };
-    const double divergent_y[] = {
-        #include "BENCHMARK_INTEGRALS8_Y.dat"
-    };
-    assert(sizeof(divergent_x) == sizeof(divergent_y));
+    /* memory cleanup */
+    free(xvalue);
+    for (size_t i = 0; i < size_files; ++i)
+        free(yvalue[i]);
 
-    for (size_t i = 0; i < sizeof(divergent_x) / sizeof(*divergent_x) - 1; ++i)
+    /* the divergent integral isn't computed with 2FAST */
+    double *divergent_x, *divergent_y;
+    size_t divergent_size;
+
+    coffe_read_ncol(
+        "tests/benchmarks/benchmark_integral8.dat",
+        2,
+        &divergent_size,
+        &divergent_x,
+        &divergent_y
+    );
+
+    for (size_t i = 0; i < divergent_size - 1; ++i)
         weak_assert(
             approx_equal(
                 divergent_y[i],
@@ -75,33 +83,41 @@ static int coffe_test_integrals(
             &error_flag
         );
 
+    /* memory cleanup */
+    free(divergent_x);
+    free(divergent_y);
+
     /* test renormalization */
-    const double ren_x[] = {
-        #include "BENCHMARK_INTEGRALS_RENORMALIZATION_X.dat"
-    };
-    const double ren_y[] = {
-        #include "BENCHMARK_INTEGRALS_RENORMALIZATION_Y.dat"
-    };
-    const double ren_z[] = {
-        #include "BENCHMARK_INTEGRALS_RENORMALIZATION_Z.dat"
-    };
+    double *ren_x, *ren_y, *ren_z;
+    size_t ren_size;
 
-    assert(sizeof(ren_x) == sizeof(ren_y));
-    assert(sizeof(ren_x) == sizeof(ren_z));
+    coffe_read_ncol(
+        "tests/benchmarks/benchmark_integral8_renormalization.dat",
+        3,
+        &ren_size,
+        &ren_x,
+        &ren_y,
+        &ren_z
+    );
 
-    for (size_t i = 0; i < sizeof(ren_x) / sizeof(*ren_x); ++i)
+    for (size_t i = 0; i < ren_size; ++i)
         weak_assert(
             approx_equal(
-                ren_z[i] * pow(COFFE_H0, 4),
+                ren_z[i],
                 gsl_spline2d_eval(
                     integrals[8].renormalization.spline,
-                    ren_x[i] * COFFE_H0, ren_y[i] * COFFE_H0,
+                    ren_x[i], ren_y[i],
                     integrals[8].renormalization.xaccel,
                     integrals[8].renormalization.yaccel
                 )
             ),
             &error_flag
         );
+
+    /* memory cleanup */
+    free(ren_x);
+    free(ren_y);
+    free(ren_z);
 
     if (!error_flag)
         COFFE_TESTS_PRINT_SUCCESS;

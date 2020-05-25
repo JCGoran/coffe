@@ -427,6 +427,48 @@ int coffe_output_init(
             NULL
         );
     }
+
+    if (par->divergent){
+
+        /* the integral itself */
+        snprintf(
+            header, COFFE_MAX_STRLEN,
+            "# n = 4, l = 0\n"
+        );
+        snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral8.dat", prefix);
+        write_ncol_null(
+            filepath,
+            integral[8].result.spline->size, header, " ",
+            integral[8].result.spline->x,
+            integral[8].result.spline->y,
+            NULL
+        );
+
+        /* the renormalization */
+        snprintf(
+            header, COFFE_MAX_STRLEN,
+            "# n = 4, l = 0\n"
+        );
+        snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral8_renormalization.dat", prefix);
+        FILE *file_renormalization = fopen(filepath, "w");
+        for (size_t i = 0; i < integral[8].renormalization.spline->interp_object.xsize; ++i){
+            for (size_t j = 0; j < integral[8].renormalization.spline->interp_object.ysize; ++j){
+                fprintf(
+                    file_renormalization,
+                    "%e %e %e\n",
+                    integral[8].renormalization.spline->xarr[i],
+                    integral[8].renormalization.spline->yarr[j],
+                    gsl_spline2d_get(
+                        integral[8].renormalization.spline,
+                        integral[8].renormalization.spline->zarr,
+                        i, j
+                    )
+                );
+            }
+        }
+        fclose(file_renormalization);
+    }
+
     if (par->flatsky){
         snprintf(
             header, COFFE_MAX_STRLEN,
