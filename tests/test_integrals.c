@@ -29,7 +29,7 @@ static int coffe_test_integrals(
             "tests/benchmarks/benchmark_integral%zu.dat",
             i
         );
-        read_ncol(
+        coffe_read_ncol(
             name,
             2, &size,
             &xvalue,

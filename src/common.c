@@ -684,7 +684,7 @@ double coffe_resolution_window(
     of length <len>
 **/
 
-int read_ncol(
+int coffe_read_ncol(
     const char *filename,
     const size_t N,
     size_t *len,

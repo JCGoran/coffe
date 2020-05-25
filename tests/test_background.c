@@ -18,7 +18,7 @@ static int coffe_test_background(
     double *z, *a, *Hz, *conformal_Hz, *conformal_Hz_prime, *D1, *f, *comoving_distance;
 
     /* load the file */
-    read_ncol(
+    coffe_read_ncol(
         "tests/benchmarks/benchmark_background.dat",
         8, &size,
         &z, &a, &Hz, &conformal_Hz,

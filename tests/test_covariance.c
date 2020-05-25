@@ -43,7 +43,7 @@ static int coffe_test_covariance(
                 covariance->l[mp1],
                 covariance->l[mp2]
             );
-            read_ncol(
+            coffe_read_ncol(
                 name, 3, &size, &r1, &r2, &result
             );
 

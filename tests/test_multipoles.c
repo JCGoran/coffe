@@ -133,7 +133,7 @@ static int coffe_test_multipoles(
             double *xvalue, *yvalue;
             size_t size;
             /* reading the benchmark file */
-            read_ncol(
+            coffe_read_ncol(
                 name,
                 2,
                 &size,
