@@ -121,7 +121,7 @@ static int parse_string_array(
     config_t *conf,
     const char *setting,
     char ***values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -129,7 +129,7 @@ static int parse_string_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (char **)malloc(sizeof(char *) * *values_len);
     if (*values == NULL){
@@ -139,7 +139,7 @@ static int parse_string_array(
 
     const char *temp_setting;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_setting = config_setting_get_string_elem(type, i);
         (*values)[i] =
             (char *)coffe_malloc(sizeof(char)*(strlen(temp_setting) + 1));
@@ -158,7 +158,7 @@ static int parse_int_array(
     config_t *conf,
     const char *setting,
     int **values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -166,13 +166,13 @@ static int parse_int_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (int *)coffe_malloc(sizeof(int) * *values_len);
 
     int temp_value;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_value = config_setting_get_int_elem(type, i);
         *(*values + i) = temp_value;
     }
@@ -189,7 +189,7 @@ static int parse_double_array(
     config_t *conf,
     const char *setting,
     double **values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -197,13 +197,13 @@ static int parse_double_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (double *)coffe_malloc(sizeof(double) * *values_len);
 
     double temp_value;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_value = config_setting_get_float_elem(type, i);
         *(*values + i) = temp_value;
     }
@@ -221,7 +221,7 @@ static int parse_bias_default(
     double values[] = {value, value, value, value, value};
     coffe_init_spline(
         spline, redshifts, values,
-        sizeof(redshifts)/sizeof(*redshifts),
+        COFFE_ARRAY_SIZE(redshifts),
         method
     );
 
@@ -409,7 +409,7 @@ static int parse_external_power_spectrum(
     size_t pk_len = psp.ln_k_size;
 
     /* rescaling as CLASS internally uses units of 1/Mpc */
-    for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
+    for (size_t i = 0; i < (size_t)psp.ln_k_size; ++i){
         k[i] = exp(psp.ln_k[i]) / par->h;
         pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
     }
@@ -464,11 +464,11 @@ int coffe_parse_default_parameters(
     par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 150.};
     par->sep = coffe_malloc(
-        sizeof(double) * sizeof(separations) / sizeof(*separations)
+        sizeof(double) * COFFE_ARRAY_SIZE(separations)
     );
-    for (size_t i = 0; i < sizeof(separations) / sizeof(*separations); ++i)
+    for (size_t i = 0; i < COFFE_ARRAY_SIZE(separations); ++i)
         par->sep[i] = separations[i];
-    par->sep_len = sizeof(separations) / sizeof(*separations);
+    par->sep_len = COFFE_ARRAY_SIZE(separations);
     par->interp_method = 5;
     par->covariance_integration_method = 1;
     par->covariance_integration_bins = 2000;
@@ -486,7 +486,7 @@ int coffe_parse_default_parameters(
     };
     coffe_init_spline(
         &par->power_spectrum,
-        k, pk, sizeof(k) / sizeof(*k),
+        k, pk, COFFE_ARRAY_SIZE(k),
         par->interp_method
     );
     par->k_min = 1e-5;
@@ -625,11 +625,11 @@ int coffe_parse_default_parameters(
 
     const double multipoles[] = {0, 2, 4};
     par->multipole_values = coffe_malloc(
-        sizeof(double) * sizeof(multipoles) / sizeof(*multipoles)
+        sizeof(double) * COFFE_ARRAY_SIZE(multipoles)
     );
-    for (size_t i = 0; i < sizeof(multipoles) / sizeof(*multipoles); ++i)
+    for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i)
         par->multipole_values[i] = multipoles[i];
-    par->multipole_values_len = sizeof(multipoles) / sizeof(*multipoles);
+    par->multipole_values_len = COFFE_ARRAY_SIZE(multipoles);
 
     par->flatsky = 0;
 
@@ -992,7 +992,7 @@ int coffe_parser_init(
 
     /* parsing the contributions to the correlation function and covariance */
     char **correlation_contributions = NULL;
-    int correlation_contributions_len = 0;
+    size_t correlation_contributions_len = 0;
     parse_string_array(
         conf, "correlation_contributions",
         &correlation_contributions,
@@ -1010,7 +1010,7 @@ int coffe_parser_init(
     par->correlation_contrib.g4 = 0;
     par->correlation_contrib.g5 = 0;
 
-    for (int i = 0; i<correlation_contributions_len; ++i){
+    for (size_t i = 0; i < correlation_contributions_len; ++i){
         if (strcmp(correlation_contributions[i], "den") == 0)
             par->correlation_contrib.den = 1;
         else if (strcmp(correlation_contributions[i], "rsd") == 0)
@@ -1033,7 +1033,7 @@ int coffe_parser_init(
             par->correlation_contrib.g5 = 1;
     }
 
-    for (int i = 0; i < correlation_contributions_len; ++i)
+    for (size_t i = 0; i < correlation_contributions_len; ++i)
         free(correlation_contributions[i]);
     free(correlation_contributions);
 
@@ -1168,7 +1168,7 @@ int coffe_parser_init(
             (double *)coffe_malloc(sizeof(double)*len);
         double *pk_norm =
             (double *)coffe_malloc(sizeof(double)*len);
-        for (size_t i = 0; i<len; ++i){
+        for (size_t i = 0; i < len; ++i){
             k_norm[i] = par->power_spectrum.spline->x[i]/COFFE_H0;
             pk_norm[i] = par->power_spectrum.spline->y[i]*pow(COFFE_H0, 3);
         }

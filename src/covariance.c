@@ -394,7 +394,7 @@ int coffe_covariance_init(
         /* finding the largest separation */
         double *upper_limit =
             (double *)coffe_malloc(sizeof(double)*par->covariance_density_len);
-        for (size_t i = 0; i<par->covariance_density_len; ++i){
+        for (size_t i = 0; i < par->covariance_density_len; ++i){
             if (par->output_type == 4){
                 upper_limit[i] = 2*(
                     coffe_interp_spline(
@@ -425,7 +425,7 @@ int coffe_covariance_init(
         size_t *npixels =
             (size_t *)coffe_malloc(sizeof(size_t)*par->covariance_density_len);
 
-        for (size_t i = 0; i<par->covariance_density_len; ++i){
+        for (size_t i = 0; i < par->covariance_density_len; ++i){
             npixels[i] = (size_t)(
                 upper_limit[i] / par->covariance_pixelsize
             );
@@ -453,7 +453,7 @@ int coffe_covariance_init(
             (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
         double **integral_pk2 =
             (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
+        for (size_t i = 0; i < par->multipole_values_len; ++i){
             for (size_t j = 0; j<par->multipole_values_len; ++j){
             integral_pk[i*par->multipole_values_len + j] =
                 (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
@@ -668,12 +668,12 @@ int coffe_covariance_init(
             for (size_t i = 0; i<par->multipole_values_len; ++i){
                 for (size_t j = 0; j<par->multipole_values_len; ++j){
                     /* the sums c_i wigner3j^2(l1, l2, i) */
-                    for (size_t cnt = 0; cnt<sizeof(coeff_array)/sizeof(coeff_array[0]); ++cnt){
+                    for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeff_array); ++cnt){
                         coeff_sum +=
                             coeff_array[cnt]
                            *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
                     }
-                    for (size_t cnt = 0; cnt<sizeof(coeffbar_array)/sizeof(coeffbar_array[0]); ++cnt){
+                    for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeffbar_array); ++cnt){
                         coeffbar_sum +=
                             coeffbar_array[cnt]
                            *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);

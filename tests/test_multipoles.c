@@ -19,7 +19,6 @@
 #ifndef NAMES_MAXSIZE
 #define NAMES_MAXSIZE 10
 #endif
-#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
 
 static void change_signal(
     struct coffe_correlation_contributions *signal,
@@ -115,10 +114,10 @@ static int coffe_test_multipoles(
     const int multipoles[] = {0, 2, 4};
 
     /* test of individual contributions */
-    for (int j = 0; j < LEN(names); ++j){
+    for (size_t j = 0; j < COFFE_ARRAY_SIZE(names); ++j){
         char *type = names[j];
         change_signal(&par->correlation_contrib, type, NULL);
-        for (int i = 0; i < LEN(multipoles); ++i){
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
             char name[size_name];
@@ -218,7 +217,7 @@ static int coffe_test_multipoles(
         /* density + rsd (standard terms) */
         par->correlation_contrib.den = 1;
         par->correlation_contrib.rsd = 1;
-        for (int i = 0; i < LEN(multipoles); ++i){
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
             char name[size_name];
@@ -279,7 +278,7 @@ static int coffe_test_multipoles(
         par->correlation_contrib.den = 1;
         par->correlation_contrib.rsd = 1;
         par->correlation_contrib.len = 1;
-        for (int i = 0; i < LEN(multipoles); ++i){
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
             char name[size_name];
@@ -340,7 +339,7 @@ static int coffe_test_multipoles(
         par->correlation_contrib.den = 1;
         par->correlation_contrib.rsd = 1;
         par->correlation_contrib.d1 = 1;
-        for (int i = 0; i < LEN(multipoles); ++i){
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
             char name[size_name];

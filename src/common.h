@@ -67,6 +67,10 @@
 #define COFFE_H0 (1./(2997.92458)) // H0 in units h/Mpc
 #endif
 
+/* useful macro for determining the size of an array */
+#ifndef COFFE_ARRAY_SIZE
+#define COFFE_ARRAY_SIZE(arr) ((size_t) (sizeof (arr) / sizeof (arr)[0]))
+#endif
 
 /**
     simple wrapper with failsafe for malloc
@@ -129,7 +133,7 @@ struct coffe_parameters_t
 
     double *mu; /* value for the angles */
 
-    int mu_len; /* number of angles */
+    size_t mu_len; /* number of angles */
 
     struct coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
 
@@ -137,7 +141,7 @@ struct coffe_parameters_t
 
     char **type_bg; /* background values to output */
 
-    int type_bg_len; /* number of background values */
+    size_t type_bg_len; /* number of background values */
 
     int background_bins; /* number of bins for the background */
 
@@ -220,31 +224,31 @@ struct coffe_parameters_t
 
     int *multipole_values; /* the multipoles to calculate */
 
-    int multipole_values_len;
+    size_t multipole_values_len;
 
     double *covariance_z_mean;
 
-    int covariance_z_mean_len;
+    size_t covariance_z_mean_len;
 
     double *covariance_deltaz;
 
-    int covariance_deltaz_len;
+    size_t covariance_deltaz_len;
 
     double *covariance_zmin;
 
-    int covariance_zmin_len;
+    size_t covariance_zmin_len;
 
     double *covariance_zmax;
 
-    int covariance_zmax_len;
+    size_t covariance_zmax_len;
 
     double *covariance_fsky;
 
-    int covariance_fsky_len;
+    size_t covariance_fsky_len;
 
     double *covariance_density;
 
-    int covariance_density_len;
+    size_t covariance_density_len;
 
     double covariance_pixelsize;
 
