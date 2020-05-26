@@ -45,8 +45,8 @@ static int coffe_test_integrals(
             const double y_obtained = coffe_interp_spline(&integrals[integral].result, xvalue[i]);
             fprintf(
                 stderr,
-                "Integral %zu, separation %e, value %e\n",
-                integral, x, y_obtained
+                "Integral = %zu, separation = %e, expected = %e, obtained = %e\n",
+                integral, x, y_expected, y_obtained
             );
             weak_assert(
                 approx_equal(y_expected, y_obtained),
@@ -72,16 +72,27 @@ static int coffe_test_integrals(
         &divergent_y
     );
 
-    for (size_t i = 0; i < divergent_size - 1; ++i)
+    for (size_t i = 0; i < divergent_size - 1; ++i){
+
+        const double y_expected = divergent_y[i];
+        const double y_obtained = coffe_interp_spline(
+            &integrals[8].result, divergent_x[i]
+        );
+
+        fprintf(
+            stderr,
+            "Integral 8, separation = %e, expected = %e, obtained = %e\n",
+            divergent_x[i], y_expected, y_obtained
+        );
+
         weak_assert(
             approx_equal(
-                divergent_y[i],
-                coffe_interp_spline(
-                    &integrals[8].result, divergent_x[i]
-                )
+                y_expected,
+                y_obtained
             ),
             &error_flag
         );
+    }
 
     /* memory cleanup */
     free(divergent_x);
@@ -100,19 +111,30 @@ static int coffe_test_integrals(
         &ren_z
     );
 
-    for (size_t i = 0; i < ren_size; ++i)
+    for (size_t i = 0; i < ren_size; ++i){
+
+        const double y_expected = ren_z[i];
+        const double y_obtained = gsl_spline2d_eval(
+            integrals[8].renormalization.spline,
+            ren_x[i], ren_y[i],
+            integrals[8].renormalization.xaccel,
+            integrals[8].renormalization.yaccel
+        );
+
+        fprintf(
+            stderr,
+            "Integral 8 renormalization, x1 = %e, x2 = %e, expected = %e, obtained = %e\n",
+            ren_x[i], ren_y[i], y_expected, y_obtained
+        );
+
         weak_assert(
             approx_equal(
-                ren_z[i],
-                gsl_spline2d_eval(
-                    integrals[8].renormalization.spline,
-                    ren_x[i], ren_y[i],
-                    integrals[8].renormalization.xaccel,
-                    integrals[8].renormalization.yaccel
-                )
+                y_expected,
+                y_obtained
             ),
             &error_flag
         );
+    }
 
     /* memory cleanup */
     free(ren_x);
