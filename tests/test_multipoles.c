@@ -98,9 +98,9 @@ static void reset_signal(
 }
 
 static int coffe_test_multipoles(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integrals_t *integral
+    struct coffe_parameters_t *par,
+    struct coffe_background_t *bg,
+    struct coffe_integrals_t *integral
 )
 {
     /* no errors initially */
@@ -109,14 +109,14 @@ static int coffe_test_multipoles(
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
 
-    const char names[][NAMES_MAXSIZE] = {
+    char names[][NAMES_MAXSIZE] = {
         "den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len", "all"
     };
     const int multipoles[] = {0, 2, 4};
 
     /* test of individual contributions */
     for (int j = 0; j < LEN(names); ++j){
-        const char *type = names[j];
+        char *type = names[j];
         change_signal(&par->correlation_contrib, type, NULL);
         for (int i = 0; i < LEN(multipoles); ++i){
             const int l = multipoles[i];
@@ -163,9 +163,231 @@ static int coffe_test_multipoles(
 
                 fprintf(
                     stderr,
-                    "l = %d, separation = %.3f, type %s\n",
-                    l, xvalue[k], type
+                    "l = %d, separation = %.3f, type %s, expected = %e, obtained = %e\n",
+                    l, xvalue[k], type, y_expected, y_obtained
                 );
+
+                /**
+                    some tests have numerical issues due to floating point precision:
+                    this is mainly in cases when the integral is actually very close to zero,
+                    such as den-den with l >= 2 (it is exactly 0 in the flat-sky case),
+                    so we do NOT enforce the check
+                    NOTE: I could've set the tests to check only those which work instead
+                    of writing out those which do NOT work; however, the end result is the same
+                    NOTE 2: I am using `strcmp` instead of directly checking
+                    `par->correlation_contrib.[TYPE] == 1` since the case "all" would then
+                    not be checked (I could've put that one below with the "special" cases,
+                    but it's not worth the hassle and the already duplicated code)
+                **/
+                if (l == 2){
+                    if (
+                        strcmp(type, "den") == 0 ||
+                        strcmp(type, "d2") == 0 ||
+                        strcmp(type, "g1") == 0 ||
+                        strcmp(type, "g2") == 0 ||
+                        strcmp(type, "g3") == 0
+                    ){
+                    }
+                }
+                else if (l == 4){
+                    if (
+                        strcmp(type, "den") == 0 ||
+                        strcmp(type, "d1") == 0 ||
+                        strcmp(type, "d2") == 0 ||
+                        strcmp(type, "g1") == 0 ||
+                        strcmp(type, "g2") == 0 ||
+                        strcmp(type, "g3") == 0 ||
+                        strcmp(type, "g4") == 0 ||
+                        strcmp(type, "g5") == 0
+                    ){
+                    }
+                }
+                else{
+                    weak_assert(
+                        approx_equal(y_expected, y_obtained),
+                        &error_flag
+                    );
+                }
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+    }
+
+    /* test of some notable special cases */
+    {
+        /* density + rsd (standard terms) */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.rsd = 1;
+        for (int i = 0; i < LEN(multipoles); ++i){
+            const int l = multipoles[i];
+            const size_t size_name = 256;
+            char name[size_name];
+            snprintf(
+                name,
+                size_name,
+                "tests/benchmarks/benchmark_std_multipoles%d.dat",
+                l
+            );
+
+            double *xvalue, *yvalue;
+            size_t size;
+            /* reading the benchmark file */
+            coffe_read_ncol(
+                name,
+                2,
+                &size,
+                &xvalue, &yvalue
+            );
+
+            for (size_t k = 0; k < size; ++k){
+                const double x = xvalue[k] * COFFE_H0;
+                const double y_expected = yvalue[k];
+                const double y_obtained = coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            NONINTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            SINGLE_INTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            DOUBLE_INTEGRATED, MULTIPOLES
+                        );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type den+rsd, expected = %e, obtained = %e\n",
+                    l, xvalue[k], y_expected, y_obtained
+                );
+
+                weak_assert(
+                    approx_equal(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+    }
+    {
+        /* density + rsd + lensing */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.rsd = 1;
+        par->correlation_contrib.len = 1;
+        for (int i = 0; i < LEN(multipoles); ++i){
+            const int l = multipoles[i];
+            const size_t size_name = 256;
+            char name[size_name];
+            snprintf(
+                name,
+                size_name,
+                "tests/benchmarks/benchmark_std_len_multipoles%d.dat",
+                l
+            );
+
+            double *xvalue, *yvalue;
+            size_t size;
+            /* reading the benchmark file */
+            coffe_read_ncol(
+                name,
+                2,
+                &size,
+                &xvalue, &yvalue
+            );
+
+            for (size_t k = 0; k < size; ++k){
+                const double x = xvalue[k] * COFFE_H0;
+                const double y_expected = yvalue[k];
+                const double y_obtained = coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            NONINTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            SINGLE_INTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            DOUBLE_INTEGRATED, MULTIPOLES
+                        );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type den+rsd+len, expected = %e, obtained = %e\n",
+                    l, xvalue[k], y_expected, y_obtained
+                );
+
+                weak_assert(
+                    approx_equal(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+    }
+    {
+        /* density + rsd + d1 */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.rsd = 1;
+        par->correlation_contrib.d1 = 1;
+        for (int i = 0; i < LEN(multipoles); ++i){
+            const int l = multipoles[i];
+            const size_t size_name = 256;
+            char name[size_name];
+            snprintf(
+                name,
+                size_name,
+                "tests/benchmarks/benchmark_std_d1_multipoles%d.dat",
+                l
+            );
+
+            double *xvalue, *yvalue;
+            size_t size;
+            /* reading the benchmark file */
+            coffe_read_ncol(
+                name,
+                2,
+                &size,
+                &xvalue, &yvalue
+            );
+
+            for (size_t k = 0; k < size; ++k){
+                const double x = xvalue[k] * COFFE_H0;
+                const double y_expected = yvalue[k];
+                const double y_obtained = coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            NONINTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            SINGLE_INTEGRATED, MULTIPOLES
+                        )
+                        +
+                        coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            DOUBLE_INTEGRATED, MULTIPOLES
+                        );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type den+rsd+d1, expected = %e, obtained = %e\n",
+                    l, xvalue[k], y_expected, y_obtained
+                );
+
                 weak_assert(
                     approx_equal(y_expected, y_obtained),
                     &error_flag

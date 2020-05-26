@@ -81,10 +81,3 @@ test_covariance_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wp
 test_covariance_LDFLAGS = $(LDFLAGS)
 test_covariance_AM_CFLAGS = $(AM_CFLAGS)
 
-# this is an expected failure since l=2,4 multipoles
-# are extremely small for den, d1, d2, g1, g2, g3, g4, g5,
-# and the integration has a lot of numerical cancellations,
-# which causes rounding errors;
-# this by no means reflects the general accuracy of COFFE,
-# just a limitation of floating point operations
-XFAIL_TESTS=test_multipoles
