@@ -171,37 +171,31 @@ static int coffe_test_multipoles(
                     this is mainly in cases when the integral is actually very close to zero,
                     such as den-den with l >= 2 (it is exactly 0 in the flat-sky case),
                     so we do NOT enforce the check
-                    NOTE: I could've set the tests to check only those which work instead
-                    of writing out those which do NOT work; however, the end result is the same
-                    NOTE 2: I am using `strcmp` instead of directly checking
-                    `par->correlation_contrib.[TYPE] == 1` since the case "all" would then
-                    not be checked (I could've put that one below with the "special" cases,
-                    but it's not worth the hassle and the already duplicated code)
                 **/
-                if (l == 2){
-                    if (
-                        strcmp(type, "den") == 0 ||
-                        strcmp(type, "d2") == 0 ||
-                        strcmp(type, "g1") == 0 ||
-                        strcmp(type, "g2") == 0 ||
-                        strcmp(type, "g3") == 0
-                    ){
-                    }
-                }
-                else if (l == 4){
-                    if (
-                        strcmp(type, "den") == 0 ||
-                        strcmp(type, "d1") == 0 ||
-                        strcmp(type, "d2") == 0 ||
-                        strcmp(type, "g1") == 0 ||
-                        strcmp(type, "g2") == 0 ||
-                        strcmp(type, "g3") == 0 ||
-                        strcmp(type, "g4") == 0 ||
-                        strcmp(type, "g5") == 0
-                    ){
-                    }
-                }
-                else{
+                if (!(
+                        (
+                            (l == 2) && (
+                                strcmp(type, "den") == 0 ||
+                                strcmp(type, "d2") == 0 ||
+                                strcmp(type, "g1") == 0 ||
+                                strcmp(type, "g2") == 0 ||
+                                strcmp(type, "g3") == 0
+                            )
+                        ) ||
+                        (
+                            (l == 4) && (
+                                strcmp(type, "den") == 0 ||
+                                strcmp(type, "d1") == 0 ||
+                                strcmp(type, "d2") == 0 ||
+                                strcmp(type, "g1") == 0 ||
+                                strcmp(type, "g2") == 0 ||
+                                strcmp(type, "g3") == 0 ||
+                                strcmp(type, "g4") == 0 ||
+                                strcmp(type, "g5") == 0
+                            )
+                        )
+                    )
+                ){
                     weak_assert(
                         approx_equal(y_expected, y_obtained),
                         &error_flag
