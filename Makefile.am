@@ -1,8 +1,21 @@
 # The main product
 bin_PROGRAMS = coffe # make all
 
-#include .c and .h in SOURCES so that both appear in dist
-coffe_SOURCES = \
+lib_LIBRARIES = libcoffe.a
+
+libcoffe_adir = $(includedir)/coffe
+
+libcoffe_a_HEADERS = \
+    src/common.h \
+    src/parser.h \
+    src/background.h \
+    src/integrals.h \
+    src/corrfunc.h \
+    src/multipoles.h \
+    src/average_multipoles.h \
+    src/covariance.h
+
+libcoffe_a_SOURCES = \
     src/common.c \
     src/covariance.c \
     src/utils.c \
@@ -17,7 +30,19 @@ coffe_SOURCES = \
     src/signal.c \
     src/corrfunc.c \
     src/multipoles.c \
-    src/average_multipoles.c \
+    src/average_multipoles.c
+
+#include .c and .h in SOURCES so that both appear in dist
+coffe_SOURCES = \
+    $(libcoffe_a_HEADERS) \
+    src/utils.h \
+    src/twobessel.h \
+    src/errors.h \
+    src/functions.h \
+    src/tanhsinh.h \
+    src/signal.h \
+    src/output.h \
+    $(libcoffe_a_SOURCES) \
     src/output.c \
     src/main.c
 
@@ -32,7 +57,7 @@ test_background_SOURCES = \
     src/parser.c \
     src/tanhsinh.c \
     src/background.c
-test_background_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
+test_background_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
 test_background_LDFLAGS = $(LDFLAGS)
 test_background_AM_CFLAGS = $(AM_CFLAGS)
 
@@ -45,7 +70,7 @@ test_integrals_SOURCES = \
     src/background.c \
     src/twofast.c \
     src/integrals.c
-test_integrals_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
+test_integrals_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
 test_integrals_LDFLAGS = $(LDFLAGS)
 test_integrals_AM_CFLAGS = $(AM_CFLAGS)
 
@@ -60,7 +85,7 @@ test_multipoles_SOURCES = \
     src/integrals.c \
     src/functions.c \
     src/signal.c
-test_multipoles_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
+test_multipoles_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
 test_multipoles_LDFLAGS = $(LDFLAGS)
 test_multipoles_AM_CFLAGS = $(AM_CFLAGS)
 
@@ -77,7 +102,7 @@ test_covariance_SOURCES = \
     src/twobessel.c \
     src/utils.c \
     src/covariance.c
-test_covariance_CPPFLAGS = -Isrc/ -Itests/ -Itests/benchmarks/ -Wall -Wextra -Wpedantic
+test_covariance_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
 test_covariance_LDFLAGS = $(LDFLAGS)
 test_covariance_AM_CFLAGS = $(AM_CFLAGS)
 
