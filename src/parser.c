@@ -404,14 +404,14 @@ static int parse_external_power_spectrum(
             (double)(class_end - class_start) / CLOCKS_PER_SEC
         );
 
-    double *k =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-    double *pk =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-    size_t pk_len = psp.ln_k_size;
+    double *k = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
+    double *pk = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
+    size_t pk_len = pnl.k_size;
 
     /* rescaling as CLASS internally uses units of 1/Mpc */
-    for (size_t i = 0; i < (size_t)psp.ln_k_size; ++i){
-        k[i] = exp(psp.ln_k[i]) / par->h;
-        pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
+    for (size_t i = 0; i < pk_len; ++i){
+        k[i] = pnl.k[i] / par->h;
+        pk[i] = exp(pnl.ln_pk_l[0][i]) * pow(par->h, 3);
     }
     if (par->have_window){
         for (size_t i = 0; i < pk_len; ++i)
