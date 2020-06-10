@@ -453,13 +453,11 @@ int coffe_parse_default_parameters(
     par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
     par->w0 = -1.0;
     par->wa = 0.0;
-    #ifdef HAVE_CLASS
     par->have_class = 0;
     par->h = 0.67;
     par->k_pivot = 0.05;
     par->ln_10_pow_10_A_s = 3.06;
     par->n_s = 0.96;
-    #endif
 
     par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 150.};

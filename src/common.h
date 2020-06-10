@@ -273,7 +273,6 @@ struct coffe_parameters_t
 
     int verbose;
 
-#ifdef HAVE_CLASS
     /* stuff for CLASS only */
 
     int have_class; /* should CLASS be used or not? */
@@ -285,8 +284,6 @@ struct coffe_parameters_t
     double h; /* Damn you, little h! */
 
     double k_pivot; /* for CLASS */
-
-#endif
 
 };
 
