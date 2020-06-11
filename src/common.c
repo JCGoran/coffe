@@ -624,50 +624,55 @@ int coffe_parameters_free(
     struct coffe_parameters_t *par
 )
 {
-    if (par->conf != NULL)
-        config_destroy(par->conf);
-    par->conf = NULL;
+    if (par->flag){
+        if (par->conf != NULL)
+            config_destroy(par->conf);
+        par->conf = NULL;
 
-    coffe_free_spline(&par->power_spectrum);
-    coffe_free_spline(&par->power_spectrum_norm);
-    coffe_free_spline(&par->matter_bias1);
-    coffe_free_spline(&par->matter_bias2);
-    coffe_free_spline(&par->magnification_bias1);
-    coffe_free_spline(&par->magnification_bias2);
-    coffe_free_spline(&par->evolution_bias1);
-    coffe_free_spline(&par->evolution_bias2);
+        coffe_free_spline(&par->power_spectrum);
+        coffe_free_spline(&par->power_spectrum_norm);
+        coffe_free_spline(&par->matter_bias1);
+        coffe_free_spline(&par->matter_bias2);
+        coffe_free_spline(&par->magnification_bias1);
+        coffe_free_spline(&par->magnification_bias2);
+        coffe_free_spline(&par->evolution_bias1);
+        coffe_free_spline(&par->evolution_bias2);
 
-    for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
-        free(par->type_bg[i]);
-    }
-    free(par->type_bg);
+        for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
+            free(par->type_bg[i]);
+        }
+        free(par->type_bg);
 
-    if (par->output_type == 1){
-        free(par->sep);
-        free(par->mu);
+        if (par->output_type == 1){
+            free(par->sep);
+            free(par->mu);
+        }
+        if (par->output_type == 2){
+            free(par->sep);
+            free(par->multipole_values);
+        }
+        if (par->output_type == 3){
+            free(par->sep);
+            free(par->multipole_values);
+        }
+        if (par->output_type == 4){
+            free(par->multipole_values);
+            free(par->covariance_z_mean);
+            free(par->covariance_deltaz);
+            free(par->covariance_fsky);
+            free(par->covariance_density);
+        }
+        if (par->output_type == 5){
+            free(par->multipole_values);
+            free(par->covariance_zmin);
+            free(par->covariance_zmax);
+            free(par->covariance_fsky);
+            free(par->covariance_density);
+        }
+
+        par->flag = 0;
     }
-    if (par->output_type == 2){
-        free(par->sep);
-        free(par->multipole_values);
-    }
-    if (par->output_type == 3){
-        free(par->sep);
-        free(par->multipole_values);
-    }
-    if (par->output_type == 4){
-        free(par->multipole_values);
-        free(par->covariance_z_mean);
-        free(par->covariance_deltaz);
-        free(par->covariance_fsky);
-        free(par->covariance_density);
-    }
-    if (par->output_type == 5){
-        free(par->multipole_values);
-        free(par->covariance_zmin);
-        free(par->covariance_zmax);
-        free(par->covariance_fsky);
-        free(par->covariance_density);
-    }
+
     return EXIT_SUCCESS;
 }
 

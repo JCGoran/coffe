@@ -681,6 +681,7 @@ int coffe_integrals_init(
                 free(final_result);
             }
             integral[j].n = n, integral[j].l = l;
+            integral[j].flag = 1;
         }
     }
     if (par->flatsky){
@@ -732,6 +733,8 @@ int coffe_integrals_init(
         free(final_result);
         free(sep);
         free(result);
+
+        integral[9].flag = 1;
     }
 
     gsl_set_error_handler(default_handler);
@@ -749,18 +752,23 @@ int coffe_integrals_free(
 )
 {
     for (size_t i = 0; i<8; ++i){
-        coffe_free_spline(&integral[i].result);
+        if (integral[i].flag){
+            coffe_free_spline(&integral[i].result);
+            integral[i].flag = 0;
+        }
     }
-    if (integral[8].n == 4 && integral[8].l == 0){
+    if (integral[8].n == 4 && integral[8].l == 0 && integral[8].flag){
         coffe_free_spline(&integral[8].result);
         coffe_free_spline(&integral[8].renormalization0);
         gsl_spline2d_free(integral[8].renormalization.spline);
         gsl_interp_accel_free(integral[8].renormalization.xaccel);
         gsl_interp_accel_free(integral[8].renormalization.yaccel);
+        integral[8].flag = 0;
     }
     // code for flatsky
-    if (integral[9].n == -10 && integral[9].l == -10){
+    if (integral[9].n == -10 && integral[9].l == -10 && integral[9].flag){
         coffe_free_spline(&integral[9].result);
+        integral[9].flag = 0;
     }
     return EXIT_SUCCESS;
 }

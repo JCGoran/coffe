@@ -120,7 +120,7 @@ int coffe_multipoles_init(
 #endif
     mp->flag = 0;
     if (par->output_type == 2){
-        mp->flag = 1;
+
         clock_t start, end;
         start = clock();
 
@@ -195,6 +195,8 @@ int coffe_multipoles_init(
                 (double)(end - start) / CLOCKS_PER_SEC);
 
         gsl_set_error_handler(default_handler);
+
+        mp->flag = 1;
     }
 
     return EXIT_SUCCESS;

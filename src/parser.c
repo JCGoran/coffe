@@ -637,6 +637,8 @@ int coffe_parse_default_parameters(
 
     par->conf = NULL;
 
+    par->flag = 1;
+
     return EXIT_SUCCESS;
 }
 
@@ -1204,5 +1206,8 @@ int coffe_parser_init(
             filename,
             (double)(end - start) / CLOCKS_PER_SEC
         );
+
+    par->flag = 1;
+
     return EXIT_SUCCESS;
 }

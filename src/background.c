@@ -506,6 +506,8 @@ int coffe_background_init(
         printf("Background initialized in %.2f s\n",
             (double)(end - start) / CLOCKS_PER_SEC);
 
+    bg->flag = 1;
+
     return EXIT_SUCCESS;
 }
 
@@ -513,15 +515,20 @@ int coffe_background_free(
     struct coffe_background_t *bg
 )
 {
-    coffe_free_spline(&bg->z_as_chi);
-    coffe_free_spline(&bg->a);
-    coffe_free_spline(&bg->Hz);
-    coffe_free_spline(&bg->conformal_Hz);
-    coffe_free_spline(&bg->conformal_Hz_prime);
-    coffe_free_spline(&bg->D1);
-    coffe_free_spline(&bg->f);
-    coffe_free_spline(&bg->G1);
-    coffe_free_spline(&bg->G2);
-    coffe_free_spline(&bg->comoving_distance);
+    if (bg->flag){
+        coffe_free_spline(&bg->z_as_chi);
+        coffe_free_spline(&bg->a);
+        coffe_free_spline(&bg->Hz);
+        coffe_free_spline(&bg->conformal_Hz);
+        coffe_free_spline(&bg->conformal_Hz_prime);
+        coffe_free_spline(&bg->D1);
+        coffe_free_spline(&bg->f);
+        coffe_free_spline(&bg->G1);
+        coffe_free_spline(&bg->G2);
+        coffe_free_spline(&bg->comoving_distance);
+
+        bg->flag = 0;
+    }
+
     return EXIT_SUCCESS;
 }

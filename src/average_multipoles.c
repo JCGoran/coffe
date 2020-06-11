@@ -107,7 +107,7 @@ int coffe_average_multipoles_init(
 #endif
     ramp->flag = 0;
     if (par->output_type == 3){
-        ramp->flag = 1;
+
         clock_t start, end;
         start = clock();
 
@@ -179,6 +179,8 @@ int coffe_average_multipoles_init(
                 (double)(end - start) / CLOCKS_PER_SEC);
 
         gsl_set_error_handler(default_handler);
+
+        ramp->flag = 1;
     }
 
     return EXIT_SUCCESS;

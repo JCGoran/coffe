@@ -285,6 +285,8 @@ struct coffe_parameters_t
 
     double k_pivot; /* for CLASS */
 
+    int flag;
+
 };
 
 char *coffe_get_time(void);

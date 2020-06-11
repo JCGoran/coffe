@@ -42,6 +42,8 @@ struct coffe_background_t
 
     struct coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
 
+    int flag;
+
 };
 
 

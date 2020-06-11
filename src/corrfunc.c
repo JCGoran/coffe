@@ -140,7 +140,7 @@ int coffe_corrfunc_init(
     corrfunc->flag = 0;
     cf2d->flag = 0;
     if (par->output_type == 0){
-        cf_ang->flag = 1;
+
         clock_t start, end;
         start = clock();
 
@@ -194,9 +194,11 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("Angular correlation function calculated in %.2f s\n",
                 (double)(end - start) / CLOCKS_PER_SEC);
+
+        cf_ang->flag = 1;
     }
     else if (par->output_type == 1){
-        corrfunc->flag = 1;
+
         clock_t start, end;
         start = clock();
 
@@ -276,10 +278,12 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("Correlation function calculated in %.2f s\n",
                 (double)(end - start) / CLOCKS_PER_SEC);
+
+        corrfunc->flag = 1;
     }
 
     else if (par->output_type == 6){
-        cf2d->flag = 1;
+
         clock_t start, end;
         start = clock();
 
@@ -356,6 +360,8 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("2D correlation function calculated in %.2f s\n",
                 (double)(end - start) / CLOCKS_PER_SEC);
+
+        cf2d->flag = 1;
     }
 
     return EXIT_SUCCESS;

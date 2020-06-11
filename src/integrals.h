@@ -25,6 +25,7 @@ struct coffe_integrals_t
     struct coffe_interpolation result;
     struct coffe_interpolation2d renormalization;
     struct coffe_interpolation renormalization0;
+    int flag;
 };
 
 /**
