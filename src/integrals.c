@@ -89,6 +89,36 @@ static const size_t coffe_sep_len = sizeof(coffe_sep)/sizeof(coffe_sep[0]);
 
 
 /**
+    list of separations below 1 Mpc/h for which we need to evaluate
+    the convergent integrals
+**/
+
+static const double min_sep[] = {
+    NORM(1E-6), NORM(1E-5), NORM(1E-4),
+    NORM(1E-3), NORM(2E-3), NORM(5E-3),
+    NORM(7E-3), NORM(8E-3), NORM(9E-3),
+    NORM(1E-2), NORM(1.1E-2), NORM(1.2E-2),
+    NORM(1.25E-2), NORM(1.3E-2), NORM(1.35E-2),
+    NORM(1.5E-2), NORM(2E-2), NORM(2.5E-2),
+    NORM(3E-2), NORM(3.5E-2), NORM(5E-2),
+    NORM(7E-2), NORM(8E-2), NORM(9E-2),
+    NORM(1E-1), NORM(1.1E-1), NORM(1.2E-1),
+    NORM(1.25E-1), NORM(1.3E-1), NORM(1.35E-1),
+    NORM(1.5E-1), NORM(1.75E-1), NORM(2E-1), NORM(2.5E-1),
+    NORM(3E-1), NORM(3.5E-1), NORM(4E-1),
+    NORM(5E-1), NORM(6E-1),
+    NORM(7E-1), NORM(8E-1), NORM(9E-1)
+};
+
+
+/**
+    length of the above
+**/
+
+static const size_t min_sep_len = sizeof(min_sep) / sizeof(min_sep[0]);
+
+
+/**
     coefficients for the r -> 0 limit
 **/
 
@@ -414,6 +444,152 @@ static double integrals_flatsky(
     return output;
 }
 
+/**
+    computes the integrals I^n_l(r).
+    If n >= l, returns the combination I^n_l(r) * r^(n - l).
+**/
+int coffe_integrals_renormalizable(
+    double *output_x,
+    double *output_y,
+    const size_t output_len,
+    const struct coffe_interpolation *spectrum,
+    const int l,
+    const int n,
+    const double x_min,
+    const double x_max
+)
+{
+    /* do the FFTlog transform first */
+    double *fft_x = coffe_malloc(sizeof(double) * output_len);
+    double *fft_y = coffe_malloc(sizeof(double) * output_len);
+    twofast_1bessel(
+        fft_x,
+        fft_y,
+        output_len,
+        spectrum->spline->x,
+        spectrum->spline->y,
+        spectrum->spline->size,
+        l,
+        n,
+        COFFE_H0,
+        x_min,
+        x_min,
+        x_max,
+        0
+    );
+
+    double x0_result;
+
+    if (n >= l){
+        for (size_t i = 0; i < output_len; ++i){
+            fft_y[i] *= pow(fft_x[i], n - l); // r^(n - l) * I^n_l(r)
+        }
+        double result_limit, error_limit;
+        {
+            struct integrals_params test;
+            test.result.spline = spectrum->spline;
+            test.result.accel = spectrum->accel;
+            test.n = n;
+            test.l = l;
+
+            gsl_integration_workspace *space =
+                gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+
+            gsl_function integrand;
+            integrand.function = &integrals_prefactor;
+            integrand.params = &test;
+
+            const double precision = 1E-5;
+            gsl_integration_qag(
+                &integrand,
+                x_min,
+                x_max,
+                0,
+                precision,
+                COFFE_MAX_INTSPACE,
+                GSL_INTEG_GAUSS61,
+                space,
+                &result_limit,
+                &error_limit
+            );
+            gsl_integration_workspace_free(space);
+        }
+        x0_result = result_limit * integrals_coefficients(l) / 2. / M_PI / M_PI;
+    }
+    else{
+        x0_result = 0.0;
+    }
+    const double x0 = 0.0;
+
+    struct integrals_params test;
+    test.result.spline = spectrum->spline;
+    test.result.accel = spectrum->accel;
+    test.n = n;
+    test.l = l;
+
+    double temp_result, temp_error;
+
+#ifndef HAVE_DOUBLE_EXPONENTIAL
+    const double precision = 1E-5;
+    gsl_function integrand;
+    integrand.function = &integrals_bessel_integrand;
+    integrand.params = &test;
+
+    gsl_integration_workspace *wspace =
+        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+#endif
+
+    output_x[0] = x0;
+    output_y[0] = x0_result;
+
+    /* setting the output for the smallest separations (under 1 Mpc/h) */
+    for (size_t i = 1; i <= min_sep_len; ++i){
+        test.r = min_sep[i - 1];
+        output_x[i] = min_sep[i - 1]; // dimensionless!
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        temp_result = tanhsinh_quad(
+            &integrals_bessel_integrand,
+            &test,
+            x_min,
+            x_max,
+            0.,
+            &temp_error,
+            NULL
+        );
+#else
+        gsl_integration_qag(
+            &integrand,
+            x_min,
+            x_max,
+            0,
+            precision,
+            COFFE_MAX_INTSPACE,
+            GSL_INTEG_GAUSS61,
+            wspace,
+            &temp_result,
+            &temp_error
+        );
+#endif
+        if (n > l){
+            output_y[i] = pow(output_x[i], n - l) * temp_result / 2. / M_PI / M_PI;
+        }
+        else{
+            output_y[i] = temp_result / 2. / M_PI / M_PI;
+        }
+    }
+
+#ifndef HAVE_DOUBLE_EXPONENTIAL
+    gsl_integration_workspace_free(wspace);
+#endif
+
+    for (size_t i = min_sep_len + 1; i < output_len + min_sep_len + 1; ++i){
+        output_x[i] = fft_x[i - min_sep_len - 1];
+        output_y[i] = fft_y[i - min_sep_len - 1];
+    }
+
+    return EXIT_SUCCESS;
+}
+
 
 /**
     computes all the nonzero I^n_l integrals
@@ -433,7 +609,6 @@ int coffe_integrals_init(
 
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
-    double r0_sep, r0_result;
 
     for (int j = 0; j<9; ++j){
         if (par->nonzero_terms[j].n != -1 && par->nonzero_terms[j].l != -1){
@@ -542,131 +717,23 @@ int coffe_integrals_init(
             }
             else{
                 /* if integral is not divergent, use implementation of 2FAST */
-                size_t npoints = (size_t)par->bessel_bins;
-                double *sep =
-                    (double *)coffe_malloc(sizeof(double)*npoints);
-                double *result =
-                    (double *)coffe_malloc(sizeof(double)*npoints);
-                twofast_1bessel(
-                    sep, result, npoints,
-                    par->power_spectrum_norm.spline->x,
-                    par->power_spectrum_norm.spline->y,
-                    par->power_spectrum_norm.spline->size,
-                    l, n,
-                    COFFE_H0, par->k_min_norm,
-                    par->k_min_norm, par->k_max_norm, 0
-                );
-                if (n >= l){
-                    for (size_t i = 0; i<npoints; ++i){
-                        result[i] *= pow(sep[i], n - l); // r^(n - l) * I^n_l(r)
-                    }
-                    double result_limit, error_limit;
-                    {
-                        struct integrals_params test;
-                        test.result.spline = par->power_spectrum_norm.spline;
-                        test.result.accel = par->power_spectrum_norm.accel;
-                        test.n = n;
-                        test.l = l;
-
-                        gsl_integration_workspace *space =
-                            gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-                        gsl_function integrand;
-                        integrand.function = &integrals_prefactor;
-                        integrand.params = &test;
-
-                        double precision = 1E-5;
-                        gsl_integration_qag(
-                            &integrand, par->k_min_norm, par->k_max_norm, 0,
-                            precision, COFFE_MAX_INTSPACE,
-                            GSL_INTEG_GAUSS61, space, &result_limit, &error_limit
-                        );
-                        gsl_integration_workspace_free(space);
-                    }
-                    r0_result = result_limit*integrals_coefficients(l)/2./M_PI/M_PI;
-                }
-                else{
-                    r0_result = 0.0;
-                }
-                r0_sep = 0.0;
-
-                double min_sep[] = {
-                    NORM(1E-6), NORM(1E-5), NORM(1E-4),
-                    NORM(1E-3), NORM(2E-3), NORM(5E-3),
-                    NORM(7E-3), NORM(8E-3), NORM(9E-3),
-                    NORM(1E-2), NORM(1.1E-2), NORM(1.2E-2),
-                    NORM(1.25E-2), NORM(1.3E-2), NORM(1.35E-2),
-                    NORM(1.5E-2), NORM(2E-2), NORM(2.5E-2),
-                    NORM(3E-2), NORM(3.5E-2), NORM(5E-2),
-                    NORM(7E-2), NORM(8E-2), NORM(9E-2),
-                    NORM(1E-1), NORM(1.1E-1), NORM(1.2E-1),
-                    NORM(1.25E-1), NORM(1.3E-1), NORM(1.35E-1),
-                    NORM(1.5E-1), NORM(1.75E-1), NORM(2E-1), NORM(2.5E-1),
-                    NORM(3E-1), NORM(3.5E-1), NORM(4E-1),
-                    NORM(5E-1), NORM(6E-1),
-                    NORM(7E-1), NORM(8E-1), NORM(9E-1)
-                };
-                const size_t len = sizeof(min_sep)/sizeof(min_sep[0]);
-                struct integrals_params test;
-                test.result.spline = par->power_spectrum_norm.spline;
-                test.result.accel = par->power_spectrum_norm.accel;
-                test.n = n;
-                test.l = l;
-
-                double temp_result, temp_error;
-
-#ifndef HAVE_DOUBLE_EXPONENTIAL
-                double precision = 1E-5;
-                gsl_function integrand;
-                integrand.function = &integrals_bessel_integrand;
-                integrand.params = &test;
-
-                gsl_integration_workspace *wspace =
-                    gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-#endif
-
+                const size_t npoints = par->bessel_bins;
                 double *final_sep =
-                    (double *)coffe_malloc(sizeof(double)*(npoints + len + 1));
+                    (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
 
                 double *final_result =
-                    (double *)coffe_malloc(sizeof(double)*(npoints + len + 1));
+                    (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
 
-                final_sep[0] = r0_sep;
-                final_result[0] = r0_result;
-
-                for (size_t i = 1; i<=len; ++i){
-                    test.r = min_sep[i - 1];
-                    final_sep[i] = min_sep[i - 1]; // dimensionless!
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-                    temp_result = tanhsinh_quad(
-                        &integrals_bessel_integrand,
-                        &test,
-                        par->k_min_norm, par->k_max_norm, 0.,
-                        &temp_error, NULL
-                    );
-#else
-                    gsl_integration_qag(
-                        &integrand, par->k_min_norm, par->k_max_norm, 0,
-                        precision, COFFE_MAX_INTSPACE,
-                        GSL_INTEG_GAUSS61, wspace,
-                        &temp_result, &temp_error
-                    );
-#endif
-                    if (n > l){
-                        final_result[i] = pow(final_sep[i], n - l)*temp_result/2./M_PI/M_PI;
-                    }
-                    else{
-                        final_result[i] = temp_result/2./M_PI/M_PI;
-                    }
-                }
-#ifndef HAVE_DOUBLE_EXPONENTIAL
-                gsl_integration_workspace_free(wspace);
-#endif
-
-                for (size_t i = len + 1; i<npoints + len + 1; ++i){
-                    final_sep[i] = sep[i - len - 1];
-                    final_result[i] = result[i - len - 1];
-                }
+                coffe_integrals_renormalizable(
+                    final_sep,
+                    final_result,
+                    npoints,
+                    &par->power_spectrum_norm,
+                    l,
+                    n,
+                    par->k_min_norm,
+                    par->k_max_norm
+                );
 
                 coffe_init_spline(
                     &(integral[j].result),
@@ -675,8 +742,6 @@ int coffe_integrals_init(
                     npoints,
                     par->interp_method
                 );
-                free(sep);
-                free(result);
                 free(final_sep);
                 free(final_result);
             }

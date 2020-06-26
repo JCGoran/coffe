@@ -28,6 +28,19 @@ struct coffe_integrals_t
     int flag;
 };
 
+
+int coffe_integrals_renormalizable(
+    double *output_x,
+    double *output_y,
+    const size_t output_len,
+    const struct coffe_interpolation *spectrum,
+    const int l,
+    const int n,
+    const double x_min,
+    const double x_max
+);
+
+
 /**
     computes all the nonzero I^n_l integrals
 **/
