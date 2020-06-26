@@ -60,8 +60,6 @@ struct temp_background
 
     double *D1; /* growth rate D_1(a) */
 
-    double *D1_prime; /* derivative of D_1(a) wrt D1'(rphys)*rphys, dimensionless ('=d/drphys)*/
-
     double *f; /* growth function f=d(log D)/d(log a) */
 
     double *G1, *G2;
@@ -402,6 +400,12 @@ int coffe_background_init(
             (temp_bg->G1)[i] = 0;
             (temp_bg->G2)[i] = 0;
         }
+    }
+    /* normalizing D1 so it's 1 at z = 0 */
+    {
+        const double D10 = temp_bg->D1[0];
+        for (int i = 0; i < par->background_bins; ++i)
+            temp_bg->D1[i] /= D10;
     }
 
     /* initializing the splines; all splines are a function of z */

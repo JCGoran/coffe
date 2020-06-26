@@ -657,7 +657,6 @@ int coffe_covariance_init(
             const double c8bar =
                 490*c4*c4/1287.;
 
-            const double D10 = coffe_interp_spline(&bg->D1, 0);
             const double D1z = coffe_interp_spline(&bg->D1, z_mean);
 
             const double coeff_array[] = {c0, c2, c4};
@@ -701,10 +700,10 @@ int coffe_covariance_init(
                                    /par->covariance_pixelsize
                                    /separations[n]
                                    /separations[m]
-                                   +D1z * D1z / D10 / D10
+                                   +D1z * D1z
                                    *integral_pk[i*par->multipole_values_len + j][npixels_max*n + m]
                                    *coeff_sum/par->covariance_density[k]
-                                   +D1z * D1z * D1z * D1z / D10 / D10 / D10 / D10
+                                   +D1z * D1z * D1z * D1z
                                    *integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m]
                                    *coeffbar_sum
                                 )

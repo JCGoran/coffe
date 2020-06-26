@@ -34,8 +34,6 @@ struct coffe_background_t
 
     struct coffe_interpolation D1; /* growth rate D_1(a) */
 
-    struct coffe_interpolation D1_prime; /* derivative of D_1(a) wrt D1'(rphys)*rphys, dimensionless ('=d/drphys)*/
-
     struct coffe_interpolation f; /* growth function f=d(log D)/d(log a) */
 
     struct coffe_interpolation G1, G2;

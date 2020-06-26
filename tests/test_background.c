@@ -57,7 +57,7 @@ static int coffe_test_background(
         /* test D1 */
         weak_assert(
             approx_equal(
-                D1[i],
+                D1[i] / D1[0],
                 coffe_interp_spline(&bg->D1, z[i])
             ),
             &error_flag
