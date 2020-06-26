@@ -587,6 +587,9 @@ int coffe_integrals_renormalizable(
         output_y[i] = fft_y[i - min_sep_len - 1];
     }
 
+    free(fft_x);
+    free(fft_y);
+
     return EXIT_SUCCESS;
 }
 
