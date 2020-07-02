@@ -46,9 +46,19 @@ coffe_SOURCES = \
     src/output.c \
     src/main.c
 
-TESTS = test_background test_integrals test_multipoles test_covariance
+TESTS = \
+    test_background \
+    test_integrals \
+    test_corrfunc \
+    test_multipoles \
+    test_covariance
 
-check_PROGRAMS = test_background test_integrals test_multipoles test_covariance
+check_PROGRAMS = \
+    test_background \
+    test_integrals \
+    test_corrfunc \
+    test_multipoles \
+    test_covariance
 
 test_background_SOURCES = \
     tests/test_background.c \
@@ -73,6 +83,21 @@ test_integrals_SOURCES = \
 test_integrals_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
 test_integrals_LDFLAGS = $(LDFLAGS)
 test_integrals_AM_CFLAGS = $(AM_CFLAGS)
+
+test_corrfunc_SOURCES = \
+    tests/test_corrfunc.c \
+    src/common.c \
+    src/errors.c \
+    src/parser.c \
+    src/tanhsinh.c \
+    src/background.c \
+    src/twofast.c \
+    src/integrals.c \
+    src/functions.c \
+    src/signal.c
+test_corrfunc_CPPFLAGS = -Isrc/ -Itests/ -Wall -Wextra -Wpedantic
+test_corrfunc_LDFLAGS = $(LDFLAGS)
+test_corrfunc_AM_CFLAGS = $(AM_CFLAGS)
 
 test_multipoles_SOURCES = \
     tests/test_multipoles.c \
