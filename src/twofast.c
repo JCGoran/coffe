@@ -217,8 +217,11 @@ static void twofast_fft_input(
     double *input_x_mod = (double *)malloc(sizeof(double)*output_len);
     double *input_y_mod = (double *)fftw_malloc(sizeof(double)*output_len);
     fftw_complex *input_y_fft = (fftw_complex *)fftw_malloc(sizeof(fftw_complex)*N2);
-    fftw_plan p =
-        fftw_plan_dft_r2c_1d(output_len, input_y_mod, input_y_fft, flag);
+    fftw_plan p;
+    #pragma omp critical
+    {
+        p = fftw_plan_dft_r2c_1d(output_len, input_y_mod, input_y_fft, flag);
+    }
 
     for (size_t i = 0; i<output_len; ++i){
         input_x_mod[i] = k0*pow(kmax/kmin, (double)i/output_len);
@@ -238,7 +241,10 @@ static void twofast_fft_input(
     }
 
     fftw_execute(p);
-    fftw_destroy_plan(p);
+    #pragma omp critical
+    {
+        fftw_destroy_plan(p);
+    }
 
     for (size_t i = 0; i<N2; ++i){
         output_y[i] =
@@ -396,15 +402,21 @@ void twofast_1bessel(
 
     double *temp_output_y = (double *)fftw_malloc(sizeof(double)*output_len);
 
-    fftw_plan p =
-        fftw_plan_dft_c2r_1d(output_len, input_y_fft, temp_output_y, flag);
+    fftw_plan p;
+    #pragma omp critical
+    {
+        p = fftw_plan_dft_c2r_1d(output_len, input_y_fft, temp_output_y, flag);
+    }
 
     for (size_t i = 0; i<N2; ++i){
         input_y_fft[i] = temp_input[i]; // putting it back
     }
 
     fftw_execute(p);
-    fftw_destroy_plan(p);
+    #pragma omp critical
+    {
+        fftw_destroy_plan(p);
+    }
 
     for (size_t i = 0; i<output_len; ++i){
         temp_output_y[i] *= prefactors[i];
