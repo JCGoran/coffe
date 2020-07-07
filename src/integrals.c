@@ -399,12 +399,21 @@ static double integrals_renormalization(
 }
 
 
-static double integrals_flatsky_integrand(double k, void *p)
+static double integrals_flatsky_integrand(
+    double k,
+    void *p
+)
 {
     struct integrals_params *integrand = (struct integrals_params *) p;
 
-    return k*coffe_interp_spline(&integrand->result, k)
-       *gsl_sf_bessel_J0(k*integrand->r);
+        /* k^2 */
+    return k * k
+        /* P(k) */
+       * coffe_interp_spline(&integrand->result, k)
+        /* J0(k * r) */
+       * gsl_sf_bessel_J0(k * integrand->r)
+        /* k * r */
+       / (k * integrand->r);
 }
 
 
@@ -415,7 +424,8 @@ static double integrals_flatsky_integrand(double k, void *p)
 static double integrals_flatsky(
     struct coffe_interpolation result,
     double sep,
-    double kmin, double kmax
+    double kmin,
+    double kmax
 )
 {
     struct integrals_params test;
@@ -753,48 +763,98 @@ int coffe_integrals_init(
         }
     }
     if (par->flatsky){
-        size_t npoints = (size_t)par->bessel_bins;
+        const size_t npoints = (size_t)par->bessel_bins;
         double *sep =
-            (double *)coffe_malloc(sizeof(double)*npoints);
+            (double *)coffe_malloc(sizeof(double) * npoints);
         double *result =
-            (double *)coffe_malloc(sizeof(double)*npoints);
-        twofast_1bessel_flatsky(
-            sep, result, npoints,
+            (double *)coffe_malloc(sizeof(double) * npoints);
+        twofast_1bessel(
+            sep,
+            result,
+            npoints,
             par->power_spectrum_norm.spline->x,
             par->power_spectrum_norm.spline->y,
             par->power_spectrum_norm.spline->size,
-            COFFE_H0, par->k_min_norm,
-            par->k_min_norm, par->k_max_norm, 0
+            -0.5,
+            0.5,
+            COFFE_H0,
+            par->k_min_norm,
+            par->k_min_norm,
+            par->k_max_norm,
+            0
         );
 
-        double min_sep[] = {0};
-        const size_t min_sep_len = sizeof(min_sep)/sizeof(min_sep[0]);
+        /* we're off by a factor sqrt(2 / pi) * 2 * pi^2, so we rescale first */
+        /* note that we're actually computing r * I(r) since that's well defined at r = 0 */
+        for (size_t i = 0; i < npoints; ++i)
+            result[i] *= sep[i] * sqrt(2. / M_PI) * 2 * M_PI * M_PI;
 
         double *final_sep =
-            (double *)coffe_malloc(sizeof(double)*(npoints + min_sep_len));
+            (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
 
         double *final_result =
-            (double *)coffe_malloc(sizeof(double)*(npoints + min_sep_len));
+            (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i<min_sep_len; ++i){
-            final_sep[i] = NORM(min_sep[i]);
-            final_result[i] = integrals_flatsky(
-                par->power_spectrum_norm,
-                final_sep[i],
-                par->k_min_norm, par->k_max_norm
+        double result_limit, error_limit;
+        {
+            struct integrals_params test;
+            test.result.spline = par->power_spectrum_norm.spline;
+            test.result.accel = par->power_spectrum_norm.accel;
+            test.n = 1;
+            test.l = 0;
+
+            const double x_min = par->k_min_norm;
+            const double x_max = par->k_max_norm;
+
+            gsl_integration_workspace *space =
+                gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+
+            gsl_function integrand;
+            integrand.function = &integrals_prefactor;
+            integrand.params = &test;
+
+            const double precision = 1E-5;
+            gsl_integration_qag(
+                &integrand,
+                x_min,
+                x_max,
+                0,
+                precision,
+                COFFE_MAX_INTSPACE,
+                GSL_INTEG_GAUSS61,
+                space,
+                &result_limit,
+                &error_limit
             );
+            gsl_integration_workspace_free(space);
         }
 
-        for (size_t i = min_sep_len; i<min_sep_len + npoints; ++i){
-            final_sep[i] = sep[i - min_sep_len];
-            final_result[i] = result[i - min_sep_len];
+        final_sep[0] = 0.0;
+        final_result[0] = result_limit;
+
+        /* I think this part doesn't need parallelization */
+        //#pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 1; i <= min_sep_len; ++i){
+            final_sep[i] = min_sep[i - 1];
+            final_result[i] =
+                final_sep[i]
+              * integrals_flatsky(
+                    par->power_spectrum_norm,
+                    final_sep[i],
+                    par->k_min_norm,
+                    par->k_max_norm
+                );
+        }
+
+        for (size_t i = min_sep_len + 1; i < min_sep_len + npoints + 1; ++i){
+            final_sep[i] = sep[i - min_sep_len - 1];
+            final_result[i] = result[i - min_sep_len - 1];
         }
         coffe_init_spline(
             &(integral[9].result),
             final_sep,
             final_result,
-            npoints + min_sep_len,
+            npoints + min_sep_len + 1,
             par->interp_method
         );
         free(final_sep);

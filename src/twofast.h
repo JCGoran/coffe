@@ -48,37 +48,8 @@ void twofast_1bessel(
     double *input_x,
     double *input_y,
     size_t input_len,
-    int l,
+    double l,
     double nu,
-    double r0,
-    double k0,
-    double kmin,
-    double kmax,
-    unsigned flag
-);
-
-/*****
-    computes the integral of the form k P(k) J_0(k r)
-    INPUT:
-        output_x - pointer to output x-array (MUST BE ALLOCATED BEFOREHAND)
-        output_y - pointer to output y-array (MUST BE ALLOCATED BEFOREHAND USING FFTW_MALLOC)
-        output_len - length of previous 2 arrays
-        input_x - pointer to input x-array (k in above nomenclature)
-        input_y - pointer to input y-array (P(k) in above nomenclature)
-        input_len - length of previous 2 arrays
-        r0 - smallest separation for the output
-        k0 - smallest value of input x-array
-        kmin - smallest value of input x-array
-        kmax - largest value of input y-array
-        flag - FFTW transformation flag (0 is usually sufficient)
-*****/
-void twofast_1bessel_flatsky(
-    double *output_x,
-    double *output_y,
-    size_t output_len,
-    double *input_x,
-    double *input_y,
-    size_t input_len,
     double r0,
     double k0,
     double kmin,

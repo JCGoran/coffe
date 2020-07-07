@@ -144,7 +144,7 @@ static double complex twofast_lgamma(long double complex z)
     }
 }
 
-static double complex twofast_mql(double t, double q, int l, double alpha)
+static double complex twofast_mql(double t, double q, double l, double alpha)
 {
     const double complex n = q - 1 - t*I;
     double complex unl =
@@ -156,23 +156,6 @@ static double complex twofast_mql(double t, double q, int l, double alpha)
         exit(EXIT_FAILURE);
     }
 }
-
-/**
-    for flatsky lensing
-**/
-static double complex twofast_mq(double t, double q, double alpha)
-{
-    const double complex n = q - 1 - t*I;
-    double complex unl =
-        cpow(2, n)
-       *cexp(twofast_lgamma((1 + n)/2) - twofast_lgamma((1 - n)/2));
-    if (gsl_finite(unl)) return cpow(alpha, t*I - q)*unl;
-    else{
-        fprintf(stderr, "ERROR: file %s, function %s\n", __FILE__, __func__);
-        exit(EXIT_FAILURE);
-    }
-}
-
 
 static inline double twofast_min(double a, double b)
 {
@@ -188,7 +171,7 @@ static inline double twofast_max(double a, double b)
     return a;
 }
 
-static double twofast_selectqnu(int l, double nu)
+static double twofast_selectqnu(double l, double nu)
 {
     static const double n1 = 0.9, n2 = 0.9999;
     double qmin = twofast_max(n2 - 1.0 - nu, -l);
@@ -263,67 +246,6 @@ static void twofast_fft_input(
     fftw_free(input_y_fft);
 }
 
-/**
-    for flatsky lensing
-**/
-static void twofast_fft_input_flatsky(
-    fftw_complex *output_y,
-    size_t output_len,
-    gsl_spline *spline,
-    gsl_interp_accel *accel,
-    double q,
-    double k0,
-    double kmin,
-    double kmax,
-    unsigned flag
-)
-{
-    const size_t N2 = output_len/2 + 1;
-    const double L = 2*M_PI*output_len/log(kmax/kmin);
-    double *input_x_mod = (double *)malloc(sizeof(double)*output_len);
-    double *input_y_mod = (double *)fftw_malloc(sizeof(double)*output_len);
-    fftw_complex *input_y_fft = (fftw_complex *)fftw_malloc(sizeof(fftw_complex)*N2);
-    fftw_plan p =
-        fftw_plan_dft_r2c_1d(output_len, input_y_mod, input_y_fft, flag);
-
-    for (size_t i = 0; i<output_len; ++i){
-        input_x_mod[i] = k0*pow(kmax/kmin, (double)i/output_len);
-    }
-
-    for (size_t i = 0; i<output_len; ++i){
-        input_y_mod[i] =
-            pow(kmax/kmin, (2. - q)*i/output_len)
-           *gsl_spline_eval(spline, k0*pow(kmax/kmin, (double)i/output_len), accel)
-           *twofast_window(
-                k0*pow(kmax/kmin, (double)i/output_len),
-                kmin,
-                k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
-                exp(0.46)*kmin,
-                exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
-            );
-    }
-
-    fftw_execute(p);
-    fftw_destroy_plan(p);
-
-    for (size_t i = 0; i<N2; ++i){
-        output_y[i] =
-            twofast_window(
-                input_x_mod[N2 - 1 + i],
-                kmin,
-                k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
-                exp(0.46)*kmin,
-                exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
-            )
-           *conj(input_y_fft[i])/L;
-    }
-
-    free(input_x_mod);
-    fftw_free(input_y_mod);
-    fftw_free(input_y_fft);
-}
-
-
 void twofast_1bessel(
     double *output_x,
     double *output_y,
@@ -331,7 +253,7 @@ void twofast_1bessel(
     double *input_x,
     double *input_y,
     size_t input_len,
-    int l,
+    double l,
     double nu,
     double r0,
     double k0,
@@ -433,110 +355,6 @@ void twofast_1bessel(
     fftw_free(temp_output_y);
 }
 
-
-/**
-    for flatsky lensing
-**/
-void twofast_1bessel_flatsky(
-    double *output_x,
-    double *output_y,
-    size_t output_len,
-    double *input_x,
-    double *input_y,
-    size_t input_len,
-    double r0,
-    double k0,
-    double kmin,
-    double kmax,
-    unsigned flag
-)
-{
-    switch(flag){
-        case 0:
-            flag = FFTW_ESTIMATE;
-            break;
-        case 1:
-            flag = FFTW_MEASURE;
-            break;
-        case 2:
-            flag = FFTW_PATIENT;
-            break;
-        case 3:
-            flag = FFTW_EXHAUSTIVE;
-            break;
-        default:
-            flag = FFTW_ESTIMATE;
-            break;
-    }
-    const size_t N2 = output_len/2 + 1;
-    const double qnu = 0.9;
-    const double G = log(kmax/kmin);
-
-    gsl_spline *input_spline = gsl_spline_alloc(gsl_interp_cspline, input_len);
-    gsl_interp_accel *input_accel = gsl_interp_accel_alloc();
-    gsl_spline_init(input_spline, input_x, input_y, input_len);
-    fftw_complex *input_y_fft = (fftw_complex *)fftw_malloc(sizeof(fftw_complex)*N2);
-
-    twofast_fft_input_flatsky(
-        input_y_fft, output_len,
-        input_spline, input_accel,
-        qnu, k0, kmin, kmax,
-        flag
-    );
-    gsl_spline_free(input_spline);
-    gsl_interp_accel_free(input_accel);
-
-    double *prefactors = (double *)fftw_malloc(sizeof(double)*output_len);
-
-    for (size_t i = 0; i<output_len; ++i){
-        output_x[i] = r0*pow(kmax/kmin, (double)i/output_len);
-    }
-
-    for (size_t i = 0; i<output_len; ++i){
-        prefactors[i] =
-            2*M_PI*k0*k0*pow(kmax/kmin, -qnu*i/output_len)/G;
-    }
-
-    fftw_complex *temp_input = (fftw_complex *)fftw_malloc(sizeof(fftw_complex)*N2);
-    double *t_array = (double *)malloc(sizeof(double)*N2);
-
-    for (size_t i = 0; i<N2; ++i){
-        t_array[i] = 2*M_PI*i/G;
-    }
-
-    for (size_t i = 0; i<N2; ++i){
-        // copying the input as it's destroyed by the planner
-        temp_input[i] =
-            input_y_fft[i]
-           *twofast_mq(2*M_PI*i/G, qnu, k0*r0);
-    }
-
-    double *temp_output_y = (double *)fftw_malloc(sizeof(double)*output_len);
-
-    fftw_plan p =
-        fftw_plan_dft_c2r_1d(output_len, input_y_fft, temp_output_y, flag);
-
-    for (size_t i = 0; i<N2; ++i){
-        input_y_fft[i] = temp_input[i]; // putting it back
-    }
-
-    fftw_execute(p);
-    fftw_destroy_plan(p);
-
-    for (size_t i = 0; i<output_len; ++i){
-        temp_output_y[i] *= prefactors[i];
-    }
-
-    for (size_t i = 0; i<output_len; ++i){
-        output_y[i] = temp_output_y[i];
-    }
-
-    fftw_free(prefactors);
-    fftw_free(input_y_fft);
-    fftw_free(temp_input);
-    free(t_array);
-    fftw_free(temp_output_y);
-}
 
 #ifdef HAVE_ARB
 
