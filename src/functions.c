@@ -1564,16 +1564,39 @@ double functions_double_integrated(
     /* len-len term */
     if (par->correlation_contrib.len){
         if (par->flatsky){
-            double temp_sep = chi_mean*sqrt(2.*(1. - costheta));
             /* len-len modified by flatsky */
             result +=
             /* constant in front */
-            9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*sz_mean1)*(2 - 5*sz_mean2)/8./M_PI*pow(chi_mean, 3)
+            9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+          * (2 - 5 * sz_mean1)
+          * (2 - 5 * sz_mean2)
+          * pow(chi_mean, 3)
+          / 8. / M_PI
             /* integrand */
-           *coffe_interp_spline(&integral[9].result, x1*temp_sep*sqrt(1 - mu*mu))
-           *pow(coffe_interp_spline(&bg->D1, coffe_interp_spline(&bg->z_as_chi, x1*chi_mean)), 2) // D(lambda)^2
-           *pow(1 + coffe_interp_spline(&bg->z_as_chi, x1*chi_mean), 2) // (1 + z(lambda))^2
-           *pow(x1*(1 - x1), 2);
+          * coffe_interp_spline(
+                &integral[9].result,
+                x1 * sep * sqrt(1 - mu * mu)
+            )
+            /* D1(z)^2 */
+          * pow(
+                coffe_interp_spline(
+                    &bg->D1,
+                    coffe_interp_spline(
+                        &bg->z_as_chi,
+                        x1 * chi_mean
+                    )
+                ),
+                2
+            )
+            /* (1 + z)^2 */
+          * pow(
+                1 + coffe_interp_spline(
+                    &bg->z_as_chi,
+                    x1 * chi_mean
+                ),
+                2
+            )
+          * pow(x1 * (1 - x1), 2);
         }
         else{
         if (r2 > 1e-20){
