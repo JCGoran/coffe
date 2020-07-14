@@ -97,8 +97,8 @@ The above may need some adjustments depending on your HPC environment (using `sr
 
 ## Testing
 To test the output of the code, you can use use the command `make check`.
-Alternatively, you can build tests one by one using `make test_[MODULE]`, where `[MODULE]` can currently be one of `background`, `integrals`, `multipoles`, `covariance`.
-More tests are on the way.
+Alternatively, you can build tests one by one using `make test_[MODULE]`, where `[MODULE]` can currently be one of `background`, `integrals`, `corrfunc`, `multipoles`, `covariance`.
+This is primarily useful when modifying the code itself, to make sure the old results of the code weren't broken by some new change (feature, bugfix, etc.).
 
 ## Bug reports and feature requests
 Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests.
