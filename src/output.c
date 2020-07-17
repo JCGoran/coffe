@@ -469,7 +469,7 @@ int coffe_output_init(
         fclose(file_renormalization);
     }
 
-    if (par->flatsky){
+    if (par->flatsky_density_lensing || par->flatsky_lensing_lensing){
         snprintf(
             header, COFFE_MAX_STRLEN,
             "# flatsky\n"

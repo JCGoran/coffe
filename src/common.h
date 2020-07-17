@@ -269,7 +269,11 @@ struct coffe_parameters_t
 
     int theta_len;
 
-    int flatsky;
+    int flatsky_standard_standard;
+
+    int flatsky_density_lensing;
+
+    int flatsky_lensing_lensing;
 
     int verbose;
 

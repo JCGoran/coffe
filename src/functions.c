@@ -69,7 +69,7 @@ double functions_nonintegrated(
     /* den-den term */
     if (par->correlation_contrib.den){
         /* den-den modified by flatsky */
-        if (par->flatsky){
+        if (par->flatsky_standard_standard){
             result += bz_mean1*bz_mean2
                *coffe_interp_spline(&integral[0].result, sep);
         }
@@ -81,7 +81,7 @@ double functions_nonintegrated(
     /* rsd-rsd term */
     if (par->correlation_contrib.rsd){
         /* rsd-rsd modified by flatsky */
-        if (par->flatsky){
+        if (par->flatsky_standard_standard){
             result +=
                 fmean*fmean*coffe_interp_spline(&integral[0].result, sep)/5.
                 -
@@ -194,7 +194,7 @@ double functions_nonintegrated(
         par->correlation_contrib.rsd
     ){
         /* den-rsd modified by flatsky */
-        if (par->flatsky){
+        if (par->flatsky_standard_standard){
             result +=
                 (bz_mean1*fmean/3. + bz_mean2*fmean/3.)
                *coffe_interp_spline(&integral[0].result, sep)
@@ -646,7 +646,7 @@ double functions_single_integrated(
         par->correlation_contrib.len
     ){
         /* den-len + len-den modified in flatsky */
-        if (par->flatsky){
+        if (par->flatsky_density_lensing){
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/M_PI/4
                *coffe_interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
@@ -1563,7 +1563,7 @@ double functions_double_integrated(
 
     /* len-len term */
     if (par->correlation_contrib.len){
-        if (par->flatsky){
+        if (par->flatsky_lensing_lensing){
             /* len-len modified by flatsky */
             result +=
             /* constant in front */

@@ -762,7 +762,7 @@ int coffe_integrals_init(
             integral[j].flag = 1;
         }
     }
-    if (par->flatsky){
+    if (par->flatsky_density_lensing || par->flatsky_lensing_lensing){
         const size_t npoints = (size_t)par->bessel_bins;
         double *sep =
             (double *)coffe_malloc(sizeof(double) * npoints);
