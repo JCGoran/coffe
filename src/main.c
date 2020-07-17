@@ -114,15 +114,16 @@ int main(int argc, char *argv[])
         print_error_verbose(PROG_VALUE_ERROR, "NUMTHREADS");
         exit(EXIT_FAILURE);
     }
-    par.nthreads = n;
 
     /* the main sequence */
 
     coffe_parser_init(settings_file, &par);
 
-    if (par.verbose){
+    /* this goes after the parser since it sets it to the default (1) */
+    par.nthreads = n;
+
+    if (par.verbose)
         printf("Number of threads in use: %d\n", par.nthreads);
-    }
 
     coffe_background_init(&par, &bg);
 

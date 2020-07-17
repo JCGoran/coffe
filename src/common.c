@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_sf_bessel.h>
 
 #include "common.h"
 #include "errors.h"
@@ -53,14 +54,16 @@ void *coffe_malloc(size_t len)
 
 char *coffe_get_time(void)
 {
-    char *timestamp = (char *)malloc(sizeof(char)*30);
+    char *timestamp = (char *)malloc(sizeof(char) * COFFE_MAX_STRLEN);
     time_t ltime;
     ltime = time(NULL);
     struct tm *tm;
     tm = localtime(&ltime);
 
-    sprintf(
-        timestamp,"%04d-%02d-%02d-%02d-%02d-%02d",
+    snprintf(
+        timestamp,
+        COFFE_MAX_STRLEN,
+        "%04d-%02d-%02d-%02d-%02d-%02d",
         /* see http://www.cplusplus.com/reference/ctime/tm/ for the offsets */
         tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
     );
@@ -74,7 +77,7 @@ char *coffe_get_time(void)
 **/
 
 int read_1col(
-    char *filename,
+    const char *filename,
     double **values,
     size_t *len
 )
@@ -137,7 +140,7 @@ int read_1col(
 **/
 
 int read_2col(
-    char *filename,
+    const char *filename,
     double **values1,
     double **values2,
     size_t *len
@@ -206,7 +209,7 @@ int read_2col(
 **/
 
 int write_1col(
-    char *filename,
+    const char *filename,
     double *values,
     size_t len,
     const char *header
@@ -241,9 +244,9 @@ int write_1col(
 **/
 
 int write_2col(
-    char *filename,
-    double *values1,
-    double *values2,
+    const char *filename,
+    const double *values1,
+    const double *values2,
     size_t len,
     const char *header,
     const char *sep
@@ -281,11 +284,11 @@ int write_2col(
 
 int write_ncol(
     size_t ncolumns,
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 )
 {
@@ -299,11 +302,11 @@ int write_ncol(
 
     va_start(args, values);
     double **all_values = (double **)coffe_malloc(sizeof(double *)*ncolumns);
-    all_values[0] = values;
+    all_values[0] = (double *)values;
 
     for (size_t i = 1; i<ncolumns; ++i){
         values = va_arg(args, double *);
-        all_values[i] = values;
+        all_values[i] = (double *)values;
     }
     va_end(args);
 
@@ -332,43 +335,45 @@ int write_ncol(
 **/
 
 int write_ncol_null(
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 )
 {
     va_list args;
-    FILE *data = fopen(filename, "w");
-    if (data == NULL){
-        print_error_verbose(PROG_OPEN_ERROR, filename);
-        return EXIT_FAILURE;
-    }
-    if (header != NULL) fprintf(data, "%s", header);
-
     va_start(args, values);
     size_t counter = 0;
     double **all_values = (double **)coffe_malloc(sizeof(double *)*COFFE_MAX_ALLOCABLE);
-    all_values[0] = values;
+    all_values[0] = (double *)values;
 
-    do{
+    while (values != NULL){
         values = va_arg(args, double *);
         ++counter;
-        all_values[counter] = values;
-    } while (values != NULL);
+        all_values[counter] = (double *)values;
+    }
     va_end(args);
 
-    for (size_t i = 0; i<len; ++i){
-        for (size_t j = 0; j<counter; ++j){
-            if (j<counter - 1)
-                fprintf(data, "%.10e%s", all_values[j][i], sep);
-            else
-                fprintf(data, "%.10e%s\n", all_values[j][i], sep);
+    if (counter > 0){
+        FILE *data = fopen(filename, "w");
+        if (data == NULL){
+            print_error_verbose(PROG_OPEN_ERROR, filename);
+            return EXIT_FAILURE;
         }
+        if (header != NULL) fprintf(data, "%s", header);
+
+        for (size_t i = 0; i<len; ++i){
+            for (size_t j = 0; j<counter; ++j){
+                if (j<counter - 1)
+                    fprintf(data, "%.10e%s", all_values[j][i], sep);
+                else
+                    fprintf(data, "%.10e%s\n", all_values[j][i], sep);
+            }
+        }
+        fclose(data);
     }
-    fclose(data);
     for (size_t i = 0; i<counter; ++i){
         all_values[i] = NULL;
     }
@@ -383,8 +388,8 @@ int write_ncol_null(
 **/
 
 int write_matrix(
-    char *filename,
-    double **values,
+    const char *filename,
+    const double **values,
     size_t len1,
     size_t len2,
     const char *header,
@@ -455,11 +460,11 @@ int free_double_matrix(
 
 int copy_matrix_array(
     double **destination,
-    double **source,
+    const double **source,
     size_t rows,
     size_t columns,
     size_t index,
-    char *type
+    const char *type
 )
 {
     if (strcmp(type, "row") == 0){
@@ -485,12 +490,12 @@ int copy_matrix_array(
 }
 
 
-int init_spline(
+int coffe_init_spline(
     struct coffe_interpolation *interp,
-    double *xi,
-    double *yi,
-    size_t bins,
-    int interpolation_type
+    const double *xi,
+    const double *yi,
+    const size_t bins,
+    const int interpolation_type
 )
 {
     if (bins <= 0){
@@ -540,12 +545,14 @@ int init_spline(
 }
 
 
-int free_spline(
+int coffe_free_spline(
     struct coffe_interpolation *interp
 )
 {
-    gsl_spline_free(interp->spline);
-    gsl_interp_accel_free(interp->accel);
+    if (interp->spline != NULL)
+        gsl_spline_free(interp->spline);
+    if (interp->accel != NULL)
+        gsl_interp_accel_free(interp->accel);
     if (interp->spline != NULL) interp->spline = NULL;
     if (interp->accel != NULL) interp->accel = NULL;
     return EXIT_SUCCESS;
@@ -575,21 +582,38 @@ int coffe_compare_descending(
 
 
 /**
-    function describing w(z)
+    function describing the dark energy EOS
     for now only w(z) = w0 + wa*(1 - a),
     but others straightforward to implement
 **/
 
-double common_wfunction(
-    struct coffe_parameters_t *par,
+double coffe_dark_energy_eos(
+    const struct coffe_parameters_t *par,
     double z
 )
 {
     return par->w0 + par->wa*z/(1 + z);
 }
 
-double interp_spline(
-    struct coffe_interpolation *interp,
+
+/**
+    function describing the galaxy bias analytically;
+    by default, it is a fit of the form:
+    b(z) = A * z^2 + B * z + C
+    to the bias as described in GC of 1910.09273,
+    table 3, but one can adapt it for their own needs
+**/
+
+double coffe_galaxy_bias(
+    const double z
+)
+{
+    const double A = -0.179886, B = 1.15485, C = 0.484564;
+    return A * z * z + B * z + C;
+}
+
+double coffe_interp_spline(
+    const struct coffe_interpolation *interp,
     double value
 )
 {
@@ -600,43 +624,162 @@ int coffe_parameters_free(
     struct coffe_parameters_t *par
 )
 {
-    config_destroy(par->conf);
-    par->conf = NULL;
-    for (size_t i = 0; i<(size_t)par->correlation_sources_len; ++i){
-        free(par->correlation_sources[i]);
-    }
-    free(par->correlation_sources);
+    if (par->flag){
+        if (par->conf != NULL)
+            config_destroy(par->conf);
+        par->conf = NULL;
 
-    for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
-        free(par->type_bg[i]);
-    }
-    free(par->type_bg);
+        coffe_free_spline(&par->power_spectrum);
+        coffe_free_spline(&par->power_spectrum_norm);
+        coffe_free_spline(&par->matter_bias1);
+        coffe_free_spline(&par->matter_bias2);
+        coffe_free_spline(&par->magnification_bias1);
+        coffe_free_spline(&par->magnification_bias2);
+        coffe_free_spline(&par->evolution_bias1);
+        coffe_free_spline(&par->evolution_bias2);
 
-    if (par->output_type == 1){
-        free(par->sep);
-        free(par->mu);
+        for (size_t i = 0; i<(size_t)par->type_bg_len; ++i){
+            free(par->type_bg[i]);
+        }
+        free(par->type_bg);
+
+        if (par->output_type == 1){
+            free(par->sep);
+            free(par->mu);
+        }
+        if (par->output_type == 2){
+            free(par->sep);
+            free(par->multipole_values);
+        }
+        if (par->output_type == 3){
+            free(par->sep);
+            free(par->multipole_values);
+        }
+        if (par->output_type == 4){
+            free(par->multipole_values);
+            free(par->covariance_z_mean);
+            free(par->covariance_deltaz);
+            free(par->covariance_fsky);
+            free(par->covariance_density);
+        }
+        if (par->output_type == 5){
+            free(par->multipole_values);
+            free(par->covariance_zmin);
+            free(par->covariance_zmax);
+            free(par->covariance_fsky);
+            free(par->covariance_density);
+        }
+
+        par->flag = 0;
     }
-    if (par->output_type == 2){
-        free(par->sep);
-        free(par->multipole_values);
+
+    return EXIT_SUCCESS;
+}
+
+double coffe_resolution_window(
+    double x
+)
+{
+    return 3.0 * gsl_sf_bessel_j1(x) / x;
+}
+
+
+/**
+    reads file <filename> into arrays <values1>..<valuesN>
+    of length <len>
+**/
+
+int coffe_read_ncol(
+    const char *filename,
+    const size_t N,
+    size_t *len,
+    double **values,
+    ...
+)
+{
+    int error = 0;
+    FILE *data = fopen(filename, "r");
+    if (data == NULL){
+        print_error_verbose(PROG_OPEN_ERROR, filename);
+        return EXIT_FAILURE;
     }
-    if (par->output_type == 3){
-        free(par->sep);
-        free(par->multipole_values);
+
+    /* number of lines in the file */
+    size_t n = 0;
+    char c, temp_string[COFFE_MAX_STRLEN];
+    char *temp_token;
+
+    /* first we get how many lines are in the file, also including comments */
+    while ((c=fgetc(data)) != EOF){
+        if (c == '\n') ++n;
     }
-    if (par->output_type == 4){
-        free(par->multipole_values);
-        free(par->covariance_z_mean);
-        free(par->covariance_deltaz);
-        free(par->covariance_fsky);
-        free(par->covariance_density);
+
+    error = fseek(data, 0, SEEK_SET);
+    if (error){
+        print_error_verbose(PROG_POS_ERROR, filename);
+        return EXIT_FAILURE;
     }
-    if (par->output_type == 5){
-        free(par->multipole_values);
-        free(par->covariance_zmin);
-        free(par->covariance_zmax);
-        free(par->covariance_fsky);
-        free(par->covariance_density);
+
+    /* get a line into temp_string */
+    size_t counter = 0;
+    for (size_t i = 0; i<n; ++i){
+        fgets(temp_string, COFFE_MAX_STRLEN, data);
+        if (temp_string[0] != '#') ++counter;
+    }
+
+    /* number of lines in the file */
+    *len = counter;
+
+    error = fseek(data, 0, SEEK_SET);
+    if (error){
+        print_error_verbose(PROG_POS_ERROR, filename);
+        return EXIT_FAILURE;
+    }
+
+    /* we need to store <N> pointers to <values> */
+    double **pointers = (double **)coffe_malloc(sizeof(double *) * N);
+
+    for (size_t i = 0; i < N; ++i)
+        /* allocating memory for <values> */
+        pointers[i] = (double *)coffe_malloc(sizeof(double) * counter);
+
+    /* kind of recycling <counter> here */
+    counter = 0;
+
+    for (size_t i = 0; i < n; ++i){
+        fgets(temp_string, COFFE_MAX_STRLEN, data);
+        if (temp_string[0] != '#'){
+            temp_token = strtok(temp_string, ",\t: ");
+            for (size_t j = 0; j < N; ++j){
+                /* <pointers[j]> should hopefully be the address of <values> */
+                if (temp_token != NULL)
+                    *(pointers[j] + counter) = atof(temp_token);
+                temp_token = strtok(NULL, ",\t: ");
+            }
+            ++counter;
+        }
+    }
+
+    /* here we need to do the varg trick */
+    va_list args;
+
+    /* now we re-assign the pointers */
+    va_start(args, values);
+    for (size_t i = 0; i < N; ++i){
+        *values = pointers[i];
+        values = va_arg(args, double **);
+    }
+    va_end(args);
+
+    /* memory cleanup of <pointers> */
+    for (size_t i = 0; i < N; ++i)
+        pointers[i] = NULL;
+    free(pointers);
+
+    error = fclose(data);
+    if (error){
+        print_error_verbose(PROG_CLOSE_ERROR, filename);
+        return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }

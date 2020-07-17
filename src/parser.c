@@ -121,7 +121,7 @@ static int parse_string_array(
     config_t *conf,
     const char *setting,
     char ***values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -129,7 +129,7 @@ static int parse_string_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (char **)malloc(sizeof(char *) * *values_len);
     if (*values == NULL){
@@ -139,7 +139,7 @@ static int parse_string_array(
 
     const char *temp_setting;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_setting = config_setting_get_string_elem(type, i);
         (*values)[i] =
             (char *)coffe_malloc(sizeof(char)*(strlen(temp_setting) + 1));
@@ -158,7 +158,7 @@ static int parse_int_array(
     config_t *conf,
     const char *setting,
     int **values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -166,13 +166,13 @@ static int parse_int_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (int *)coffe_malloc(sizeof(int) * *values_len);
 
     int temp_value;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_value = config_setting_get_int_elem(type, i);
         *(*values + i) = temp_value;
     }
@@ -189,7 +189,7 @@ static int parse_double_array(
     config_t *conf,
     const char *setting,
     double **values,
-    int *values_len
+    size_t *values_len
 )
 {
     config_setting_t *type = config_lookup(conf, setting);
@@ -197,16 +197,34 @@ static int parse_double_array(
         print_error(PROG_NULL_PARAM);
         return EXIT_FAILURE;
     }
-    *values_len = config_setting_length(type);
+    *values_len = (size_t)config_setting_length(type);
 
     *values = (double *)coffe_malloc(sizeof(double) * *values_len);
 
     double temp_value;
 
-    for (int i = 0; i<*values_len; ++i){
+    for (size_t i = 0; i < *values_len; ++i){
         temp_value = config_setting_get_float_elem(type, i);
         *(*values + i) = temp_value;
     }
+    return EXIT_SUCCESS;
+}
+
+
+static int parse_bias_default(
+    double value,
+    struct coffe_interpolation *spline,
+    int method
+)
+{
+    double redshifts[] = {0, 25, 50, 75, 100};
+    double values[] = {value, value, value, value, value};
+    coffe_init_spline(
+        spline, redshifts, values,
+        COFFE_ARRAY_SIZE(redshifts),
+        method
+    );
+
     return EXIT_SUCCESS;
 }
 
@@ -236,17 +254,14 @@ static int parse_bias(
             &values,
             &len
         );
-        init_spline(spline, redshifts, values, len, method);
+        coffe_init_spline(spline, redshifts, values, len, method);
         free(redshifts);
         free(values);
     }
     else{
         double value;
         parse_double(conf, setting_single, &value, COFFE_TRUE);
-        /* a hacky way to init; if you need more range, increase redshift */
-        double redshifts[] = {0, 25, 50, 75, 100};
-        double values[] = {value, value, value, value, value};
-        init_spline(spline, redshifts, values, sizeof(redshifts)/sizeof(redshifts[0]), method);
+        parse_bias_default(value, spline, method);
     }
 
     return EXIT_SUCCESS;
@@ -256,7 +271,7 @@ static int parse_bias(
 /**
     parsing the power spectrum from an external source (only CLASS for now)
 **/
-
+#ifdef HAVE_CLASS
 static int parse_external_power_spectrum(
     struct coffe_parameters_t *par
 )
@@ -389,16 +404,24 @@ static int parse_external_power_spectrum(
             (double)(class_end - class_start) / CLOCKS_PER_SEC
         );
 
-    double *k =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-    double *pk =(double *)coffe_malloc(sizeof(double)*psp.ln_k_size);
-    size_t pk_len = psp.ln_k_size;
+    double *k = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
+    double *pk = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
+    size_t pk_len = pnl.k_size;
 
     /* rescaling as CLASS internally uses units of 1/Mpc */
-    for (size_t i = 0; i<(size_t)psp.ln_k_size; ++i){
-        k[i] = exp(psp.ln_k[i]) / par->h;
-        pk[i] = exp(psp.ln_pk_l[i]) * pow(par->h, 3);
+    for (size_t i = 0; i < pk_len; ++i){
+        k[i] = pnl.k[i] / par->h;
+        pk[i] = exp(pnl.ln_pk_l[0][i]) * pow(par->h, 3);
     }
-    init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+    if (par->have_window){
+        for (size_t i = 0; i < pk_len; ++i)
+            pk[i] *= pow(
+                coffe_resolution_window(par->window_size * k[i]),
+                2
+            );
+    }
+
+    coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
     free(k);
     free(pk);
@@ -416,6 +439,208 @@ static int parse_external_power_spectrum(
 
     return EXIT_SUCCESS;
 }
+#endif
+
+int coffe_parse_default_parameters(
+    struct coffe_parameters_t *par
+)
+{
+    par->nthreads = 1;
+    /* cosmological parameters */
+    par->Omega0_cdm = 0.25;
+    par->Omega0_baryon = 0.05;
+    par->Omega0_gamma = 9e-5;
+    par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
+    par->w0 = -1.0;
+    par->wa = 0.0;
+    par->have_class = 0;
+    par->h = 0.67;
+    par->k_pivot = 0.05;
+    par->ln_10_pow_10_A_s = 3.06;
+    par->n_s = 0.96;
+
+    par->file_sep[0] = 0;
+    const double separations[] = {10., 20., 40., 100., 150.};
+    par->sep = coffe_malloc(
+        sizeof(double) * COFFE_ARRAY_SIZE(separations)
+    );
+    for (size_t i = 0; i < COFFE_ARRAY_SIZE(separations); ++i)
+        par->sep[i] = separations[i];
+    par->sep_len = COFFE_ARRAY_SIZE(separations);
+    par->interp_method = 5;
+    par->covariance_integration_method = 1;
+    par->covariance_integration_bins = 2000;
+    par->covariance_interpolation_method = 2;
+    par->file_power_spectrum[0] = 0;
+    /*
+        turns out you can do this
+        https://stackoverflow.com/a/1662202
+    */
+    const double k[] = {
+        #include "WAVENUMBER_HEADER.dat"
+    };
+    const double pk[] = {
+        #include "POWER_SPECTRUM_HEADER.dat"
+    };
+    coffe_init_spline(
+        &par->power_spectrum,
+        k, pk, COFFE_ARRAY_SIZE(k),
+        par->interp_method
+    );
+    par->k_min = 1e-5;
+    par->k_max = 300.;
+    {
+        size_t len = par->power_spectrum.spline->size;
+        double *k_norm =
+            (double *)coffe_malloc(sizeof(double)*len);
+        double *pk_norm =
+            (double *)coffe_malloc(sizeof(double)*len);
+        for (size_t i = 0; i < len; ++i){
+            k_norm[i] = par->power_spectrum.spline->x[i] / COFFE_H0;
+            pk_norm[i] = par->power_spectrum.spline->y[i] * pow(COFFE_H0, 3);
+        }
+        coffe_init_spline(
+            &par->power_spectrum_norm,
+            k_norm, pk_norm, len,
+            par->interp_method
+        );
+        par->k_min_norm = par->k_min / COFFE_H0;
+        par->k_max_norm = par->k_max / COFFE_H0;
+        free(k_norm);
+        free(pk_norm);
+    }
+
+    par->matter_bias_analytic = 0;
+    parse_bias_default(
+        1.0, &par->matter_bias1, par->interp_method
+    );
+    par->read_matter_bias1 = 0;
+    par->file_matter_bias1[0] = 0;
+
+    parse_bias_default(
+        1.0, &par->matter_bias2, par->interp_method
+    );
+    par->read_matter_bias2 = 0;
+    par->file_matter_bias2[0] = 0;
+
+    parse_bias_default(
+        0.0, &par->magnification_bias1, par->interp_method
+    );
+    par->read_magnification_bias1 = 0;
+    par->file_magnification_bias1[0] = 0;
+
+    parse_bias_default(
+        0.0, &par->magnification_bias2, par->interp_method
+    );
+    par->read_magnification_bias2 = 0;
+    par->file_magnification_bias2[0] = 0;
+
+    parse_bias_default(
+        0.0, &par->evolution_bias1, par->interp_method
+    );
+    par->read_evolution_bias1 = 0;
+    par->file_evolution_bias1[0] = 0;
+
+    parse_bias_default(
+        0.0, &par->evolution_bias2, par->interp_method
+    );
+    par->read_evolution_bias2 = 0;
+    par->file_evolution_bias2[0] = 0;
+
+    par->output_type = 2;
+    par->covariance_density = NULL;
+    par->covariance_density_len = 0;
+    par->covariance_z_mean = NULL;
+    par->covariance_z_mean_len = 0;
+    par->covariance_deltaz = NULL;
+    par->covariance_deltaz_len = 0;
+    par->covariance_fsky = NULL;
+    par->covariance_fsky_len = 0;
+    par->covariance_pixelsize = 0.0;
+    par->covariance_zmin = NULL;
+    par->covariance_zmin_len = 0;
+    par->covariance_zmax = NULL;
+    par->covariance_zmax_len = 0;
+    par->covariance_minimum_separation = 0.0;
+
+    par->have_window = 0;
+    par->window_size = 0;
+
+    snprintf(par->output_path, COFFE_MAX_STRLEN, "./");
+    snprintf(par->output_prefix, COFFE_MAX_STRLEN, "$TIME");
+    {
+        char *temp_time = coffe_get_time();
+        snprintf(
+            par->timestamp,
+            COFFE_MAX_STRLEN,
+            "%s",
+            temp_time
+        );
+        free(temp_time);
+    }
+
+    par->correlation_contrib.den = 1;
+    par->correlation_contrib.rsd = 0;
+    par->correlation_contrib.d1 = 0;
+    par->correlation_contrib.d2 = 0;
+    par->correlation_contrib.g1 = 0;
+    par->correlation_contrib.g2 = 0;
+    par->correlation_contrib.g3 = 0;
+    par->correlation_contrib.len = 0;
+    par->correlation_contrib.g4 = 0;
+    par->correlation_contrib.g5 = 0;
+
+    par->mu = NULL;
+    par->mu_len = 0;
+
+    par->divergent = 0;
+
+    par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
+    par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
+    par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
+    par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
+    par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
+    par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
+    par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
+    par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
+    par->nonzero_terms[8].n = -1, par->nonzero_terms[8].l = -1;
+
+    par->type_bg = NULL;
+    par->type_bg_len = 0;
+
+    par->background_bins = 10000;
+    par->bessel_bins = 10000;
+    #ifndef HAVE_CUBA
+    par->integration_method = 2;
+    #endif
+    par->integration_bins = 750000;
+
+    par->z_mean = 1.0;
+    par->deltaz = 0.2;
+
+    par->z_min = 0.9;
+    par->z_max = 1.1;
+
+    const double multipoles[] = {0, 2, 4};
+    par->multipole_values = coffe_malloc(
+        sizeof(double) * COFFE_ARRAY_SIZE(multipoles)
+    );
+    for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i)
+        par->multipole_values[i] = multipoles[i];
+    par->multipole_values_len = COFFE_ARRAY_SIZE(multipoles);
+
+    par->flatsky = 0;
+
+    par->theta_len = 0;
+
+    par->verbose = 0;
+
+    par->conf = NULL;
+
+    par->flag = 1;
+
+    return EXIT_SUCCESS;
+}
 
 
 /**
@@ -428,6 +653,7 @@ int coffe_parser_init(
     struct coffe_parameters_t *par
 )
 {
+    coffe_parse_default_parameters(par);
     config_t *conf = (config_t *)coffe_malloc(sizeof(config_t));
 
     config_init(conf);
@@ -542,32 +768,87 @@ int coffe_parser_init(
     /* number of points for the 2-3-4D integration */
     parse_int(conf, "integration_sampling", &par->integration_bins, COFFE_TRUE);
 
+    /* integration method for covariance */
+    parse_int(conf, "covariance_integration_method", &par->covariance_integration_method, COFFE_TRUE);
+    if (
+        par->covariance_integration_method != 1 &&
+        par->covariance_integration_method != 2
+    ){
+        print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_method");
+        exit(EXIT_FAILURE);
+    }
+
+    if (par->covariance_integration_method == 2){
+        /* integration method for covariance (only for FFT log) */
+        parse_int(conf, "covariance_integration_bins", &par->covariance_integration_bins, COFFE_TRUE);
+        if (par->covariance_integration_bins <= 0){
+            print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_bins");
+            exit(EXIT_FAILURE);
+        }
+        parse_int(conf, "covariance_interpolation_method", &par->covariance_interpolation_method, COFFE_TRUE);
+        if (
+            par->covariance_interpolation_method != 1 &&
+            par->covariance_interpolation_method != 2
+        ){
+            print_error_verbose(PROG_VALUE_ERROR, "covariance_interpolation_method");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     /* parsing the w parameter */
     parse_double(conf, "w0", &par->w0, COFFE_TRUE);
     parse_double(conf, "wa", &par->wa, COFFE_TRUE);
 
     /* parsing the matter bias */
-    parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
-    parse_bias(
-        conf,
-        "input_matter_bias1",
-        par->file_matter_bias1,
-        "matter_bias1",
-        &par->matter_bias1,
-        par->interp_method,
-        par->read_matter_bias1
-    );
+    parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
+    if (!par->matter_bias_analytic){
+        parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
+        parse_bias(
+            conf,
+            "input_matter_bias1",
+            par->file_matter_bias1,
+            "matter_bias1",
+            &par->matter_bias1,
+            par->interp_method,
+            par->read_matter_bias1
+        );
 
-    parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
-    parse_bias(
-        conf,
-        "input_matter_bias2",
-        par->file_matter_bias2,
-        "matter_bias2",
-        &par->matter_bias2,
-        par->interp_method,
-        par->read_matter_bias2
-    );
+        parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
+        parse_bias(
+            conf,
+            "input_matter_bias2",
+            par->file_matter_bias2,
+            "matter_bias2",
+            &par->matter_bias2,
+            par->interp_method,
+            par->read_matter_bias2
+        );
+    }
+    else{
+        /* need to hack this up */
+        const size_t bins = 1024;
+        const double redshift_max = 10.;
+        double *x = (double *)coffe_malloc(sizeof(double) * bins);
+        double *y = (double *)coffe_malloc(sizeof(double) * bins);
+        for (size_t i = 0; i < bins; ++i){
+            x[i] = (double)i * redshift_max / bins;
+            y[i] = coffe_galaxy_bias(x[i]);
+        }
+        coffe_init_spline(
+            &par->matter_bias1,
+            x, y, bins,
+            par->interp_method
+        );
+
+        coffe_init_spline(
+            &par->matter_bias2,
+            x, y, bins,
+            par->interp_method
+        );
+
+        free(x);
+        free(y);
+    }
 
     /* parsing the magnification bias (s) */
     parse_int(conf, "read_magnification_bias1", &par->read_magnification_bias1, COFFE_FALSE);
@@ -710,34 +991,51 @@ int coffe_parser_init(
     }
 
     /* parsing the contributions to the correlation function and covariance */
+    char **correlation_contributions = NULL;
+    size_t correlation_contributions_len = 0;
     parse_string_array(
         conf, "correlation_contributions",
-        &par->correlation_sources,
-        &par->correlation_sources_len
+        &correlation_contributions,
+        &correlation_contributions_len
     );
 
-    char possible_inputs[10][10]
-        = {"den", "rsd", "d1", "d2", "g1", "g2", "g3", "g4", "g5", "len"};
+    par->correlation_contrib.den = 0;
+    par->correlation_contrib.rsd = 0;
+    par->correlation_contrib.d1 = 0;
+    par->correlation_contrib.d2 = 0;
+    par->correlation_contrib.g1 = 0;
+    par->correlation_contrib.g2 = 0;
+    par->correlation_contrib.g3 = 0;
+    par->correlation_contrib.len = 0;
+    par->correlation_contrib.g4 = 0;
+    par->correlation_contrib.g5 = 0;
 
-    int counter = 0;
-    char temp_input[10];
-    for (int i = 0; i<par->correlation_sources_len*(par->correlation_sources_len + 1)/2; ++i){
-        strcpy(par->corr_terms[i], "\0");
+    for (size_t i = 0; i < correlation_contributions_len; ++i){
+        if (strcmp(correlation_contributions[i], "den") == 0)
+            par->correlation_contrib.den = 1;
+        else if (strcmp(correlation_contributions[i], "rsd") == 0)
+            par->correlation_contrib.rsd = 1;
+        else if (strcmp(correlation_contributions[i], "len") == 0)
+            par->correlation_contrib.len = 1;
+        else if (strcmp(correlation_contributions[i], "d1") == 0)
+            par->correlation_contrib.d1 = 1;
+        else if (strcmp(correlation_contributions[i], "d2") == 0)
+            par->correlation_contrib.d1 = 1;
+        else if (strcmp(correlation_contributions[i], "g1") == 0)
+            par->correlation_contrib.g1 = 1;
+        else if (strcmp(correlation_contributions[i], "g2") == 0)
+            par->correlation_contrib.g2 = 1;
+        else if (strcmp(correlation_contributions[i], "g3") == 0)
+            par->correlation_contrib.g3 = 1;
+        else if (strcmp(correlation_contributions[i], "g4") == 0)
+            par->correlation_contrib.g4 = 1;
+        else if (strcmp(correlation_contributions[i], "g5") == 0)
+            par->correlation_contrib.g5 = 1;
     }
 
-    /* input of the possible correlation terms */
-    for (int i = 0; i<par->correlation_sources_len; ++i){
-        for (int j = i; j<par->correlation_sources_len; ++j){
-            for (int l = 0; l<10; ++l){
-                sprintf(temp_input, "%d", l);
-                if (strcmp(par->correlation_sources[i], possible_inputs[l]) == 0)
-                    strcat(par->corr_terms[counter], temp_input);
-                if (strcmp(par->correlation_sources[j], possible_inputs[l]) == 0)
-                    strcat(par->corr_terms[counter], temp_input);
-            }
-            ++counter;
-        }
-    }
+    for (size_t i = 0; i < correlation_contributions_len; ++i)
+        free(correlation_contributions[i]);
+    free(correlation_contributions);
 
     par->divergent = 0;
 
@@ -751,31 +1049,16 @@ int coffe_parser_init(
     par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
 
     /* isolating the term requiring renormalization */
-    for (int i = 0; i<counter; ++i){
-        if (
-            strcmp(par->corr_terms[i], "33") == 0 || // d2-d2 term
-            strcmp(par->corr_terms[i], "44") == 0 || // g1-g1 term
-            strcmp(par->corr_terms[i], "55") == 0 || // g2-g2 term
-            strcmp(par->corr_terms[i], "66") == 0 || // g3-g3 term
-            strcmp(par->corr_terms[i], "77") == 0 || // g4-g4 term
-            strcmp(par->corr_terms[i], "88") == 0 || // g5-g5 term
-            /* I don't think these are necessary anymore */
-            strcmp(par->corr_terms[i], "34") == 0 ||
-            strcmp(par->corr_terms[i], "43") == 0 ||
-            strcmp(par->corr_terms[i], "35") == 0 ||
-            strcmp(par->corr_terms[i], "53") == 0 ||
-            strcmp(par->corr_terms[i], "36") == 0 ||
-            strcmp(par->corr_terms[i], "63") == 0 ||
-            strcmp(par->corr_terms[i], "45") == 0 ||
-            strcmp(par->corr_terms[i], "54") == 0 ||
-            strcmp(par->corr_terms[i], "46") == 0 ||
-            strcmp(par->corr_terms[i], "64") == 0 ||
-            strcmp(par->corr_terms[i], "56") == 0 ||
-            strcmp(par->corr_terms[i], "65") == 0
-        ){
-            par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
-            par->divergent = 1;
-        }
+    if (
+        par->correlation_contrib.d2 ||
+        par->correlation_contrib.g1 ||
+        par->correlation_contrib.g2 ||
+        par->correlation_contrib.g3 ||
+        par->correlation_contrib.g4 ||
+        par->correlation_contrib.g5
+    ){
+        par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
+        par->divergent = 1;
     }
 
     /* the output path */
@@ -794,6 +1077,19 @@ int coffe_parser_init(
     /* parsing the k range */
     parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
     parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
+
+    /* parsing the window */
+    parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
+
+    /* parsing the size of the window (in Mpc/h) */
+    if (par->have_window){
+        parse_double(conf, "window_size", &par->window_size, COFFE_TRUE);
+        /* boundary checking */
+        if (par->window_size <= 0.0 || par->window_size >= 1000.){
+            print_error_verbose(PROG_VALUE_ERROR, "window_size");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS
@@ -825,7 +1121,15 @@ int coffe_parser_init(
             &pk_len
         );
 
-        init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+        if (par->have_window){
+            for (size_t i = 0; i < pk_len; ++i)
+                pk[i] *= pow(
+                    coffe_resolution_window(par->window_size * k[i]),
+                    2
+                );
+        }
+
+        coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
 
         free(k);
         free(pk);
@@ -864,11 +1168,11 @@ int coffe_parser_init(
             (double *)coffe_malloc(sizeof(double)*len);
         double *pk_norm =
             (double *)coffe_malloc(sizeof(double)*len);
-        for (size_t i = 0; i<len; ++i){
+        for (size_t i = 0; i < len; ++i){
             k_norm[i] = par->power_spectrum.spline->x[i]/COFFE_H0;
             pk_norm[i] = par->power_spectrum.spline->y[i]*pow(COFFE_H0, 3);
         }
-        init_spline(
+        coffe_init_spline(
             &par->power_spectrum_norm,
             k_norm, pk_norm, len,
             par->interp_method
@@ -881,7 +1185,16 @@ int coffe_parser_init(
 
 
     /* saving the timestamp */
-    sprintf(par->timestamp, "%s", coffe_get_time());
+    {
+        char *temp_time = coffe_get_time();
+        snprintf(
+            par->timestamp,
+            COFFE_MAX_STRLEN,
+            "%s",
+            temp_time
+        );
+        free(temp_time);
+    }
 
     par->conf = conf;
 
@@ -893,5 +1206,8 @@ int coffe_parser_init(
             filename,
             (double)(end - start) / CLOCKS_PER_SEC
         );
+
+    par->flag = 1;
+
     return EXIT_SUCCESS;
 }

@@ -20,33 +20,33 @@
 #define COFFE_FUNCTIONS_H
 
 double functions_nonintegrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double r
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double r
 );
 
 double functions_single_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double r,
-    double x
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double r,
+    const double x
 );
 
 double functions_double_integrated(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integrals_t integral[],
-    double z_mean,
-    double mu,
-    double r,
-    double x1,
-    double x2
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double mu,
+    const double r,
+    const double x1,
+    const double x2
 );
 
 #endif

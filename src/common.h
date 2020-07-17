@@ -67,6 +67,10 @@
 #define COFFE_H0 (1./(2997.92458)) // H0 in units h/Mpc
 #endif
 
+/* useful macro for determining the size of an array */
+#ifndef COFFE_ARRAY_SIZE
+#define COFFE_ARRAY_SIZE(arr) ((size_t) (sizeof (arr) / sizeof (arr)[0]))
+#endif
 
 /**
     simple wrapper with failsafe for malloc
@@ -86,6 +90,15 @@ struct coffe_interpolation2d
     gsl_interp_accel *xaccel, *yaccel;
 };
 
+enum coffe_integral_type
+{
+    NONINTEGRATED, SINGLE_INTEGRATED, DOUBLE_INTEGRATED
+};
+
+enum coffe_output_type
+{
+    CORRFUNC, MULTIPOLES, AVERAGE_MULTIPOLES
+};
 
 /**
     contains all the values for n and l
@@ -100,43 +113,35 @@ struct nl_terms
 
 
 /**
+    structure with all of the correlation contributions
+**/
+
+struct coffe_correlation_contributions
+{
+    int den, rsd, len, d1, d2, g1, g2, g3, g4, g5;
+};
+
+
+/**
     contains all the parameters necessary to carry
     out the computation
 **/
 
 struct coffe_parameters_t
 {
-    char **correlation_sources; /* correlation sources to calculate */
-
-    int correlation_sources_len; /* number of correlation sources to calculate */
-
     int output_type; /* correlation function (angular or full sky), or multipoles, or redshift averaged multipoles */
 
     double *mu; /* value for the angles */
 
-    int mu_len; /* number of angles */
+    size_t mu_len; /* number of angles */
 
-    char corr_terms[COFFE_MAX_STRLEN][COFFE_MAX_STRLEN]; 
-    /* 
-    contains all the possible terms contributing to the correlation function; 
-    for N input values, we get N*(N+1)/2 terms
+    struct coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
 
-    Nomenclature:
-        "den" = 0
-        "rsd" = 1
-        "d1"  = 2
-        "d2"  = 3
-        "g1"  = 4
-        "g2"  = 5
-        "g3"  = 6
-    cross terms are of the form "MN",
-    with M and N one of the above numbers */
-
-    struct nl_terms nonzero_terms[10];
+    struct nl_terms nonzero_terms[10]; /* contrains all of the integrals we need to compute */
 
     char **type_bg; /* background values to output */
 
-    int type_bg_len; /* number of background values */
+    size_t type_bg_len; /* number of background values */
 
     int background_bins; /* number of bins for the background */
 
@@ -193,6 +198,8 @@ struct coffe_parameters_t
 
     int read_magnification_bias1, read_magnification_bias2;
 
+    int matter_bias_analytic;
+
     char file_magnification_bias1[COFFE_MAX_STRLEN], file_magnification_bias2[COFFE_MAX_STRLEN];
 
     struct coffe_interpolation magnification_bias1, magnification_bias2;
@@ -217,35 +224,45 @@ struct coffe_parameters_t
 
     int *multipole_values; /* the multipoles to calculate */
 
-    int multipole_values_len;
+    size_t multipole_values_len;
 
     double *covariance_z_mean;
 
-    int covariance_z_mean_len;
+    size_t covariance_z_mean_len;
 
     double *covariance_deltaz;
 
-    int covariance_deltaz_len;
+    size_t covariance_deltaz_len;
 
     double *covariance_zmin;
 
-    int covariance_zmin_len;
+    size_t covariance_zmin_len;
 
     double *covariance_zmax;
 
-    int covariance_zmax_len;
+    size_t covariance_zmax_len;
 
     double *covariance_fsky;
 
-    int covariance_fsky_len;
+    size_t covariance_fsky_len;
 
     double *covariance_density;
 
-    int covariance_density_len;
+    size_t covariance_density_len;
 
     double covariance_pixelsize;
 
     double covariance_minimum_separation;
+
+    int covariance_integration_method;
+
+    int covariance_integration_bins;
+
+    int covariance_interpolation_method;
+
+    int have_window;
+
+    double window_size;
 
     /* for redshift averaged multipoles */
     double z_min, z_max;
@@ -256,7 +273,6 @@ struct coffe_parameters_t
 
     int verbose;
 
-#ifdef HAVE_CLASS
     /* stuff for CLASS only */
 
     int have_class; /* should CLASS be used or not? */
@@ -269,7 +285,7 @@ struct coffe_parameters_t
 
     double k_pivot; /* for CLASS */
 
-#endif
+    int flag;
 
 };
 
@@ -281,29 +297,29 @@ char *coffe_get_time(void);
 **/
 
 int read_1col(
-    char *filename,
+    const char *filename,
     double **values,
     size_t *len
 );
 
 int read_2col(
-    char *filename,
+    const char *filename,
     double **values1,
     double **values2,
     size_t *len
 );
 
 int write_1col(
-    char *filename,
+    const char *filename,
     double *values,
     size_t len,
     const char *header
 );
 
 int write_2col(
-    char *filename,
-    double *values1,
-    double *values2,
+    const char *filename,
+    const double *values1,
+    const double *values2,
     size_t len,
     const char *header,
     const char *sep
@@ -311,20 +327,20 @@ int write_2col(
 
 int write_ncol(
     size_t ncolumns,
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 );
 
 int write_ncol_null(
-    char *filename,
+    const char *filename,
     size_t len,
     const char *header,
     const char *sep,
-    double *values,
+    const double *values,
     ...
 );
 
@@ -340,8 +356,8 @@ int free_double_matrix(
 );
 
 int write_matrix(
-    char *filename,
-    double **values,
+    const char *filename,
+    const double **values,
     size_t len1,
     size_t len2,
     const char *header,
@@ -350,27 +366,27 @@ int write_matrix(
 
 int copy_matrix_array(
     double **destination,
-    double **source,
+    const double **source,
     size_t rows,
     size_t columns,
     size_t index,
-    char *type
+    const char *type
 );
 
-int init_spline(
+int coffe_init_spline(
     struct coffe_interpolation *interp,
-    double *xi,
-    double *yi,
-    size_t bins,
-    int interpolation_type
+    const double *xi,
+    const double *yi,
+    const size_t bins,
+    const int interpolation_type
 );
 
-double interp_spline(
-    struct coffe_interpolation *interp,
+double coffe_interp_spline(
+    const struct coffe_interpolation *interp,
     double value
 );
 
-int free_spline(
+int coffe_free_spline(
     struct coffe_interpolation *interp
 );
 
@@ -384,13 +400,30 @@ int coffe_compare_descending(
     const void *b
 );
 
-double common_wfunction(
-    struct coffe_parameters_t *par,
+double coffe_dark_energy_eos(
+    const struct coffe_parameters_t *par,
     double z
 );
 
 int coffe_parameters_free(
     struct coffe_parameters_t *par
 );
+
+double coffe_resolution_window(
+    double x
+);
+
+int coffe_read_ncol(
+    const char *filename,
+    const size_t N,
+    size_t *len,
+    double **values,
+    ...
+);
+
+double coffe_galaxy_bias(
+    const double z
+);
+
 
 #endif

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([coffe], [1.1.0], [goran.jelic-cizmek@unige.ch])
+AC_INIT([coffe], [1.2.0], [goran.jelic-cizmek@unige.ch])
 AM_INIT_AUTOMAKE([foreign subdir-objects]) # Does not require NEWS, COPYING, AUTHORS, ChangeLog or README
 
 # silent make https://autotools.io/automake/silent.html
@@ -20,6 +20,8 @@ AC_LANG([C]) # Use C not C++
 AC_PROG_CC
 
 AC_PROG_CC_C99
+
+AC_PROG_RANLIB
 
 AC_C_CONST
 

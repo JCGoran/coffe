@@ -95,6 +95,11 @@ shifter run jcgoran/coffe:[TAG] coffe -s [SETTINGSFILE] -n [NUMTHREADS]
 ```
 The above may need some adjustments depending on your HPC environment (using `srun` or similar).
 
+## Testing
+To test the output of the code, you can use use the command `make check`.
+Alternatively, you can build tests one by one using `make test_[MODULE]`, where `[MODULE]` can currently be one of `background`, `integrals`, `corrfunc`, `multipoles`, `covariance`.
+This is primarily useful when modifying the code itself, to make sure the old results of the code weren't broken by some new change (feature, bugfix, etc.).
+
 ## Bug reports and feature requests
 Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests.
 For bug reports, if you are running something other than the Docker version, please specify your platform as well as library versions.

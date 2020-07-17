@@ -34,21 +34,19 @@ struct coffe_background_t
 
     struct coffe_interpolation D1; /* growth rate D_1(a) */
 
-    struct coffe_interpolation D1_prime; /* derivative of D_1(a) wrt D1'(rphys)*rphys, dimensionless ('=d/drphys)*/
-
     struct coffe_interpolation f; /* growth function f=d(log D)/d(log a) */
-
-    struct coffe_interpolation g; /* growth function g=(1+z)*D_1 */
 
     struct coffe_interpolation G1, G2;
 
     struct coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
 
+    int flag;
+
 };
 
 
 int coffe_background_init(
-    struct coffe_parameters_t *par,
+    const struct coffe_parameters_t *par,
     struct coffe_background_t *bg
 );
 
