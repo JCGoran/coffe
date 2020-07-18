@@ -19,7 +19,7 @@ RUN wget http://www.feynarts.de/cuba/Cuba-4.2.tar.gz
 RUN tar xf /tmp/Cuba-4.2.tar.gz -C /tmp/
 WORKDIR /tmp/Cuba-4.2/
 RUN ./configure
-RUN make -j
+RUN make
 RUN make install
 RUN rm -rf /tmp/Cuba*
 # get CLASS and set it up
@@ -27,12 +27,11 @@ WORKDIR /tmp/
 # CLASS has a small bug when using the static library,
 # see https://github.com/lesgourg/class_public/issues/255 for details,
 # which was fixed in the fork
-RUN git clone -b libfix --single-branch https://github.com/JCGoran/class_public class
+RUN git clone -b master --single-branch https://github.com/lesgourg/class_public class
 WORKDIR /tmp/class/
 RUN make -j libclass.a
 RUN cp libclass.a /usr/lib/x86_64-linux-gnu/
 RUN cp include/*.h /usr/include/
-RUN rm -rf /tmp/class*
 # get COFFE and set it up
 WORKDIR /
 RUN git clone -q https://github.com/JCGoran/coffe
