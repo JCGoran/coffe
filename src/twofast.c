@@ -309,11 +309,6 @@ void twofast_1bessel(
     }
 
     fftw_complex *temp_input = (fftw_complex *)fftw_malloc(sizeof(fftw_complex)*N2);
-    double *t_array = (double *)malloc(sizeof(double)*N2);
-
-    for (size_t i = 0; i<N2; ++i){
-        t_array[i] = 2*M_PI*i/G;
-    }
 
     for (size_t i = 0; i<N2; ++i){
         // copying the input as it's destroyed by the planner
@@ -351,7 +346,6 @@ void twofast_1bessel(
     fftw_free(prefactors);
     fftw_free(input_y_fft);
     fftw_free(temp_input);
-    free(t_array);
     fftw_free(temp_output_y);
 }
 
