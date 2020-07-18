@@ -2,7 +2,7 @@
 # a lot or warnings may be displayed; to turn them off, use "docker build -q [PATH]",
 # where [PATH] is the location of this Dockerfile;
 # most are harmless and do not affect the outcome of the build
-FROM gcc:latest
+FROM gcc:8
 MAINTAINER Goran Jelic-Cizmek "goran.jelic-cizmek@unige.ch"
 # get all the standard required libraries
 RUN apt-get update && \
@@ -19,7 +19,7 @@ RUN wget http://www.feynarts.de/cuba/Cuba-4.2.tar.gz
 RUN tar xf /tmp/Cuba-4.2.tar.gz -C /tmp/
 WORKDIR /tmp/Cuba-4.2/
 RUN ./configure
-RUN make
+RUN make -j
 RUN make install
 RUN rm -rf /tmp/Cuba*
 # get CLASS and set it up
@@ -29,7 +29,7 @@ WORKDIR /tmp/
 # which was fixed in the fork
 RUN git clone -b libfix --single-branch https://github.com/JCGoran/class_public class
 WORKDIR /tmp/class/
-RUN make libclass.a
+RUN make -j libclass.a
 RUN cp libclass.a /usr/lib/x86_64-linux-gnu/
 RUN cp include/*.h /usr/include/
 RUN rm -rf /tmp/class*
@@ -40,7 +40,7 @@ WORKDIR /coffe/
 # this is necessary as long as the future branch isn't merged into master
 RUN git checkout future
 RUN autoreconf -i
-RUN ./configure --enable-cuba --enable-class --enable-doubleexp
-RUN make
+RUN ./configure --enable-cuba --enable-class
+RUN make -j
 RUN ln -s /coffe/coffe /usr/bin/coffe
 WORKDIR /data/
