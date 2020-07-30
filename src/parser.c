@@ -498,7 +498,7 @@ int coffe_parse_default_parameters(
     par->sep_len = COFFE_ARRAY_SIZE(separations);
     par->interp_method = 5;
     par->covariance_integration_method = 1;
-    par->covariance_integration_bins = 2000;
+    par->covariance_integration_bins = 8000;
     par->covariance_interpolation_method = 2;
     par->file_power_spectrum[0] = 0;
     /*
@@ -585,7 +585,7 @@ int coffe_parse_default_parameters(
     par->covariance_deltaz_len = 0;
     par->covariance_fsky = NULL;
     par->covariance_fsky_len = 0;
-    par->covariance_pixelsize = 0.0;
+    par->covariance_pixelsize = 10.0;
     par->covariance_zmin = NULL;
     par->covariance_zmin_len = 0;
     par->covariance_zmax = NULL;
@@ -1053,7 +1053,7 @@ int coffe_parser_init(
         else if (strcmp(correlation_contributions[i], "d1") == 0)
             par->correlation_contrib.d1 = 1;
         else if (strcmp(correlation_contributions[i], "d2") == 0)
-            par->correlation_contrib.d1 = 1;
+            par->correlation_contrib.d2 = 1;
         else if (strcmp(correlation_contributions[i], "g1") == 0)
             par->correlation_contrib.g1 = 1;
         else if (strcmp(correlation_contributions[i], "g2") == 0)

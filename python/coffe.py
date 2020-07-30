@@ -19,7 +19,7 @@ def get_default_parameters():
         'input_power_spectrum' : 'PkL_CLASS.dat',
         'omega_cdm' : 0.25,
         'omega_baryon' : 0.05,
-        'omega_gamma' : 5e-5,
+        'omega_gamma' : 9e-5,
         'w0' : -1.0,
         'wa' : 0.0,
         'matter_bias1' : 1.,
@@ -69,7 +69,7 @@ def get_default_parameters():
         'bessel_sampling' : 10000,
         'theta_sampling' : 3000,
         'integration_method' : 2,
-        'integration_sampling' : 1000000,
+        'integration_sampling' : 750000,
         'k_min' : 1e-5,
         'k_max' : 300.,
         'interpolation' : 5,
@@ -83,6 +83,7 @@ def get_default_parameters():
         'covariance_integration_method' : 1,
         'covariance_integration_bins' : 8000,
         'covariance_interpolation_method' : 2,
+        'covariance_minimum_separation' : 20,
         'verbose' : 1,
     }
 
