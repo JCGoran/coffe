@@ -49,5 +49,15 @@ double functions_double_integrated(
     const double x2
 );
 
+double functions_flatsky_lensing_lensing_multipoles(
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t integral[],
+    const double z_mean,
+    const double sep,
+    const int l,
+    const double x
+);
+
 #endif
 

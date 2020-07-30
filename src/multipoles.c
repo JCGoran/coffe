@@ -154,10 +154,16 @@ int coffe_multipoles_init(
             bg
         );
 
+        for (size_t i = 0; i<mp->l_len; ++i){
+            for (size_t j = 0; j<mp->sep_len; ++j){
+                mp->result[i][j] = 0.0;
+            }
+        }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] =
+                mp->result[i][j] +=
                     coffe_integrate(
                         par, bg, integral,
                         mp->sep[j]*COFFE_H0, 0, mp->l[i],
@@ -165,6 +171,7 @@ int coffe_multipoles_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){
@@ -176,6 +183,7 @@ int coffe_multipoles_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){

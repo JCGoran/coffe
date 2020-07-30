@@ -276,16 +276,16 @@ static int parse_external_power_spectrum(
     struct coffe_parameters_t *par
 )
 {
-    struct precision ppr;
-    struct background pba;
-    struct thermo pth;
-    struct perturbs ppt;
-    struct primordial ppm;
-    struct spectra psp;
-    struct nonlinear pnl;
-    struct output pop;
-    struct transfers ptr;
-    struct lensing ple;
+    struct precision *ppr = coffe_malloc(sizeof(struct precision));
+    struct background *pba = coffe_malloc(sizeof(struct background));
+    struct thermo *pth = coffe_malloc(sizeof(struct thermo));
+    struct perturbs *ppt = coffe_malloc(sizeof(struct perturbs));
+    struct primordial *ppm = coffe_malloc(sizeof(struct primordial));
+    struct spectra *psp = coffe_malloc(sizeof(struct spectra));
+    struct nonlinear *pnl = coffe_malloc(sizeof(struct nonlinear));
+    struct output *pop = coffe_malloc(sizeof(struct output));
+    struct transfers *ptr = coffe_malloc(sizeof(struct transfers));
+    struct lensing *ple = coffe_malloc(sizeof(struct lensing));
     ErrorMsg errmsg;
 
     clock_t class_start, class_end;
@@ -294,93 +294,111 @@ static int parse_external_power_spectrum(
         printf("Launching CLASS...\n");
 
     class_start = clock();
-    struct file_content fc;
+    struct file_content *fc = coffe_malloc(sizeof(struct file_content));
 
-    size_t class_parameters_len = 18, counter = 0;
+    size_t class_parameters_len = 20, counter = 0;
 
-    parser_init(&fc, class_parameters_len, "", errmsg);
+    parser_init(fc, class_parameters_len, "", errmsg);
 
     /*
         not sure which values are actually necessary
         (maybe give the user the ability to read all of them?)
     */
 
-    sprintf(fc.name[counter], "h");
-    sprintf(fc.value[counter], "%e", par->h);
+    sprintf(fc->name[counter], "h");
+    sprintf(fc->value[counter], "%e", par->h);
     ++counter;
 
-    sprintf(fc.name[counter], "T_cmb");
-    sprintf(fc.value[counter], "%e", 2.7255);
+    sprintf(fc->name[counter], "T_cmb");
+    sprintf(fc->value[counter], "%e", 2.7255);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_b");
-    sprintf(fc.value[counter], "%e", par->Omega0_baryon);
+    sprintf(fc->name[counter], "Omega_b");
+    sprintf(fc->value[counter], "%e", par->Omega0_baryon);
     ++counter;
 
-    sprintf(fc.name[counter], "N_ur");
-    sprintf(fc.value[counter], "%e", 3.046);
+    sprintf(fc->name[counter], "N_ur");
+    sprintf(fc->value[counter], "%e", 3.046);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_cdm");
-    sprintf(fc.value[counter], "%e", par->Omega0_cdm);
+    sprintf(fc->name[counter], "Omega_cdm");
+    sprintf(fc->value[counter], "%e", par->Omega0_cdm);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_k");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "Omega_k");
+    sprintf(fc->value[counter], "%e", 0.0);
     ++counter;
 
-    sprintf(fc.name[counter], "w0_fld");
-    sprintf(fc.value[counter], "%e", par->w0);
+    sprintf(fc->name[counter], "w0_fld");
+    sprintf(fc->value[counter], "%e", par->w0);
     ++counter;
 
-    sprintf(fc.name[counter], "wa_fld");
-    sprintf(fc.value[counter], "%e", par->wa);
+    sprintf(fc->name[counter], "wa_fld");
+    sprintf(fc->value[counter], "%e", par->wa);
     ++counter;
 
-    sprintf(fc.name[counter], "output");
-    sprintf(fc.value[counter], "mPk");
+    sprintf(fc->name[counter], "output");
+    sprintf(fc->value[counter], "mPk");
     ++counter;
 
-    sprintf(fc.name[counter], "gauge");
-    sprintf(fc.value[counter], "synchronous");
+    sprintf(fc->name[counter], "gauge");
+    sprintf(fc->value[counter], "synchronous");
     ++counter;
 
-    sprintf(fc.name[counter], "P_k_ini type");
-    sprintf(fc.value[counter], "analytic_Pk");
+    sprintf(fc->name[counter], "P_k_ini type");
+    sprintf(fc->value[counter], "analytic_Pk");
     ++counter;
 
-    sprintf(fc.name[counter], "k_pivot");
-    sprintf(fc.value[counter], "%e", par->k_pivot);
+    sprintf(fc->name[counter], "k_pivot");
+    sprintf(fc->value[counter], "%e", par->k_pivot);
     ++counter;
 
-    sprintf(fc.name[counter], "ln10^{10}A_s");
-    sprintf(fc.value[counter], "%e", par->ln_10_pow_10_A_s);
+    sprintf(fc->name[counter], "ln10^{10}A_s");
+    sprintf(fc->value[counter], "%e", par->ln_10_pow_10_A_s);
     ++counter;
 
-    sprintf(fc.name[counter], "n_s");
-    sprintf(fc.value[counter], "%e", par->n_s);
+    sprintf(fc->name[counter], "n_s");
+    sprintf(fc->value[counter], "%e", par->n_s);
     ++counter;
 
-    sprintf(fc.name[counter], "alpha_s");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "alpha_s");
+    sprintf(fc->value[counter], "%e", 0.0);
     ++counter;
 
-    sprintf(fc.name[counter], "k_min_tau0");
-    sprintf(fc.value[counter], "%e", 0.002);
+    sprintf(fc->name[counter], "k_min_tau0");
+    sprintf(fc->value[counter], "%e", 0.002);
     ++counter;
 
-    sprintf(fc.name[counter], "P_k_max_h/Mpc");
-    sprintf(fc.value[counter], "%e", par->k_max);
+    sprintf(fc->name[counter], "P_k_max_h/Mpc");
+    sprintf(fc->value[counter], "%e", par->k_max);
     ++counter;
 
-    sprintf(fc.name[counter], "z_pk");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "z_pk");
+    sprintf(fc->value[counter], "%e", 0.0);
+    ++counter;
+
+    sprintf(fc->name[counter], "z_max_pk");
+    sprintf(fc->value[counter], "%e", 3.0);
+    ++counter;
+
+    sprintf(fc->name[counter], "non linear");
+    sprintf(fc->value[counter], "%s", "halofit");
     ++counter;
 
     if (
         input_init(
-            &fc, &ppr, &pba, &pth, &ppt, &ptr,
-            &ppm, &psp, &pnl, &ple, &pop, errmsg
+            fc,
+            ppr,
+            pba,
+            pth,
+            ppt,
+            ptr,
+            ppm,
+            psp,
+            pnl,
+            ple,
+            pop,
+            errmsg
         ) == _FAILURE_
     ){
         fprintf(stderr, "\n\nError running input_init\n=>%s\n", errmsg);
@@ -389,13 +407,13 @@ static int parse_external_power_spectrum(
 
     /* the main CLASS sequence */
 
-    background_init(&ppr, &pba);
-    thermodynamics_init(&ppr, &pba, &pth);
-    perturb_init(&ppr, &pba, &pth, &ppt);
-    primordial_init(&ppr, &ppt, &ppm);
-    nonlinear_init(&ppr, &pba, &pth, &ppt, &ppm, &pnl);
-    transfer_init(&ppr, &pba, &pth, &ppt, &pnl, &ptr);
-    spectra_init(&ppr, &pba, &ppt, &ppm, &pnl, &ptr, &psp);
+    background_init(ppr, pba);
+    thermodynamics_init(ppr, pba, pth);
+    perturb_init(ppr, pba, pth, ppt);
+    primordial_init(ppr, ppt, ppm);
+    nonlinear_init(ppr, pba, pth, ppt, ppm, pnl);
+    transfer_init(ppr, pba, pth, ppt, pnl, ptr);
+    spectra_init(ppr, pba, ppt, ppm, pnl, ptr, psp);
 
     class_end = clock();
     if (par->verbose)
@@ -404,14 +422,25 @@ static int parse_external_power_spectrum(
             (double)(class_end - class_start) / CLOCKS_PER_SEC
         );
 
-    double *k = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
-    double *pk = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
-    size_t pk_len = pnl.k_size;
+    double *k = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+    double *pk = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+    size_t pk_len = pnl->k_size;
+
+    nonlinear_pk_at_z(
+        pba,
+        pnl,
+        logarithmic,
+        pk_linear,
+        0,
+        pnl->index_pk_total,
+        pk,
+        NULL
+    );
 
     /* rescaling as CLASS internally uses units of 1/Mpc */
     for (size_t i = 0; i < pk_len; ++i){
-        k[i] = pnl.k[i] / par->h;
-        pk[i] = exp(pnl.ln_pk_l[0][i]) * pow(par->h, 3);
+        k[i] = pnl->k[i] / par->h;
+        pk[i] = exp(pk[i]) * pow(par->h, 3);
     }
     if (par->have_window){
         for (size_t i = 0; i < pk_len; ++i)
@@ -426,16 +455,16 @@ static int parse_external_power_spectrum(
     free(k);
     free(pk);
 
-    /* freeing the memory of CLASS structures */
+    /* keeping it for later reuse */
 
-    background_free(&pba);
-    thermodynamics_free(&pth);
-    perturb_free(&ppt);
-    primordial_free(&ppm);
-    nonlinear_free(&pnl);
-    transfer_free(&ptr);
-    spectra_free(&psp);
-    parser_free(&fc);
+    par->class_file_content = fc;
+    par->class_background = pba;
+    par->class_thermodynamics = pth;
+    par->class_perturb = ppt;
+    par->class_primordial = ppm;
+    par->class_nonlinear = pnl;
+    par->class_transfer = ptr;
+    par->class_spectra = psp;
 
     return EXIT_SUCCESS;
 }
@@ -620,6 +649,8 @@ int coffe_parse_default_parameters(
 
     par->z_min = 0.9;
     par->z_max = 1.1;
+
+    par->pk_type = 0; //0 for linear, 1 for nonlinear
 
     const double multipoles[] = {0, 2, 4};
     par->multipole_values = coffe_malloc(
@@ -1073,6 +1104,7 @@ int coffe_parser_init(
 
     /* flatsky parameters */
     parse_int(conf, "flatsky_standard_standard", &par->flatsky_standard_standard, COFFE_TRUE);
+    parse_int(conf, "flatsky_density_lensing", &par->flatsky_density_lensing, COFFE_TRUE);
     parse_int(conf, "flatsky_lensing_lensing", &par->flatsky_lensing_lensing, COFFE_TRUE);
 
     if (par->flatsky_density_lensing || par->flatsky_lensing_lensing){
@@ -1095,6 +1127,8 @@ int coffe_parser_init(
             exit(EXIT_FAILURE);
         }
     }
+
+    parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
 
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS

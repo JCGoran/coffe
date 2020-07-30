@@ -25,6 +25,7 @@
 #include "background.h"
 #include "integrals.h"
 #include "functions.h"
+#include "class.h"
 
 /**
     all the nonintegrated terms in one place
@@ -648,10 +649,21 @@ double functions_single_integrated(
         /* den-len + len-den modified in flatsky */
         if (par->flatsky_density_lensing){
             result +=
-               -3*(par->Omega0_cdm + par->Omega0_baryon)/M_PI/4
-               *coffe_interp_spline(&bg->D1, z_mean)*(1 + z_mean)*fabs(mu)*sep
-               *((2 - 5*sz_mean1)*bz_mean2 + (2 - 5*sz_mean2)*bz_mean1)
-               *coffe_interp_spline(&integral[9].result, sep*sqrt(1 - mu*mu));
+               -3 * (par->Omega0_cdm + par->Omega0_baryon) / M_PI / 4
+               *coffe_interp_spline(&bg->D1, z_mean)
+               *coffe_interp_spline(&bg->D1, z_mean)
+               *(1 + z_mean)
+               *fabs(mu)
+               *sep
+               *(
+                    (2 - 5 * sz_mean1) * bz_mean2
+                    +
+                    (2 - 5 * sz_mean2) * bz_mean1
+                ) / 2.
+               *coffe_interp_spline(
+                    &integral[9].result,
+                    sep * sqrt(1 - mu * mu)
+                );
         }
         else{
         if (r21 != 0.0 && r22 != 0.0){
@@ -1824,4 +1836,170 @@ double functions_double_integrated(
         );
         exit(EXIT_FAILURE);
     }
+}
+
+static int functions_nonlinear_mean(
+    const struct coffe_parameters_t *par,
+    const double z,
+    const int l,
+    struct coffe_interpolation *nonlinear_fft
+)
+{
+    struct background *pba = (struct background *)par->class_background;
+    struct nonlinear *pnl = (struct nonlinear *)par->class_nonlinear;
+
+    double *out_pk = coffe_malloc(sizeof(double) * pnl->k_size);
+    enum pk_outputs pk_type;
+    if (par->pk_type) pk_type = pk_nonlinear;
+    else pk_type = pk_linear;
+
+    nonlinear_pk_at_z(
+        pba,
+        pnl,
+        logarithmic,
+        /* pk_linear or pk_nonlinear */
+        pk_type,
+        z,
+        pnl->index_pk_total,
+        out_pk,
+        NULL
+    );
+
+    /* compute the power spectra (dimensionless) */
+    double *out_k_norm = coffe_malloc(sizeof(double) * pnl->k_size);
+    double *out_pk_norm = coffe_malloc(sizeof(double) * pnl->k_size);
+
+    for (int i = 0; i < pnl->k_size; ++i){
+        out_k_norm[i] = pnl->k[i] / par->h / COFFE_H0;
+        out_pk_norm[i] = exp(out_pk[i]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+    }
+
+    struct coffe_interpolation pk;
+    coffe_init_spline(
+        &pk,
+        out_k_norm,
+        out_pk_norm,
+        pnl->k_size,
+        par->interp_method
+    );
+
+    /* free up memory */
+    free(out_pk);
+    free(out_k_norm);
+    free(out_pk_norm);
+
+    /* do the FFTlog transform */
+    const size_t output_len = par->bessel_bins;
+
+    /**
+        TODO find a way to alloc the output length without using magic numbers
+        such as 42 for the number of separations between 0 and 1 Mpc/h.
+        The +1 is for r=0 which is obtained analytically.
+    **/
+    double *output_x = coffe_malloc(sizeof(double) * (output_len + 42 + 1));
+    double *output_y = coffe_malloc(sizeof(double) * (output_len + 42 + 1));
+
+    coffe_integrals_renormalizable(
+        output_x,
+        output_y,
+        output_len,
+        &pk,
+        l,
+        1,
+        pk.spline->x[0],
+        pk.spline->x[pk.spline->size - 1]
+    );
+
+    coffe_init_spline(
+        nonlinear_fft,
+        output_x,
+        output_y,
+        output_len + 42 + 1,
+        par->interp_method
+    );
+
+    free(output_x);
+    free(output_y);
+
+    coffe_free_spline(&pk);
+
+    return EXIT_SUCCESS;
+
+}
+
+/* lensing-lensing multipoles are special */
+double functions_flatsky_lensing_lensing_multipoles(
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integrals_t *integral,
+    const double z_mean,
+    const double sep,
+    const int l,
+    const double x
+)
+{
+    const double chi_mean = coffe_interp_spline(
+        &bg->comoving_distance,
+        z_mean
+    );
+    const double lambda = chi_mean * x;
+
+    const double sz_mean1 = coffe_interp_spline(
+        &par->magnification_bias1,
+        z_mean
+    );
+    const double sz_mean2 = coffe_interp_spline(
+        &par->magnification_bias2,
+        z_mean
+    );
+
+    struct coffe_interpolation fftlog;
+
+    functions_nonlinear_mean(
+        par,
+        coffe_interp_spline(
+            &bg->z_as_chi,
+            lambda
+        ),
+        l,
+        &fftlog
+    );
+
+    const double result =
+        9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+      * (2 - 5 * sz_mean1)
+      * (2 - 5 * sz_mean2)
+      * pow(chi_mean, 3)
+      / 8. / M_PI
+        /* integrand */
+      * coffe_interp_spline(
+            &fftlog,
+            x * sep
+        )
+        /* D1(z)^2 (only in linear theory) */
+//      * pow(
+//            coffe_interp_spline(
+//                &bg->D1,
+//                coffe_interp_spline(
+//                    &bg->z_as_chi,
+//                    lambda
+//                )
+//            ),
+//            2
+//        )
+        /* (1 + z)^2 */
+      * pow(
+            1 + coffe_interp_spline(
+                &bg->z_as_chi,
+                lambda
+            ),
+            2
+        )
+      * pow(x * (1 - x), 2);
+    coffe_free_spline(&fftlog);
+
+    if (l > 0)
+        return result * x * sep;
+    else
+        return result;
 }

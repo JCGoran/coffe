@@ -232,13 +232,19 @@ int coffe_corrfunc_init(
             corrfunc->mu[i] = par->mu[i];
         }
 
+        for (size_t i = 0; i<corrfunc->mu_len; ++i){
+            for (size_t j = 0; j<corrfunc->sep_len; ++j){
+                (corrfunc->result)[i][j] = 0.0;
+            }
+        }
+
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
-                (corrfunc->result)[i][j] =
+                (corrfunc->result)[i][j] +=
                     coffe_integrate(
                         par, bg, integral,
                         corrfunc->sep[j]*COFFE_H0,
@@ -247,6 +253,7 @@ int coffe_corrfunc_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
@@ -259,6 +266,7 @@ int coffe_corrfunc_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
@@ -271,6 +279,7 @@ int coffe_corrfunc_init(
                     );
             }
         }
+
         gsl_set_error_handler(default_handler);
 
         end = clock();
