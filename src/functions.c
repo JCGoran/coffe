@@ -26,6 +26,117 @@
 #include "integrals.h"
 #include "functions.h"
 
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+#include "class.h"
+
+static int functions_nonlinear(
+    const struct coffe_parameters_t *par,
+    const struct coffe_integrals_t *integral,
+    const double z1,
+    const double z2,
+    struct coffe_interpolation *nonlinear_fft
+)
+{
+    struct background *pba = (struct background *)par->class_background;
+    struct nonlinear *pnl = (struct nonlinear *)par->class_nonlinear;
+
+    double *out_pk_z1 = coffe_malloc(sizeof(double) * pnl->k_size);
+    double *out_pk_z2 = coffe_malloc(sizeof(double) * pnl->k_size);
+
+    enum pk_outputs pk_type;
+    if (par->pk_type) pk_type = pk_nonlinear;
+    else pk_type = pk_linear;
+
+    nonlinear_pk_at_z(
+        pba,
+        pnl,
+        logarithmic,
+        pk_type,
+        z1,
+        pnl->index_pk_total,
+        out_pk_z1,
+        NULL
+    );
+
+    nonlinear_pk_at_z(
+        pba,
+        pnl,
+        logarithmic,
+        pk_type,
+        z2,
+        pnl->index_pk_total,
+        out_pk_z2,
+        NULL
+    );
+
+    /* compute the cross-spectra (dimensionless) */
+    double *out_k_norm = coffe_malloc(sizeof(double) * pnl->k_size);
+    double *out_pk_cross_norm = coffe_malloc(sizeof(double) * pnl->k_size);
+
+    for (int i = 0; i < pnl->k_size; ++i){
+        out_k_norm[i] = pnl->k[i] / par->h / COFFE_H0;
+        out_pk_cross_norm[i] = exp((out_pk_z1[i] + out_pk_z2[i]) / 2.) * pow(par->h, 3) * pow(COFFE_H0, 3);
+    }
+
+    struct coffe_interpolation pk;
+    coffe_init_spline(
+        &pk,
+        out_k_norm,
+        out_pk_cross_norm,
+        pnl->k_size,
+        par->interp_method
+    );
+
+    /* free up memory */
+    free(out_pk_z1);
+    free(out_pk_z2);
+    free(out_k_norm);
+    free(out_pk_cross_norm);
+
+    /* do the FFTlog transform */
+    const size_t output_len = par->bessel_bins;
+    double *output_x[8], *output_y[8];
+
+    for (int i = 0; i < 8; ++i){
+        /**
+            TODO find a way to alloc the output length without using magic numbers
+            such as 42 for the number of separations between 0 and 1 Mpc/h.
+            The +1 is for r=0 which is obtained analytically.
+        **/
+        output_x[i] = coffe_malloc(sizeof(double) * (output_len + 42 + 1));
+        output_y[i] = coffe_malloc(sizeof(double) * (output_len + 42 + 1));
+
+        coffe_integrals_renormalizable(
+            output_x[i],
+            output_y[i],
+            output_len,
+            &pk,
+            integral[i].l,
+            integral[i].n,
+            pk.spline->x[0],
+            pk.spline->x[pk.spline->size - 1]
+        );
+
+        coffe_init_spline(
+            &nonlinear_fft[i],
+            output_x[i],
+            output_y[i],
+            output_len + 42 + 1,
+            par->interp_method
+        );
+
+        free(output_x[i]);
+        free(output_y[i]);
+    }
+
+    coffe_free_spline(&pk);
+
+    return EXIT_SUCCESS;
+
+}
+
+#endif
+
 /**
     all the nonintegrated terms in one place
 **/
@@ -66,6 +177,18 @@ double functions_nonintegrated(
     const double fevo2 = coffe_interp_spline(&par->evolution_bias2, z2);
     const double a1 = coffe_interp_spline(&bg->a, z1);
     const double a2 = coffe_interp_spline(&bg->a, z2);
+
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    struct coffe_interpolation nonlinear_fft[8];
+    functions_nonlinear(
+        par,
+        integral,
+        z1,
+        z2,
+        nonlinear_fft
+    );
+#endif
+
     /* den-den term */
     if (par->correlation_contrib.den){
         /* den-den modified by flatsky */
@@ -75,7 +198,11 @@ double functions_nonintegrated(
         }
         else{
         result += b1*b2
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+           *coffe_interp_spline(&nonlinear_fft[0], sep);
+#else
            *coffe_interp_spline(&integral[0].result, sep);
+#endif
         }
     }
     /* rsd-rsd term */
@@ -94,12 +221,20 @@ double functions_nonintegrated(
         else{
         result +=
             f1*f2*(1 + 2*pow(costheta, 2))/15
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+           *coffe_interp_spline(&nonlinear_fft[0], sep)
+#else
            *coffe_interp_spline(&integral[0].result, sep)
+#endif
             -
             f1*f2/21.*(
                 (1 + 11.*pow(costheta, 2)) + 18*costheta*(pow(costheta, 2) - 1)*chi1*chi2/sep/sep
             )
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+           *coffe_interp_spline(&nonlinear_fft[1], sep)
+#else
            *coffe_interp_spline(&integral[1].result, sep)
+#endif
             +
             f1*f2*(
                 4*(3*pow(costheta, 2) - 1)*(pow(chi1, 4) + pow(chi2, 4))/35./pow(sep, 4)
@@ -108,7 +243,11 @@ double functions_nonintegrated(
                     3*(3 + pow(costheta, 2))*chi1*chi2 - 8*(pow(chi1, 2) + pow(chi2, 2))*costheta
                 )/35./pow(sep, 4)
             )
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+           *coffe_interp_spline(&nonlinear_fft[2], sep);
+#else
            *coffe_interp_spline(&integral[2].result, sep);
+#endif
         }
     }
     /* d1-d1 term */
@@ -560,9 +699,17 @@ double functions_nonintegrated(
                 )
             );
     }
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    for (int i = 0; i < 8; ++i)
+        coffe_free_spline(&nonlinear_fft[i]);
+#endif
     if (gsl_finite(result)){
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    return result;
+#else
     return
         result*coffe_interp_spline(&bg->D1, z1)*coffe_interp_spline(&bg->D1, z2);
+#endif
     }
     else{
         fprintf(stderr,
@@ -618,6 +765,26 @@ double functions_single_integrated(
     const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
     const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
 
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    struct coffe_interpolation
+        nonlinear_fft_z1_const_z2[8],
+        nonlinear_fft_z2_const_z1[8];
+    functions_nonlinear(
+        par,
+        integral,
+        z1_const,
+        z2,
+        nonlinear_fft_z1_const_z2
+    );
+    functions_nonlinear(
+        par,
+        integral,
+        z1,
+        z2_const,
+        nonlinear_fft_z2_const_z1
+    );
+#endif
+
     double ren1 = 0, ren2 = 0;
     if (par->divergent){
         if (r21 == 0.0) ren1 = coffe_interp_spline(&integral[8].renormalization0, lambda2);
@@ -658,23 +825,65 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1_const)
+#endif
+                   *chi2
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2)
+#endif
+                   /coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*coffe_interp_spline(&integral[3].result, sqrt(r21))
+                        2*chi1*costheta
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[3], sqrt(r21))
+#else
+                       *coffe_interp_spline(&integral[3].result, sqrt(r21))
+#endif
                        -chi1*chi1*lambda2*(1 - costheta*costheta)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[1], sqrt(r21))
+#else
                        *coffe_interp_spline(&integral[1].result, sqrt(r21))
+#endif
                        /r21
                     )
                     +
-                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2_const)
+#endif
+                   *chi1
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1)
+#endif
+                   /coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*coffe_interp_spline(&integral[3].result, sqrt(r22))
+                        2*chi2*costheta
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[3], sqrt(r22))
+#else
+                       *coffe_interp_spline(&integral[3].result, sqrt(r22))
+#endif
                        -chi2*chi2*lambda1*(1 - costheta*costheta)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[1], sqrt(r22))
+#else
                        *coffe_interp_spline(&integral[1].result, sqrt(r22))
+#endif
                        /r22
                     )
                 );
@@ -683,20 +892,58 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1_const)
+#endif
+                   *chi2
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2)
+#endif
+                   /coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*coffe_interp_spline(&integral[3].result, 0.0)
+                        2*chi1
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[3], 0.0)
+#else
+                       *coffe_interp_spline(&integral[3].result, 0.0)
+#endif
                     )
                     +
-                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2_const)
+#endif
+                   *chi1
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1)
+#endif
+                   /coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*costheta*coffe_interp_spline(&integral[3].result, sqrt(r22))
+                        2*chi2*costheta
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[3], sqrt(r22))
+#else
+                       *coffe_interp_spline(&integral[3].result, sqrt(r22))
+#endif
                        -chi2*chi2*lambda1*(1 - costheta*costheta)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[1], sqrt(r22))
+#else
                        *coffe_interp_spline(&integral[1].result, sqrt(r22))
+#endif
                        /r22
                     )
                 );
@@ -705,21 +952,59 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)*chi2
+                    b1*(2 - 5*s2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1_const)
+#endif
+                   *chi2
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2)
+#endif
+                   /coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*costheta*coffe_interp_spline(&integral[3].result, sqrt(r21))
+                        2*chi1*costheta
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[3], sqrt(r21))
+#else
+                       *coffe_interp_spline(&integral[3].result, sqrt(r21))
+#endif
                        -chi1*chi1*lambda2*(1 - costheta*costheta)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[1], sqrt(r21))
+#else
                        *coffe_interp_spline(&integral[1].result, sqrt(r21))
+#endif
                        /r21
                     )
                     +
-                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)*chi1
+                    b2*(2 - 5*s1)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2_const)
+#endif
+                   *chi1
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1)
+#endif
+                   /coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*coffe_interp_spline(&integral[3].result, 0.0)
+                        2*chi2
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[3], 0.0)
+#else
+                       *coffe_interp_spline(&integral[3].result, 0.0)
+#endif
                     )
                 );
         }
@@ -727,18 +1012,50 @@ double functions_single_integrated(
             result +=
                -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                *(
-                    b1*(2 - 5*s2)*coffe_interp_spline(&bg->D1, z1_const)
+                    b1*(2 - 5*s2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1_const)
+#endif
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2)
+#endif
+                   /coffe_interp_spline(&bg->a, z2)
                    *(
-                        2*chi1*chi2*coffe_interp_spline(&integral[3].result, 0.0)
+                        2*chi1*chi2
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z2_const_z1[3], 0.0)
+#else
+                       *coffe_interp_spline(&integral[3].result, 0.0)
+#endif
                     )
                     +
-                    b2*(2 - 5*s1)*coffe_interp_spline(&bg->D1, z2_const)
+                    b2*(2 - 5*s1)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z2_const)
+#endif
                     /* integrand */
-                   *(1 - x)*coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)
+                   *(1 - x)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                   *1.
+#else
+                   *coffe_interp_spline(&bg->D1, z1)
+#endif
+                   /coffe_interp_spline(&bg->a, z1)
                    *(
-                        2*chi2*chi1*coffe_interp_spline(&integral[3].result, 0.0)
+                        2*chi2*chi1
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+                       *coffe_interp_spline(&nonlinear_fft_z1_const_z2[3], 0.0)
+#else
+                       *coffe_interp_spline(&integral[3].result, 0.0)
+#endif
                     )
                 );
         }
@@ -1478,6 +1795,13 @@ double functions_single_integrated(
                *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             );
     }
+
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    for (int i = 0; i < 8; ++i){
+        coffe_free_spline(&nonlinear_fft_z1_const_z2[i]);
+        coffe_free_spline(&nonlinear_fft_z2_const_z1[i]);
+    }
+#endif
     if (gsl_finite(result)){
         return result;
     }
@@ -1544,6 +1868,26 @@ double functions_double_integrated(
     const double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
     const double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
 
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    struct coffe_interpolation nonlinear_fft[8];
+    functions_nonlinear(
+        par,
+        integral,
+        z1,
+        z2,
+        nonlinear_fft
+    );
+#elif defined(HAVE_CLASS) && defined(HAVE_NONLINEAR_FLATSKY)
+    struct coffe_interpolation nonlinear_fft[8];
+    functions_nonlinear(
+        par,
+        integral,
+        z1,
+        z2,
+        nonlinear_fft
+    );
+#endif
+
     double ren = 0;
     if (par->divergent){
         if (r2 <= pow(0.000001*COFFE_H0, 2)){
@@ -1605,32 +1949,60 @@ double functions_double_integrated(
             9.*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)/4.*chi1*chi2
            *
             /* integrand */
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+            1.
+#else
             coffe_interp_spline(&bg->D1, z1)
            *coffe_interp_spline(&bg->D1, z2)
+#endif
            /coffe_interp_spline(&bg->a, z1)
            /coffe_interp_spline(&bg->a, z2)
            *(1 - x1)*(1 - x2)
            *(
                 2*(costheta*costheta - 1)*lambda1*lambda2
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[0], sqrt(r2))/5.
+#else
                *coffe_interp_spline(&integral[0].result, sqrt(r2))/5.
+#endif
                +
                 4*costheta
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[5], sqrt(r2))/3.
+#else
                *coffe_interp_spline(&integral[5].result, sqrt(r2))/3.
+#endif
                +
                 4*costheta*(r2 + 6*costheta*lambda1*lambda2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[3], sqrt(r2))/15.
+#else
                *coffe_interp_spline(&integral[3].result, sqrt(r2))/15.
+#endif
                +
                 2*(costheta*costheta - 1)*lambda1*lambda2
                *(2*r2 + 3*costheta*lambda1*lambda2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[1], sqrt(r2))/7./r2
+#else
                *coffe_interp_spline(&integral[1].result, sqrt(r2))/7./r2
+#endif
                +
                 2*costheta
                *(2*r2*r2 + 12*costheta*r2*lambda1*lambda2 + 15*(costheta*costheta - 1)*lambda1*lambda1*lambda2*lambda2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[4], sqrt(r2))/15./r2
+#else
                *coffe_interp_spline(&integral[4].result, sqrt(r2))/15./r2
+#endif
                +
                 (costheta*costheta - 1)*lambda1*lambda2
                *(6*r2*r2 + 30*costheta*r2*lambda1*lambda2 + 35*(costheta*costheta - 1)*lambda1*lambda1*lambda2*lambda2)
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[2], sqrt(r2))/35./r2/r2
+#else
                *coffe_interp_spline(&integral[2].result, sqrt(r2))/35./r2/r2
+#endif
             );
         }
         else{
@@ -1639,16 +2011,29 @@ double functions_double_integrated(
             9./4*pow((par->Omega0_cdm + par->Omega0_baryon), 2)*(2 - 5*s1)*(2 - 5*s2)*chi1*chi2
            *
             /* integrand */
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+            1.
+#else
             coffe_interp_spline(&bg->D1, z1)
            *coffe_interp_spline(&bg->D1, z2)
+#endif
            /coffe_interp_spline(&bg->a, z1)
            /coffe_interp_spline(&bg->a, z2)
            *(1 - x1)*(1 - x2)
            *(
-               4*coffe_interp_spline(&integral[5].result, 0.0)/3.
+               4.
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[5], 0.0)/3.
+#else
+               *coffe_interp_spline(&integral[5].result, 0.0)/3.
+#endif
                +
                 24.*lambda1*lambda2
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+               *coffe_interp_spline(&nonlinear_fft[3], 0.0)/15.
+#else
                *coffe_interp_spline(&integral[3].result, 0.0)/15.
+#endif
             );
         }
         }
@@ -1798,6 +2183,10 @@ double functions_double_integrated(
                *ren
             );
     }
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+    for (int i = 0; i < 8; ++i)
+        coffe_free_spline(&nonlinear_fft[i]);
+#endif
     if (gsl_finite(result)){
     return
         result;
