@@ -382,7 +382,11 @@ static int parse_external_power_spectrum(
     ++counter;
 
     sprintf(fc->name[counter], "non linear");
-    sprintf(fc->value[counter], "%s", "halofit");
+
+    if (par->pk_type == 1)
+        sprintf(fc->value[counter], "%s", "halofit");
+    else if (par->pk_type == 2)
+        sprintf(fc->value[counter], "%s", "hmcode");
     ++counter;
 
     if (
@@ -518,6 +522,7 @@ int coffe_parse_default_parameters(
     );
     par->k_min = 1e-5;
     par->k_max = 300.;
+    par->pk_type = 0;
     {
         size_t len = par->power_spectrum.spline->size;
         double *k_norm =
