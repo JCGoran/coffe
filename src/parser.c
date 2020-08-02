@@ -382,7 +382,11 @@ static int parse_external_power_spectrum(
     ++counter;
 
     sprintf(fc->name[counter], "non linear");
-    sprintf(fc->value[counter], "%s", "halofit");
+
+    if (par->pk_type == 1)
+        sprintf(fc->value[counter], "%s", "halofit");
+    else if (par->pk_type == 2)
+        sprintf(fc->value[counter], "%s", "hmcode");
     ++counter;
 
     if (
@@ -498,7 +502,7 @@ int coffe_parse_default_parameters(
     par->sep_len = COFFE_ARRAY_SIZE(separations);
     par->interp_method = 5;
     par->covariance_integration_method = 1;
-    par->covariance_integration_bins = 2000;
+    par->covariance_integration_bins = 8000;
     par->covariance_interpolation_method = 2;
     par->file_power_spectrum[0] = 0;
     /*
@@ -518,6 +522,7 @@ int coffe_parse_default_parameters(
     );
     par->k_min = 1e-5;
     par->k_max = 300.;
+    par->pk_type = 0;
     {
         size_t len = par->power_spectrum.spline->size;
         double *k_norm =
@@ -585,7 +590,7 @@ int coffe_parse_default_parameters(
     par->covariance_deltaz_len = 0;
     par->covariance_fsky = NULL;
     par->covariance_fsky_len = 0;
-    par->covariance_pixelsize = 0.0;
+    par->covariance_pixelsize = 10.0;
     par->covariance_zmin = NULL;
     par->covariance_zmin_len = 0;
     par->covariance_zmax = NULL;
@@ -649,8 +654,6 @@ int coffe_parse_default_parameters(
 
     par->z_min = 0.9;
     par->z_max = 1.1;
-
-    par->pk_type = 0; //0 for linear, 1 for nonlinear
 
     const double multipoles[] = {0, 2, 4};
     par->multipole_values = coffe_malloc(
@@ -1055,7 +1058,7 @@ int coffe_parser_init(
         else if (strcmp(correlation_contributions[i], "d1") == 0)
             par->correlation_contrib.d1 = 1;
         else if (strcmp(correlation_contributions[i], "d2") == 0)
-            par->correlation_contrib.d1 = 1;
+            par->correlation_contrib.d2 = 1;
         else if (strcmp(correlation_contributions[i], "g1") == 0)
             par->correlation_contrib.g1 = 1;
         else if (strcmp(correlation_contributions[i], "g2") == 0)
@@ -1117,6 +1120,7 @@ int coffe_parser_init(
 
     /* parsing the window */
     parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
+    parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
 
     /* parsing the size of the window (in Mpc/h) */
     if (par->have_window){
@@ -1127,8 +1131,6 @@ int coffe_parser_init(
             exit(EXIT_FAILURE);
         }
     }
-
-    parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
 
     /* parsing the power spectrum */
 #ifdef HAVE_CLASS
