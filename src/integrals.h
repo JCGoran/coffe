@@ -26,6 +26,8 @@ struct coffe_integrals_t
     struct coffe_interpolation2d renormalization;
     struct coffe_interpolation renormalization0;
     int flag;
+    struct coffe_integrals_t *multipoles_flatsky_lensing_lensing;
+    size_t multipoles_flatsky_len;
 };
 
 

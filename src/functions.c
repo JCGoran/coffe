@@ -25,7 +25,10 @@
 #include "background.h"
 #include "integrals.h"
 #include "functions.h"
+
+#ifdef HAVE_CLASS
 #include "class.h"
+#endif
 
 /**
     all the nonintegrated terms in one place
@@ -1575,7 +1578,7 @@ double functions_double_integrated(
 
     /* len-len term */
     if (par->correlation_contrib.len){
-        if (par->flatsky_lensing_lensing){
+        if (par->flatsky_lensing_lensing && par->output_type != 2){
             /* len-len modified by flatsky */
             result +=
             /* constant in front */
@@ -1610,7 +1613,7 @@ double functions_double_integrated(
             )
           * pow(x1 * (1 - x1), 2);
         }
-        else{
+        else if (!par->flatsky_lensing_lensing){
         if (r2 > 1e-20){
             result +=
             /* constant in front */
@@ -1838,6 +1841,7 @@ double functions_double_integrated(
     }
 }
 
+#ifdef HAVE_CLASS
 static int functions_nonlinear_mean(
     const struct coffe_parameters_t *par,
     const double z,
@@ -1926,6 +1930,24 @@ static int functions_nonlinear_mean(
     return EXIT_SUCCESS;
 
 }
+#endif
+
+
+/* this is a bit convoluted... */
+static size_t find_index(
+    int l,
+    const int *multipoles,
+    const size_t multipoles_len
+)
+{
+    size_t index = 0;
+    for (size_t i = 0; i < multipoles_len; ++i){
+        if (multipoles[i] == l)
+            index = i;
+    }
+    return index;
+}
+
 
 /* lensing-lensing multipoles are special */
 double functions_flatsky_lensing_lensing_multipoles(
@@ -1953,6 +1975,7 @@ double functions_flatsky_lensing_lensing_multipoles(
         z_mean
     );
 
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
     struct coffe_interpolation fftlog;
 
     functions_nonlinear_mean(
@@ -1964,6 +1987,7 @@ double functions_flatsky_lensing_lensing_multipoles(
         l,
         &fftlog
     );
+#endif
 
     const double result =
         9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
@@ -1972,21 +1996,30 @@ double functions_flatsky_lensing_lensing_multipoles(
       * pow(chi_mean, 3)
       / 8. / M_PI
         /* integrand */
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
       * coffe_interp_spline(
             &fftlog,
             x * sep
         )
+#else
+      * coffe_interp_spline(
+            &integral[0].multipoles_flatsky_lensing_lensing[
+                find_index(l, par->multipole_values, par->multipole_values_len)
+            ].result,
+            x * sep
+        )
         /* D1(z)^2 (only in linear theory) */
-//      * pow(
-//            coffe_interp_spline(
-//                &bg->D1,
-//                coffe_interp_spline(
-//                    &bg->z_as_chi,
-//                    lambda
-//                )
-//            ),
-//            2
-//        )
+      * pow(
+            coffe_interp_spline(
+                &bg->D1,
+                coffe_interp_spline(
+                    &bg->z_as_chi,
+                    lambda
+                )
+            ),
+            2
+        )
+#endif
         /* (1 + z)^2 */
       * pow(
             1 + coffe_interp_spline(
@@ -1996,7 +2029,9 @@ double functions_flatsky_lensing_lensing_multipoles(
             2
         )
       * pow(x * (1 - x), 2);
+#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
     coffe_free_spline(&fftlog);
+#endif
 
     if (l > 0)
         return result * x * sep;

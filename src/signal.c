@@ -807,9 +807,14 @@ double coffe_integrate(
                     #endif
                 }
                 case MULTIPOLES:{
+                    double final_result = 0;
                     /* lensing-lensing is special */
-                    /* TODO figure out how to merge this with other results */
-                    if (par->flatsky_lensing_lensing){
+                    if (
+                        par->correlation_contrib.len &&
+                        par->flatsky_lensing_lensing &&
+                        /* the odd ones are zero by construction, so we care only about the even */
+                        l % 2 == 0
+                    ){
                         double result, error;
 
                         #ifdef HAVE_DOUBLE_EXPONENTIAL
@@ -845,9 +850,17 @@ double coffe_integrate(
                         gsl_integration_workspace_free(wspace);
                         #endif
 
-                        return 2 * M_PI * M_PI * flatsky_lensing_lensing_coefficient(l) * result;
+                        final_result += 2 * M_PI * M_PI * flatsky_lensing_lensing_coefficient(l) * result;
                     }
-                    else{
+                    /* this part can run now that we have lensing-lensing multipoles */
+                    if (
+                        par->correlation_contrib.g4 ||
+                        par->correlation_contrib.g5 ||
+                        (
+                            par->correlation_contrib.len &&
+                            !par->flatsky_lensing_lensing
+                        )
+                    ){
                         const int dims = 3;
                         #ifdef HAVE_CUBA
                         int nregions, neval, fail;
@@ -861,7 +874,7 @@ double coffe_integrate(
                             NULL, NULL,
                             &nregions, &neval, &fail, result, error, prob
                         );
-                        return (2*l + 1)*result[0];
+                        final_result += (2*l + 1)*result[0];
                         #else
                         double result;
                         gsl_monte_function integrand;
@@ -876,9 +889,10 @@ double coffe_integrate(
                             &result
                         );
 
-                        return (2*l + 1)*result;
+                        final_result += (2*l + 1)*result;
                         #endif
                     }
+                    return final_result;
                 }
                 case AVERAGE_MULTIPOLES:{
                     const int dims = 4;

@@ -624,6 +624,8 @@ int coffe_integrals_init(
         gsl_set_error_handler_off();
 
     for (int j = 0; j<9; ++j){
+        integral[j].flag = 0;
+        integral[j].multipoles_flatsky_len = 0;
         if (par->nonzero_terms[j].n != -1 && par->nonzero_terms[j].l != -1){
             const int n = par->nonzero_terms[j].n;
             const int l = par->nonzero_terms[j].l;
@@ -864,6 +866,47 @@ int coffe_integrals_init(
 
         integral[9].flag = 1;
     }
+    if (
+        par->flatsky_lensing_lensing &&
+        par->output_type == 2
+    ){
+        /* there's probably a less hacky way of doing this */
+        integral[0].multipoles_flatsky_lensing_lensing =
+            (struct coffe_integrals_t *)coffe_malloc(
+                sizeof(struct coffe_integrals_t) * par->multipole_values_len
+            );
+        integral[0].multipoles_flatsky_len = par->multipole_values_len;
+        for (size_t i = 0; i < par->multipole_values_len; ++i){
+            /* if integral is not divergent, use implementation of 2FAST */
+            const size_t npoints = par->bessel_bins;
+            double *final_sep =
+                (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
+
+            double *final_result =
+                (double *)coffe_malloc(sizeof(double) * (npoints + min_sep_len + 1));
+
+            coffe_integrals_renormalizable(
+                final_sep,
+                final_result,
+                npoints,
+                &par->power_spectrum_norm,
+                par->multipole_values[i],
+                1,
+                par->k_min_norm,
+                par->k_max_norm
+            );
+
+            coffe_init_spline(
+                &(integral[0].multipoles_flatsky_lensing_lensing[i].result),
+                final_sep,
+                final_result,
+                npoints + min_sep_len + 1,
+                par->interp_method
+            );
+            free(final_sep);
+            free(final_result);
+        }
+    }
 
     gsl_set_error_handler(default_handler);
     end = clock();
@@ -897,6 +940,10 @@ int coffe_integrals_free(
     if (integral[9].n == -10 && integral[9].l == -10 && integral[9].flag){
         coffe_free_spline(&integral[9].result);
         integral[9].flag = 0;
+    }
+    if (integral[0].multipoles_flatsky_len){
+        for (size_t i = 0; i < integral[0].multipoles_flatsky_len; ++i)
+            coffe_free_spline(&integral[0].multipoles_flatsky_lensing_lensing[i].result);
     }
     return EXIT_SUCCESS;
 }
