@@ -1975,62 +1975,87 @@ double functions_flatsky_lensing_lensing_multipoles(
         z_mean
     );
 
-#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
+#ifdef HAVE_CLASS
     struct coffe_interpolation fftlog;
 
-    functions_nonlinear_mean(
-        par,
-        coffe_interp_spline(
-            &bg->z_as_chi,
-            lambda
-        ),
-        l,
-        &fftlog
-    );
-#endif
-
-    const double result =
-        9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
-      * (2 - 5 * sz_mean1)
-      * (2 - 5 * sz_mean2)
-      * pow(chi_mean, 3)
-      / 8. / M_PI
-        /* integrand */
-#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
-      * coffe_interp_spline(
-            &fftlog,
-            x * sep
-        )
-#else
-      * coffe_interp_spline(
-            &integral[0].multipoles_flatsky_lensing_lensing[
-                find_index(l, par->multipole_values, par->multipole_values_len)
-            ].result,
-            x * sep
-        )
-        /* D1(z)^2 (only in linear theory) */
-      * pow(
+    if (par->pk_type)
+        functions_nonlinear_mean(
+            par,
             coffe_interp_spline(
-                &bg->D1,
-                coffe_interp_spline(
-                    &bg->z_as_chi,
-                    lambda
-                )
-            ),
-            2
-        )
-#endif
-        /* (1 + z)^2 */
-      * pow(
-            1 + coffe_interp_spline(
                 &bg->z_as_chi,
                 lambda
             ),
-            2
-        )
-      * pow(x * (1 - x), 2);
-#if defined(HAVE_CLASS) && defined(HAVE_NONLINEAR)
-    coffe_free_spline(&fftlog);
+            l,
+            &fftlog
+        );
+#endif
+
+    double result = 0;
+    #ifdef HAVE_CLASS
+    if (par->pk_type){
+        result =
+            9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+          * (2 - 5 * sz_mean1)
+          * (2 - 5 * sz_mean2)
+          * pow(chi_mean, 3)
+          / 8. / M_PI
+            /* integrand */
+          * coffe_interp_spline(
+                &fftlog,
+                x * sep
+            )
+            /* (1 + z)^2 */
+          * pow(
+                1 + coffe_interp_spline(
+                    &bg->z_as_chi,
+                    lambda
+                ),
+                2
+            )
+          * pow(x * (1 - x), 2);
+    }
+    else{
+#endif
+        result =
+            9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+          * (2 - 5 * sz_mean1)
+          * (2 - 5 * sz_mean2)
+          * pow(chi_mean, 3)
+          / 8. / M_PI
+            /* integrand */
+          * coffe_interp_spline(
+                &integral[0].multipoles_flatsky_lensing_lensing[
+                    find_index(l, par->multipole_values, par->multipole_values_len)
+                ].result,
+                x * sep
+            )
+            /* D1(z)^2 (only in linear theory) */
+          * pow(
+                coffe_interp_spline(
+                    &bg->D1,
+                    coffe_interp_spline(
+                        &bg->z_as_chi,
+                        lambda
+                    )
+                ),
+                2
+            )
+            /* (1 + z)^2 */
+          * pow(
+                1 + coffe_interp_spline(
+                    &bg->z_as_chi,
+                    lambda
+                ),
+                2
+            )
+          * pow(x * (1 - x), 2);
+#ifdef HAVE_CLASS
+    }
+#endif
+
+#ifdef HAVE_CLASS
+    if (par->pk_type)
+        coffe_free_spline(&fftlog);
 #endif
 
     if (l > 0)
