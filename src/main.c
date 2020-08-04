@@ -115,10 +115,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-#ifdef HAVE_NONLINEAR
-    printf("Nonlinear module enabled\n");
-#endif
-
     /* the main sequence */
 
     coffe_parser_init(settings_file, &par);

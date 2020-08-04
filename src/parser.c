@@ -383,9 +383,9 @@ static int parse_external_power_spectrum(
 
     sprintf(fc->name[counter], "non linear");
 
-    if (par->pk_type == 1)
+    if (par->pk_type == 2)
         sprintf(fc->value[counter], "%s", "halofit");
-    else if (par->pk_type == 2)
+    else if (par->pk_type == 3)
         sprintf(fc->value[counter], "%s", "hmcode");
     ++counter;
 
