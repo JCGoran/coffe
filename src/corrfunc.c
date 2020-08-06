@@ -241,6 +241,12 @@ int coffe_corrfunc_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
+        for (size_t i = 0; i<corrfunc->mu_len; ++i){
+            for (size_t j = 0; j<corrfunc->sep_len; ++j){
+                (corrfunc->result)[i][j] = 0.0;
+            }
+        }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){

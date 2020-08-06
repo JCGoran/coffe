@@ -289,8 +289,6 @@ struct coffe_parameters_t
 
     double k_pivot; /* for CLASS */
 
-    int pk_type;
-
     /* in C we can use void for anything that's a pointer */
     void *class_file_content,
          *class_background,
@@ -302,6 +300,8 @@ struct coffe_parameters_t
          *class_spectra;
 
     int flag;
+
+    int pk_type;
 
 };
 
