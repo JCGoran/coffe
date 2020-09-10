@@ -2296,7 +2296,7 @@ static int functions_nonlinear_mean(
 
     double *out_pk = coffe_malloc(sizeof(double) * pnl->k_size);
     enum pk_outputs pk_type;
-    if (par->pk_type) pk_type = pk_nonlinear;
+    if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
     else pk_type = pk_linear;
 
     nonlinear_pk_at_z(
