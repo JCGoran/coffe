@@ -52,7 +52,7 @@ static int average_multipoles_check_range(
     /* checking for min separation */
     qsort(*separations, *len, sizeof(double), coffe_compare_descending);
 
-    double lower_limit = 0.1; /* arbitrary limit */
+    double lower_limit = 0.0; /* arbitrary limit */
 
     size_t counter_neg = 0;
     for (size_t i = 0; i<*len; ++i){

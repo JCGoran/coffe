@@ -59,7 +59,7 @@ static int multipoles_check_range(
     qsort(*separations, *len, sizeof(double), coffe_compare_descending);
 
     double min_separation = (*separations)[*len - 1];
-    double lower_limit = 0.1; /* arbitrary limit */
+    double lower_limit = 0.0; /* arbitrary limit */
 
     size_t counter_neg = 0;
     for (size_t i = 0; i<*len; ++i){

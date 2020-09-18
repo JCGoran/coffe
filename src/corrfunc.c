@@ -69,7 +69,7 @@ static int corrfunc_check_range(
     qsort(*separations, *len, sizeof(double), coffe_compare_descending);
 
     double min_separation = (*separations)[*len - 1];
-    double lower_limit = 0.1; /* arbitrary limit */
+    double lower_limit = 0.0; /* arbitrary limit */
 
     size_t counter_neg = 0;
     for (size_t i = 0; i<*len; ++i){
@@ -205,6 +205,9 @@ int coffe_corrfunc_init(
         if (par->verbose)
             printf("Calculating the correlation function...\n");
 
+        gsl_error_handler_t *default_handler =
+            gsl_set_error_handler_off();
+
         /* first index mu, second separations */
         alloc_double_matrix(
             &corrfunc->result,
@@ -231,15 +234,6 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             corrfunc->mu[i] = par->mu[i];
         }
-
-        for (size_t i = 0; i<corrfunc->mu_len; ++i){
-            for (size_t j = 0; j<corrfunc->sep_len; ++j){
-                (corrfunc->result)[i][j] = 0.0;
-            }
-        }
-
-        gsl_error_handler_t *default_handler =
-            gsl_set_error_handler_off();
 
         for (size_t i = 0; i<corrfunc->mu_len; ++i){
             for (size_t j = 0; j<corrfunc->sep_len; ++j){
