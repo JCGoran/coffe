@@ -303,6 +303,8 @@ struct coffe_parameters_t
 
     int pk_type;
 
+    int zeldovich_approximation;
+
 };
 
 char *coffe_get_time(void);
