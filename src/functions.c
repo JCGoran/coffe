@@ -231,12 +231,15 @@ double functions_nonintegrated(
     const double fmean = coffe_interp_spline(&bg->f, z_mean);
     const double curlyH1 = coffe_interp_spline(&bg->conformal_Hz, z1); // dimensionless
     const double curlyH2 = coffe_interp_spline(&bg->conformal_Hz, z2); // dimensionless
+    const double curlyH_mean = coffe_interp_spline(&bg->conformal_Hz, z_mean); // dimensionless
     const double b1 = coffe_interp_spline(&par->matter_bias1, z1);
     const double b2 = coffe_interp_spline(&par->matter_bias2, z2);
     const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
     const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
     const double G1 = coffe_interp_spline(&bg->G1, z1);
     const double G2 = coffe_interp_spline(&bg->G2, z2);
+    const double Gz_mean1 = coffe_interp_spline(&bg->G1, z_mean);
+    const double Gz_mean2 = coffe_interp_spline(&bg->G2, z_mean);
     const double s1 = coffe_interp_spline(&par->magnification_bias1, z1);
     const double s2 = coffe_interp_spline(&par->magnification_bias2, z2);
     const double fevo1 = coffe_interp_spline(&par->evolution_bias1, z1);
@@ -333,20 +336,62 @@ double functions_nonintegrated(
     }
     /* d1-d1 term */
     if (par->correlation_contrib.d1){
-        result +=
-            (
-                curlyH1*curlyH2*f1*f2*G1*G2
-               *costheta/3.
+        /* TODO should this be yet another flag, or go under standard? */
+        if (par->flatsky_standard_standard){
+            result +=
+             (
+                curlyH_mean
+               *curlyH_mean
+               *fmean
+               *fmean
+               *Gz_mean1
+               *Gz_mean2
                *coffe_interp_spline(&integral[5].result, sep)
+               /3.
                 +
-                curlyH1*curlyH2*f1*f2*G1*G2
-               *(
-                    (chi2 - chi1*costheta)*(chi1 - chi2*costheta)
-                    +
-                    pow(sep, 2)*costheta/3.
-                )
+                2
+               *curlyH_mean
+               *curlyH_mean
+               *fmean
+               *fmean
+               *Gz_mean1
+               *Gz_mean2
+               *pow(sep, 2)
                *coffe_interp_spline(&integral[6].result, sep)
+               *gsl_sf_legendre_P2(mu)
+               /3.
             );
+        }
+        else{
+            result +=
+                (
+                    curlyH1
+                   *curlyH2
+                   *f1
+                   *f2
+                   *G1
+                   *G2
+                   *costheta
+                   *coffe_interp_spline(&integral[5].result, sep)
+                   /3.
+                   -
+                    curlyH1
+                   *curlyH2
+                   *f1
+                   *f2
+                   *G1
+                   *G2
+                   *(
+                        (chi2 - chi1 * costheta)
+                       *(chi1 - chi2 * costheta)
+                        +
+                        pow(sep, 2)
+                       *costheta
+                       /3.
+                    )
+                   *coffe_interp_spline(&integral[6].result, sep)
+                );
+        }
     }
     /* d2-d2 term */
     if (par->correlation_contrib.d2){
