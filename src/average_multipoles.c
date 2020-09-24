@@ -123,7 +123,7 @@ int coffe_average_multipoles_init(
             par->sep_len
         );
         ramp->l = (int *)coffe_malloc(sizeof(int)*par->multipole_values_len);
-        for (int i = 0; i<par->multipole_values_len; ++i){
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
             ramp->l[i] = (int)par->multipole_values[i];
         }
         ramp->l_len = (size_t)par->multipole_values_len;
