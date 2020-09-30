@@ -1121,7 +1121,6 @@ int coffe_parser_init(
 
     /* parsing the window */
     parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
-    parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
     parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
 
     /* parsing the size of the window (in Mpc/h) */
@@ -1139,6 +1138,7 @@ int coffe_parser_init(
 
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
+        parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
