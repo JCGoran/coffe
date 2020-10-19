@@ -1076,13 +1076,22 @@ double functions_single_integrated(
                *coffe_interp_spline(&bg->D1, z_mean)
                *coffe_interp_spline(&bg->D1, z_mean)
                *(1 + z_mean)
-               *fabs(mu)
                *sep
                *(
-                    (2 - 5 * sz_mean1) * bz_mean2
-                    +
-                    (2 - 5 * sz_mean2) * bz_mean1
-                ) / 2.
+                    (
+                        (2 - 5 * sz_mean1) * bz_mean2
+                        -
+                        (2 - 5 * sz_mean2) * bz_mean1
+                    )
+                   *mu
+                   +
+                    (
+                        (2 - 5 * sz_mean1) * bz_mean2
+                        +
+                        (2 - 5 * sz_mean2) * bz_mean1
+                    )
+                   *fabs(mu)
+               )
                *coffe_interp_spline(
                     &integral[9].result,
                     sep * sqrt(1 - mu * mu)
