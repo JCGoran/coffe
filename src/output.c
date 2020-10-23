@@ -411,19 +411,50 @@ int coffe_output_init(
 
 
 #ifdef HAVE_INTEGRALS
-    for (int i = 0; i<8; ++i){
+    const struct nl_terms terms[] = {
+        {.n = 0, .l = 0},
+        {.n = 0, .l = 2},
+        {.n = 0, .l = 4},
+        {.n = 1, .l = 1},
+        {.n = 1, .l = 3},
+        {.n = 2, .l = 0},
+        {.n = 2, .l = 2},
+        {.n = 3, .l = 1}
+    };
+
+    for (size_t i = 0; i < sizeof(terms) / sizeof(*terms); ++i){
         snprintf(
             header, COFFE_MAX_STRLEN,
             "# n = %d, l = %d\n",
-            integral[i].n,
-            integral[i].l
+            terms[i].n,
+            terms[i].l
         );
         snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral%d.dat", prefix, i);
         write_ncol_null(
             filepath,
-            integral[i].result.spline->size, header, " ",
-            integral[i].result.spline->x,
-            integral[i].result.spline->y,
+            coffe_find_integral(
+                integral,
+                terms[i].n,
+                terms[i].l,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->size,
+            header,
+            " ",
+            coffe_find_integral(
+                integral,
+                terms[i].n,
+                terms[i].l,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->x,
+            coffe_find_integral(
+                integral,
+                terms[i].n,
+                terms[i].l,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->y,
             NULL
         );
     }
@@ -438,9 +469,29 @@ int coffe_output_init(
         snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral8.dat", prefix);
         write_ncol_null(
             filepath,
-            integral[8].result.spline->size, header, " ",
-            integral[8].result.spline->x,
-            integral[8].result.spline->y,
+            coffe_find_integral(
+                integral,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->size,
+            header,
+            " ",
+            coffe_find_integral(
+                integral,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->x,
+            coffe_find_integral(
+                integral,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result.spline->y,
             NULL
         );
 
@@ -451,16 +502,52 @@ int coffe_output_init(
         );
         snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral8_renormalization.dat", prefix);
         FILE *file_renormalization = fopen(filepath, "w");
-        for (size_t i = 0; i < integral[8].renormalization.spline->interp_object.xsize; ++i){
-            for (size_t j = 0; j < integral[8].renormalization.spline->interp_object.ysize; ++j){
+        for (size_t i = 0; i < coffe_find_integral(
+            integral,
+            1,
+            -1,
+            COFFE_HALF_INTEGER,
+            COFFE_HALF_INTEGER
+        )->renormalization.spline->interp_object.xsize; ++i){
+            for (size_t j = 0; j < coffe_find_integral(
+                integral,
+                1,
+                -1,
+                COFFE_HALF_INTEGER,
+                COFFE_HALF_INTEGER
+            )->renormalization.spline->interp_object.ysize; ++j){
                 fprintf(
                     file_renormalization,
                     "%e %e %e\n",
-                    integral[8].renormalization.spline->xarr[i],
-                    integral[8].renormalization.spline->yarr[j],
+                    coffe_find_integral(
+                        integral,
+                        1,
+                        -1,
+                        COFFE_HALF_INTEGER,
+                        COFFE_HALF_INTEGER
+                    )->renormalization.spline->xarr[i],
+                    coffe_find_integral(
+                        integral,
+                        1,
+                        -1,
+                        COFFE_HALF_INTEGER,
+                        COFFE_HALF_INTEGER
+                    )->renormalization.spline->yarr[j],
                     gsl_spline2d_get(
-                        integral[8].renormalization.spline,
-                        integral[8].renormalization.spline->zarr,
+                        coffe_find_integral(
+                            integral,
+                            1,
+                            -1,
+                            COFFE_HALF_INTEGER,
+                            COFFE_HALF_INTEGER
+                        )->renormalization.spline,
+                        coffe_find_integral(
+                            integral,
+                            1,
+                            -1,
+                            COFFE_HALF_INTEGER,
+                            COFFE_HALF_INTEGER
+                        )->renormalization.spline->zarr,
                         i, j
                     )
                 );
@@ -477,9 +564,29 @@ int coffe_output_init(
         snprintf(filepath, COFFE_MAX_STRLEN, "%sintegral9.dat", prefix);
         write_ncol_null(
             filepath,
-            integral[9].result.spline->size, header, " ",
-            integral[9].result.spline->x,
-            integral[9].result.spline->y,
+            coffe_find_integral(
+                integral,
+                1,
+                -1,
+                COFFE_HALF_INTEGER,
+                COFFE_HALF_INTEGER
+            )->result.spline->size,
+            header,
+            " ",
+            coffe_find_integral(
+                integral,
+                1,
+                -1,
+                COFFE_HALF_INTEGER,
+                COFFE_HALF_INTEGER
+            )->result.spline->x,
+            coffe_find_integral(
+                integral,
+                1,
+                -1,
+                COFFE_HALF_INTEGER,
+                COFFE_HALF_INTEGER
+            )->result.spline->y,
             NULL
         );
     }
