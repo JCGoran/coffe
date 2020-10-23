@@ -23,7 +23,7 @@ int coffe_output_init(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
 #ifdef HAVE_INTEGRALS
-    struct coffe_integrals_t integral[],
+    struct coffe_integral_array_t integral[],
 #endif
     struct coffe_corrfunc_ang_t *cf_ang,
     struct coffe_corrfunc_t *cf,

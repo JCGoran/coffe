@@ -444,4 +444,39 @@ double coffe_galaxy_bias(
 );
 
 
+/**
+    multiplies every item of a double `array` of `size` by a double `factor`
+    MUST be alloc'd beforehand
+**/
+void coffe_rescale_array(
+    double *array,
+    const size_t size,
+    const double factor
+);
+
+
+/**
+    multiplies every item of a double `array` of `size` by a double `factor`
+    MUST be alloc'd beforehand
+**/
+void coffe_rescale_array(
+    double *array,
+    const size_t size,
+    const double factor
+);
+
+
+/**
+    computes `array1` * `array2`^`power`, of same `size`,
+    and stores the result into `array_out`
+    MUST be alloc'd beforehand
+**/
+void coffe_multiply_power_array(
+    double *array_out,
+    const double *array1,
+    const double *array2,
+    const size_t size,
+    const double power
+);
+
 #endif

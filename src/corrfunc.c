@@ -127,7 +127,7 @@ static int corrfunc_check_range(
 int coffe_corrfunc_init(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     struct coffe_corrfunc_ang_t *cf_ang,
     struct coffe_corrfunc_t *corrfunc,
     struct coffe_corrfunc2d_t *cf2d

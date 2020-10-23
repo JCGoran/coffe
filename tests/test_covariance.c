@@ -123,7 +123,7 @@ int main(void)
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integrals_t integrals[10];
+    struct coffe_integral_array_t integrals[10];
     coffe_integrals_init(&par, &bg, integrals);
 
     /* can't really integrate just one...*/

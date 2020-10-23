@@ -3,6 +3,7 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+#include <gsl/gsl_errno.h>
 
 #include "common.h"
 #include "parser.h"
@@ -11,13 +12,16 @@
 #include "tools.h"
 
 static int coffe_test_integrals(
-    const struct coffe_integrals_t *integrals
+    const struct coffe_integral_array_t *integrals
 )
 {
     int error_flag = 0;
     const size_t size_files = 8;
     size_t size;
     double *xvalue, *yvalue[size_files];
+
+    gsl_error_handler_t *default_handler =
+        gsl_set_error_handler_off();
 
     /* load the files */
     for (size_t i = 0; i < size_files; ++i){
@@ -37,16 +41,38 @@ static int coffe_test_integrals(
         );
     }
 
+    const struct nl_terms terms[] = {
+        {.n = 0, .l = 0},
+        {.n = 0, .l = 2},
+        {.n = 0, .l = 4},
+        {.n = 1, .l = 1},
+        {.n = 1, .l = 3},
+        {.n = 2, .l = 0},
+        {.n = 2, .l = 2},
+        {.n = 3, .l = 1}
+    };
+
+    assert(size_files == sizeof(terms) / sizeof(*terms));
+
     /* compare the standard integrals (ones computes with 2FAST) */
     for (size_t integral = 0; integral < size_files; ++integral){
         for (size_t i = 0; i < size - 1; ++i){
             const double x = xvalue[i];
             const double y_expected = yvalue[integral][i];
-            const double y_obtained = coffe_interp_spline(&integrals[integral].result, xvalue[i]);
+            const double y_obtained = coffe_interp_spline(
+                &coffe_find_integral(
+                    integrals,
+                    terms[integral].n,
+                    terms[integral].l,
+                    COFFE_INTEGER,
+                    COFFE_INTEGER
+                )->result,
+                xvalue[i]
+            );
             fprintf(
                 stderr,
-                "Integral = %zu, separation = %e, expected = %e, obtained = %e\n",
-                integral, x, y_expected, y_obtained
+                "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
+                integral, terms[integral].n, terms[integral].l, x, y_expected, y_obtained
             );
             weak_assert(
                 approx_equal(y_expected, y_obtained),
@@ -76,7 +102,14 @@ static int coffe_test_integrals(
 
         const double y_expected = divergent_y[i];
         const double y_obtained = coffe_interp_spline(
-            &integrals[8].result, divergent_x[i]
+            &coffe_find_integral(
+                integrals,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->result,
+            divergent_x[i]
         );
 
         fprintf(
@@ -115,10 +148,28 @@ static int coffe_test_integrals(
 
         const double y_expected = ren_z[i];
         const double y_obtained = gsl_spline2d_eval(
-            integrals[8].renormalization.spline,
+            coffe_find_integral(
+                integrals,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->renormalization.spline,
             ren_x[i], ren_y[i],
-            integrals[8].renormalization.xaccel,
-            integrals[8].renormalization.yaccel
+            coffe_find_integral(
+                integrals,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->renormalization.xaccel,
+            coffe_find_integral(
+                integrals,
+                4,
+                0,
+                COFFE_INTEGER,
+                COFFE_INTEGER
+            )->renormalization.yaccel
         );
 
         fprintf(
@@ -144,6 +195,8 @@ static int coffe_test_integrals(
     if (!error_flag)
         COFFE_TESTS_PRINT_SUCCESS;
 
+    gsl_set_error_handler(default_handler);
+
     return error_flag;
 }
 
@@ -162,14 +215,14 @@ int main(void)
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integrals_t integrals[10];
-    coffe_integrals_init(&par, &bg, integrals);
+    struct coffe_integral_array_t integrals;
+    coffe_integrals_init(&par, &bg, &integrals);
 
-    const int error_flag = coffe_test_integrals(integrals);
+    const int error_flag = coffe_test_integrals(&integrals);
 
     coffe_parameters_free(&par);
     coffe_background_free(&bg);
-    coffe_integrals_free(integrals);
+    coffe_integrals_free(&integrals);
 
     return error_flag;
 }

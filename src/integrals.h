@@ -19,25 +19,53 @@
 #ifndef COFFE_INTEGRALS_H
 #define COFFE_INTEGRALS_H
 
-struct coffe_integrals_t
+/* for detection of half integers (spherical (int) vs. ordinary Bessel (half-int) functions) */
+enum coffe_integer_state {COFFE_INTEGER, COFFE_HALF_INTEGER};
+
+struct coffe_integral_t
 {
-    int n, l;
+    /* result I^n_l, or r^(n - l) I^n_l if n > l */
     struct coffe_interpolation result;
+    /* the suitable renormalization (if necessary) */
     struct coffe_interpolation2d renormalization;
-    struct coffe_interpolation renormalization0;
-    int flag;
-    struct coffe_integrals_t *multipoles_flatsky_lensing_lensing;
-    size_t multipoles_flatsky_len;
+    /* the suitable renormalization at zero separation (if necessary) */
+    struct coffe_interpolation renormalization_zero_separation;
+    /* the power and the degree of the spherical Bessel function, respectively */
+    int n, l;
+    /* if state = COFFE_integer_state, the passed value of n or l should be the NUMERATOR */
+    enum coffe_integer_state state_n, state_l;
 };
 
 
+/* only has a pointer to multiple structures */
+struct coffe_integral_array_t
+{
+    struct coffe_integral_t *integral;
+    /* how many integrals are currently allocated */
+    size_t size;
+};
+
+
+/* returns a pointer to the suitable array, or NULL if nothing is found */
+struct coffe_integral_t *coffe_find_integral(
+    const struct coffe_integral_array_t *array,
+    const int n,
+    const int l,
+    const enum coffe_integer_state state_n,
+    const enum coffe_integer_state state_l
+);
+
+
 int coffe_integrals_renormalizable(
-    double *output_x,
-    double *output_y,
+    double **output_x,
+    double **output_y,
     const size_t output_len,
+    size_t *real_output_len,
     const struct coffe_interpolation *spectrum,
-    const double l,
-    const double n,
+    const int n,
+    const int l,
+    const enum coffe_integer_state state_n,
+    const enum coffe_integer_state state_l,
     const double x_min,
     const double x_max
 );
@@ -50,11 +78,11 @@ int coffe_integrals_renormalizable(
 int coffe_integrals_init(
     const struct coffe_parameters_t *par,
     const struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral
+    struct coffe_integral_array_t *integral
 );
 
 int coffe_integrals_free(
-    struct coffe_integrals_t *integral
+    struct coffe_integral_array_t *integral
 );
 
 #endif

@@ -47,7 +47,7 @@ static double corrfunc_single_integrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_background_t *bg = test->bg;
     const struct coffe_parameters_t *par = test->par;
-    const struct coffe_integrals_t *integral = test->integral;
+    const struct coffe_integral_array_t *integral = test->integral;
     const double mu = test->mu;
     const double sep = test->sep;
     return
@@ -74,7 +74,7 @@ static double corrfunc_double_integrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_background_t *bg = test->bg;
     const struct coffe_parameters_t *par = test->par;
-    const struct coffe_integrals_t *integral = test->integral;
+    const struct coffe_integral_array_t *integral = test->integral;
     const double mu = test->mu;
     const double sep = test->sep;
     const double x1 = var[0], x2 = var[1];
@@ -110,7 +110,7 @@ static double multipoles_nonintegrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = all_params->par;
     const struct coffe_background_t *bg = all_params->bg;
-    const struct coffe_integrals_t *integral = all_params->integral;
+    const struct coffe_integral_array_t *integral = all_params->integral;
     const double sep = all_params->sep;
     const int l = all_params->l;
 
@@ -143,7 +143,7 @@ static double multipoles_flatsky_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = all_params->par;
     const struct coffe_background_t *bg = all_params->bg;
-    const struct coffe_integrals_t *integral = all_params->integral;
+    const struct coffe_integral_array_t *integral = all_params->integral;
     const double sep = all_params->sep;
     const int l = all_params->l;
 
@@ -174,7 +174,7 @@ static double multipoles_single_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (const struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double mu = 2*var[0] - 1, x = var[1];
@@ -223,7 +223,7 @@ static double multipoles_double_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double mu = 2*var[0] - 1, x1 = var[1], x2 = var[2];
@@ -274,7 +274,7 @@ static double average_multipoles_nonintegrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -344,7 +344,7 @@ static double average_multipoles_single_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -413,7 +413,7 @@ static double average_multipoles_double_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -536,7 +536,7 @@ static int signal_integrate_gsl(
 double coffe_integrate(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     double sep,
     double mu,
     int l,

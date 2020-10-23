@@ -5,7 +5,7 @@ struct coffe_integration_parameters_t
 {
     struct coffe_parameters_t *par;
     struct coffe_background_t *bg;
-    struct coffe_integrals_t *integral;
+    struct coffe_integral_array_t *integral;
     double sep;
     double mu;
     int l;
@@ -14,7 +14,7 @@ struct coffe_integration_parameters_t
 double coffe_integrate(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     double sep,
     double mu,
     int l,

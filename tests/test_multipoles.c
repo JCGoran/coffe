@@ -99,7 +99,7 @@ static void reset_signal(
 static int coffe_test_multipoles(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral
+    struct coffe_integral_array_t *integral
 )
 {
     /* no errors initially */
@@ -472,16 +472,16 @@ int main(void)
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integrals_t integrals[10];
+    struct coffe_integral_array_t integrals;
     par.flatsky_lensing_lensing = 1;
-    coffe_integrals_init(&par, &bg, integrals);
+    coffe_integrals_init(&par, &bg, &integrals);
     par.flatsky_lensing_lensing = 0;
 
-    const int error_flag = coffe_test_multipoles(&par, &bg, integrals);
+    const int error_flag = coffe_test_multipoles(&par, &bg, &integrals);
 
     coffe_parameters_free(&par);
     coffe_background_free(&bg);
-    coffe_integrals_free(integrals);
+    coffe_integrals_free(&integrals);
 
     return error_flag;
 }

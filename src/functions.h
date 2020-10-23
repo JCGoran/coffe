@@ -22,7 +22,7 @@
 double functions_nonintegrated(
     const struct coffe_parameters_t *par,
     const struct coffe_background_t *bg,
-    const struct coffe_integrals_t integral[],
+    const struct coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r
@@ -31,7 +31,7 @@ double functions_nonintegrated(
 double functions_single_integrated(
     const struct coffe_parameters_t *par,
     const struct coffe_background_t *bg,
-    const struct coffe_integrals_t integral[],
+    const struct coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r,
@@ -41,7 +41,7 @@ double functions_single_integrated(
 double functions_double_integrated(
     const struct coffe_parameters_t *par,
     const struct coffe_background_t *bg,
-    const struct coffe_integrals_t integral[],
+    const struct coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r,
@@ -52,7 +52,7 @@ double functions_double_integrated(
 double functions_flatsky_lensing_lensing_multipoles(
     const struct coffe_parameters_t *par,
     const struct coffe_background_t *bg,
-    const struct coffe_integrals_t integral[],
+    const struct coffe_integral_array_t *integral,
     const double z_mean,
     const double sep,
     const int l,

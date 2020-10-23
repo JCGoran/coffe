@@ -21,6 +21,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+#include <math.h>
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_sf_bessel.h>
@@ -782,4 +783,86 @@ int coffe_read_ncol(
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
+}
+
+/**
+    multiplies every item of a double `array` of `size` by a double `factor`
+    MUST be alloc'd beforehand
+**/
+void coffe_rescale_array(
+    double *array,
+    const size_t size,
+    const double factor
+)
+{
+    if (array != NULL){
+        for (size_t i = 0; i < size; ++i) array[i] *= factor;
+    }
+    else{
+        fprintf(
+            stderr,
+            "ERROR: NULL encountered in %s, exiting, fix your code!\n",
+            __func__
+        );
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
+    multiplies two arrays, `array1` and `array2`, of same `size`,
+    and stores the result into `array_out`
+    MUST be alloc'd beforehand
+**/
+void coffe_multiply_array(
+    double *array_out,
+    const double *array1,
+    const double *array2,
+    const size_t size
+)
+{
+    if (
+        array_out != NULL &&
+        array1 != NULL &&
+        array2 != NULL
+    ){
+        for (size_t i = 0; i < size; ++i) array_out[i] = array1[i] * array2[i];
+    }
+    else{
+        fprintf(
+            stderr,
+            "ERROR: NULL encountered in %s, exiting, fix your code!\n",
+            __func__
+        );
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
+    computes `array1` * `array2`^`power`, of same `size`,
+    and stores the result into `array_out`
+    MUST be alloc'd beforehand
+**/
+void coffe_multiply_power_array(
+    double *array_out,
+    const double *array1,
+    const double *array2,
+    const size_t size,
+    const double power
+)
+{
+    if (
+        array_out != NULL &&
+        array1 != NULL &&
+        array2 != NULL
+    ){
+        for (size_t i = 0; i < size; ++i) array_out[i] = array1[i] * pow(array2[i], power);
+    }
+    else{
+        fprintf(
+            stderr,
+            "ERROR: NULL encountered in %s, exiting, fix your code!\n",
+            __func__
+        );
+        exit(EXIT_FAILURE);
+    }
 }
