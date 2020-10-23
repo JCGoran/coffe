@@ -271,7 +271,7 @@ static double integrals_integrate_function(
     test.n = n;
     test.l = l;
     test.state_n = state_n;
-    test.state_n = state_l;
+    test.state_l = state_l;
     test.r = sep;
 
     double result, error;
@@ -721,7 +721,7 @@ int coffe_integrals_init(
         );
 
         double chi_min = 0.;
-        double chi_max;
+        double chi_max = 0.;
         if (par->output_type == 0){
             /* dimensionless */
             chi_max = coffe_interp_spline(

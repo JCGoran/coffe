@@ -164,11 +164,6 @@ static int functions_nonlinear(
     double *output_x[8], *output_y[8];
 
     for (int i = 0; i < 8; ++i){
-        /**
-            TODO find a way to alloc the output length without using magic numbers
-            such as 42 for the number of separations between 0 and 1 Mpc/h.
-            The +1 is for r=0 which is obtained analytically.
-        **/
         output_x[i] = NULL;
         output_y[i] = NULL;
         size_t real_output_len = 0;
@@ -2166,21 +2161,21 @@ double functions_double_integrated(
 #endif
 
     double ren = 0;
-//    if (par->divergent){
-//        if (r2 <= pow(0.000001*COFFE_H0, 2)){
-//            ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization0, lambda1);
-//        }
-//        else{
-//            ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sqrt(r2))
-//                    /* renormalization term */
-//                   -gsl_spline2d_eval(
-//                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-//                        lambda1, lambda2,
-//                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-//                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
-//                    );
-//        }
-//    }
+    if (par->divergent){
+        if (r2 <= pow(0.000001*COFFE_H0, 2)){
+            ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization_zero_separation, lambda1);
+        }
+        else{
+            ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sqrt(r2))
+                    /* renormalization term */
+                   -gsl_spline2d_eval(
+                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
+                        lambda1, lambda2,
+                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
+                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                    );
+        }
+    }
 
     /* len-len term */
     if (par->correlation_contrib.len){
@@ -2599,11 +2594,6 @@ static int functions_nonlinear_mean(
     /* do the FFTlog transform */
     const size_t output_len = par->bessel_bins;
 
-    /**
-        TODO find a way to alloc the output length without using magic numbers
-        such as 42 for the number of separations between 0 and 1 Mpc/h.
-        The +1 is for r=0 which is obtained analytically.
-    **/
     double *output_x = NULL;
     double *output_y = NULL;
     size_t real_output_len = 0;
@@ -2614,8 +2604,10 @@ static int functions_nonlinear_mean(
         output_len,
         &real_output_len,
         &pk,
-        l,
         1,
+        l,
+        COFFE_INTEGER,
+        COFFE_INTEGER,
         pk.spline->x[0],
         pk.spline->x[pk.spline->size - 1]
     );
