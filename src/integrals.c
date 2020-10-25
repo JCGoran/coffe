@@ -180,7 +180,8 @@ static double integrals_coefficients(
 {
     double result;
     if (state == COFFE_HALF_INTEGER)
-        result = 1. / gsl_sf_fact(l) / pow(2, l);
+        /* in principle, we're assuming that ell is negative */
+        result = 1. / gsl_sf_fact(l + 1) / pow(2, l + 1);
     else
         result = pow(2, l) * gsl_sf_fact(l) / gsl_sf_fact(2 * l + 1);
     return result;
@@ -201,8 +202,30 @@ static double integrals_prefactor(
 )
 {
     struct integrals_params *test = (struct integrals_params *) p;
-    return pow(k, 2 + test->l - test->n)
+    double local_n, local_l;
+
+    if (test->state_n == COFFE_HALF_INTEGER)
+        local_n = (double)test->n / 2.;
+    else
+        local_n = test->n;
+    if (test->state_l == COFFE_HALF_INTEGER)
+        local_l = (double)test->l / 2.;
+    else
+        local_l = test->l;
+
+    double result;
+
+    if (
+        test->state_n == COFFE_HALF_INTEGER &&
+        test->state_l == COFFE_HALF_INTEGER
+    )
+        result = sqrt(M_PI / 2.)
+          *pow(k, 2 + local_l - local_n)
           *coffe_interp_spline(test->result, k);
+    else
+        result = pow(k, 2 + local_l - local_n)
+          *coffe_interp_spline(test->result, k);
+    return result;
 }
 
 
@@ -227,16 +250,16 @@ static double integrals_bessel_integrand(
     double result;
 
     if (integrand->state_l == COFFE_HALF_INTEGER){
-        result = k*k
+        result = sqrt(M_PI / 2.) * k * k
            *coffe_interp_spline(integrand->result, k)
-           *gsl_sf_bessel_Jn(integrand->l, k * integrand->r)
-           /pow(k*integrand->r, integrand->n);
+           *gsl_sf_bessel_Jn(integrand->l + 1, k * integrand->r)
+           /pow(k * integrand->r, integrand->n);
     }
     else{
-        result = k*k
+        result = k * k
            *coffe_interp_spline(integrand->result, k)
            *gsl_sf_bessel_jl(integrand->l, k * integrand->r)
-           /pow(k*integrand->r, integrand->n);
+           /pow(k * integrand->r, integrand->n);
     }
     return result;
 }
@@ -273,6 +296,14 @@ static double integrals_integrate_function(
     test.state_n = state_n;
     test.state_l = state_l;
     test.r = sep;
+
+    double local_n;
+    if (state_n == COFFE_INTEGER) local_n = (double)n;
+    else local_n = (double)n / 2.;
+
+    double local_l;
+    if (state_l == COFFE_INTEGER) local_l = (double)l;
+    else local_l = (double)l / 2.;
 
     double result, error;
 
@@ -313,8 +344,8 @@ static double integrals_integrate_function(
 #endif
     double output;
     /* the case sep = 0 would just give us zero, so we skip it */
-    if (n >= l && sep > 0)
-        output = result * pow(sep, n - l);
+    if (local_n >= local_l && sep > 0)
+        output = result * pow(sep, local_n - local_l);
     else
         output = result;
 
