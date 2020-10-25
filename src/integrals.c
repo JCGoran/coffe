@@ -290,20 +290,33 @@ static double integrals_bessel_integrand(
         &local_l
     );
 
-    return sqrt(M_PI / 2.) * k * k
+    double bessel_function;
+    if (integrand->state_l == COFFE_HALF_INTEGER)
+        bessel_function = sqrt(M_PI / 2.) * gsl_sf_bessel_Jn(
+            (int)((integrand->l + 1) / 2),
+            k * integrand->r
+        )
+       /pow(
+            k * integrand->r,
+            local_n + 0.5
+        );
+    else
+        bessel_function = gsl_sf_bessel_jl(
+            integrand->l,
+            k * integrand->r
+        )
+       /pow(
+            k * integrand->r,
+            local_n
+        );
+
+    return k * k
             /* usually P(k) */
            *coffe_interp_spline(
                 integrand->result,
                 k
             )
-           *gsl_sf_bessel_Jnu(
-                local_l + 0.5,
-                k * integrand->r
-            )
-           /pow(
-                k * integrand->r,
-                local_n + 0.5
-            );
+           *bessel_function;
 }
 
 
