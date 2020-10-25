@@ -81,6 +81,52 @@ static int coffe_test_integrals(
         }
     }
 
+    /* compare the standard integrals (in flatsky) */
+    {
+        const size_t size_name = 256;
+        char name[size_name];
+        snprintf(
+            name,
+            size_name,
+            "tests/benchmarks/benchmark_integral%zu.dat",
+            (size_t)9
+        );
+        double *x_array, *y_array;
+        coffe_read_ncol(
+            name,
+            2,
+            &size,
+            &x_array,
+            &y_array
+        );
+
+        for (size_t i = 0; i < size - 1; ++i){
+            const double x = x_array[i];
+            const double y_expected = y_array[i];
+            const double y_obtained = coffe_interp_spline(
+                &coffe_find_integral(
+                    integrals,
+                    1,
+                    -1,
+                    COFFE_HALF_INTEGER,
+                    COFFE_HALF_INTEGER
+                )->result,
+                x_array[i]
+            );
+            fprintf(
+                stderr,
+                "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
+                (size_t)9, 1, -1, x, y_expected, y_obtained
+            );
+            weak_assert(
+                approx_equal(y_expected, y_obtained),
+                &error_flag
+            );
+        }
+        free(x_array);
+        free(y_array);
+    }
+
     /* memory cleanup */
     free(xvalue);
     for (size_t i = 0; i < size_files; ++i)
@@ -207,6 +253,7 @@ int main(void)
 
     par.divergent = 1;
     par.nonzero_terms[8].n = 4, par.nonzero_terms[8].l = 0;
+    par.flatsky_lensing_lensing = 1;
 
     #ifdef _OPENMP
     par.nthreads = omp_get_num_procs();
