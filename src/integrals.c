@@ -547,11 +547,16 @@ int coffe_integrals_renormalizable(
     double *fft_x = coffe_malloc(sizeof(double) * output_len);
     double *fft_y = coffe_malloc(sizeof(double) * output_len);
 
-    double l_local, n_local;
-    if (state_l == COFFE_HALF_INTEGER) l_local = l / 2.;
-    else l_local = l;
-    if (state_n == COFFE_HALF_INTEGER) n_local = n / 2.;
-    else n_local = n;
+    double local_n, local_l;
+
+    integrals_check_parameters(
+        n,
+        l,
+        state_n,
+        state_l,
+        &local_n,
+        &local_l
+    );
 
     /* do the FFTlog transform first */
     twofast_1bessel(
@@ -561,8 +566,8 @@ int coffe_integrals_renormalizable(
         spectrum->spline->x,
         spectrum->spline->y,
         spectrum->spline->size,
-        l_local,
-        n_local,
+        local_l,
+        local_n,
         COFFE_H0,
         x_min,
         x_min,
@@ -572,14 +577,14 @@ int coffe_integrals_renormalizable(
 
     double x0_result;
 
-    if (n_local >= l_local){
+    if (local_n >= local_l){
         /* r^(n - l) * I^n_l(r) */
         coffe_multiply_power_array(
             fft_y,
             fft_y,
             fft_x,
             output_len,
-            n_local - l_local
+            local_n - local_l
         );
 
         /* the result I^n_l(0) */
