@@ -329,7 +329,7 @@ static double integrals_integrate_function(
     double (*func)(
         double,
 #ifdef HAVE_DOUBLE_EXPONENTIAL
-        const void*,
+        const void*
 #else
         void*
 #endif
