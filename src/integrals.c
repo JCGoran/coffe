@@ -363,43 +363,13 @@ static double integrals_integrate_function(
         &local_l
     );
 
-    double result, error;
-
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-    result = tanhsinh_quad(
+    const double result = coffe_integrate_1d(
         func,
         &test,
         kmin,
-        kmax,
-        0.,
-        &error,
-        NULL
-    );
-#else
-
-    const double precision = 1E-5;
-    gsl_function integrand;
-    integrand.params = &test;
-    integrand.function = func;
-
-    gsl_integration_workspace *wspace =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-    gsl_integration_qag(
-        &integrand,
-        kmin,
-        kmax,
-        0,
-        precision,
-        COFFE_MAX_INTSPACE,
-        GSL_INTEG_GAUSS61,
-        wspace,
-        &result,
-        &error
+        kmax
     );
 
-    gsl_integration_workspace_free(wspace);
-#endif
     double output;
     /* the case sep = 0 would just give us zero, so we skip it */
     if (local_n >= local_l && sep > 0)
@@ -470,43 +440,12 @@ static double integrals_renormalization(
     test.chi1 = chi1;
     test.chi2 = chi2;
 
-    double output, error;
-
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-    output = tanhsinh_quad(
+    const double output = coffe_integrate_1d(
         &integrals_renormalization_integrand,
         &test,
         kmin,
-        kmax,
-        0.,
-        &error,
-        NULL
+        kmax
     );
-#else
-
-    double precision = 1E-5;
-    gsl_function integrand;
-    integrand.params = &test;
-    integrand.function = &integrals_renormalization_integrand;
-
-    gsl_integration_workspace *wspace =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-    gsl_integration_qag(
-        &integrand,
-        kmin,
-        kmax,
-        0,
-        precision,
-        COFFE_MAX_INTSPACE,
-        GSL_INTEG_GAUSS61,
-        wspace,
-        &output,
-        &error
-    );
-
-    gsl_integration_workspace_free(wspace);
-#endif
 
     return output / 2. / M_PI / M_PI;
 }

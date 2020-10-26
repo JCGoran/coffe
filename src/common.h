@@ -23,6 +23,10 @@
 #include <gsl/gsl_spline2d.h>
 #include <libconfig.h>
 
+#ifdef HAVE_CUBA
+#include "cuba.h"
+#endif
+
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
                         "Copyright (C) 2019 Goran Jelic-Cizmek\n" \
@@ -477,6 +481,49 @@ void coffe_multiply_power_array(
     const double *array2,
     const size_t size,
     const double power
+);
+
+
+/**
+    integrates any 1D function `func` with arbitrary parameters `parameters`
+    between `a` and `b` and returns `result`
+**/
+
+double coffe_integrate_1d(
+    double (*func)(
+        double,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        const void*
+#else
+        void*
+#endif
+    ),
+    const void *parameters,
+    const double a,
+    const double b
+);
+
+
+double coffe_integrate_multidimensional(
+#ifdef HAVE_CUBA
+    int (*func)(
+        const int *,
+        const cubareal *,
+        const int *,
+        cubareal *,
+        void *
+    ),
+#else
+    double (*func)(
+        double *,
+        size_t,
+        void *
+    ),
+#endif
+    const void *parameters,
+    const int integration_method,
+    const int dims,
+    const int integration_bins
 );
 
 #endif

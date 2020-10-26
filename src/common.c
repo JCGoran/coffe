@@ -24,6 +24,7 @@
 #include <math.h>
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 
 #include "common.h"
@@ -865,4 +866,178 @@ void coffe_multiply_power_array(
         );
         exit(EXIT_FAILURE);
     }
+}
+
+
+/**
+    integrates any 1D function `func` with arbitrary parameters `parameters`
+    between `a` and `b` and returns `result`
+**/
+
+double coffe_integrate_1d(
+    double (*func)(
+        double,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        const void*
+#else
+        void*
+#endif
+    ),
+    const void *parameters,
+    const double a,
+    const double b
+)
+{
+    double result, error;
+
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+    result = tanhsinh_quad(
+        func,
+        parameters,
+        a,
+        b,
+        0.,
+        &error,
+        NULL
+    );
+#else
+
+    const double precision = 1E-5;
+    gsl_function integrand;
+    integrand.params = (void *)parameters;
+    integrand.function = func;
+
+    gsl_integration_workspace *wspace =
+        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
+
+    gsl_integration_qag(
+        &integrand,
+        a,
+        b,
+        0,
+        precision,
+        COFFE_MAX_INTSPACE,
+        GSL_INTEG_GAUSS61,
+        wspace,
+        &result,
+        &error
+    );
+
+    gsl_integration_workspace_free(wspace);
+#endif
+
+    return result;
+}
+
+
+/**
+    integrate a multidimensional function (on the interval [0, 1] only!)
+    using either GSL or Cuba (if available)
+**/
+
+double coffe_integrate_multidimensional(
+#ifdef HAVE_CUBA
+    int (*func)(
+        const int *,
+        const cubareal *,
+        const int *,
+        cubareal *,
+        void *
+    ),
+#else
+    double (*func)(
+        double *,
+        size_t,
+        void *
+    ),
+#endif
+    const void *parameters,
+    const int integration_method,
+    const int dims,
+    const int integration_bins
+)
+{
+#ifdef HAVE_CUBA
+
+    int nregions, neval, fail;
+    double result[1], error[1], prob[1];
+
+    Cuhre(
+        dims,
+        1,
+        func,
+        (void *)parameters,
+        1,
+        5e-4,
+        0,
+        0,
+        1,
+        integration_bins,
+        7,
+        NULL,
+        NULL,
+        &nregions, &neval, &fail, result, error, prob
+    );
+
+    return result[0];
+
+#else
+
+    double result;
+    gsl_monte_function integrand;
+    integrand.f = func;
+    integrand.dim = dims;
+    integrand.params = parameters;
+    gsl_rng_env_setup();
+    const gsl_rng_type *rng = gsl_rng_default;
+    gsl_rng *random = gsl_rng_alloc(rng);
+    double lower[dims];
+    double upper[dims];
+    double error;
+    for (int i = 0; i < dims; ++i){
+        lower[i] = 0.0;
+        upper[i] = 1.0;
+    }
+    switch (integration_method){
+        case 0:{
+            gsl_monte_plain_state *state =
+                gsl_monte_plain_alloc(dims);
+            gsl_monte_plain_integrate(
+                &integrand, lower, upper,
+                dims, integration_bins, random,
+                state,
+                result, &error
+            );
+            gsl_monte_plain_free(state);
+            break;
+        }
+        case 1:{
+            gsl_monte_miser_state *state =
+                gsl_monte_miser_alloc(dims);
+            gsl_monte_miser_integrate(
+                &integrand, lower, upper,
+                dims, integration_bins, random,
+                state,
+                result, &error
+            );
+            gsl_monte_miser_free(state);
+            break;
+        }
+        case 2:{
+            gsl_monte_vegas_state *state =
+                gsl_monte_vegas_alloc(dims);
+            gsl_monte_vegas_integrate(
+                &integrand, lower, upper,
+                dims, integration_bins, random,
+                state,
+                result, &error
+            );
+            gsl_monte_vegas_free(state);
+            break;
+        }
+    }
+    gsl_rng_free(random);
+
+    return result;
+#endif
 }
