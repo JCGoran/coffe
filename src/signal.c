@@ -464,22 +464,72 @@ static double average_multipoles_double_integrated_integrand(
 #endif
 }
 
-#ifndef HAVE_CUBA
-static int signal_integrate_gsl(
-    gsl_monte_function integrand,
+
+/**
+    integrate a multidimensional function
+    using either GSL or Cuba (if available)
+**/
+
+static double signal_integrate_multidimensional(
+#ifdef HAVE_CUBA
+    int (*func)(
+        const int *,
+        const cubareal *,
+        const int *,
+        cubareal *,
+        void *
+    ),
+#else
+    double (*func)(
+        double *,
+        size_t,
+        void *
+    ),
+#endif
+    const void *parameters,
     const int integration_method,
     const int dims,
-    const int integration_bins,
-    double *result
+    const int integration_bins
 )
 {
+#ifdef HAVE_CUBA
+
+    int nregions, neval, fail;
+    double result[1], error[1], prob[1];
+
+    Cuhre(
+        dims,
+        1,
+        func,
+        (void *)parameters,
+        1,
+        5e-4,
+        0,
+        0,
+        1,
+        integration_bins,
+        7,
+        NULL,
+        NULL,
+        &nregions, &neval, &fail, result, error, prob
+    );
+
+    return result[0];
+
+#else
+
+    double result;
+    gsl_monte_function integrand;
+    integrand.f = func;
+    integrand.dim = dims;
+    integrand.params = parameters;
     gsl_rng_env_setup();
     const gsl_rng_type *rng = gsl_rng_default;
     gsl_rng *random = gsl_rng_alloc(rng);
     double lower[dims];
     double upper[dims];
     double error;
-    for (int i = 0; i<dims; ++i){
+    for (int i = 0; i < dims; ++i){
         lower[i] = 0.0;
         upper[i] = 1.0;
     }
@@ -523,9 +573,9 @@ static int signal_integrate_gsl(
     }
     gsl_rng_free(random);
 
-    return EXIT_SUCCESS;
-}
+    return result;
 #endif
+}
 
 /**
     Computes all of the integrals for the output.
@@ -604,37 +654,13 @@ double coffe_integrate(
                     return (2*l + 1)*result;
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 2;
-
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_nonintegrated_integrand,
-                        (void *)&test, 1,
-                        1e-3, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_nonintegrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * signal_integrate_multidimensional(
+                        &average_multipoles_nonintegrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        2,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
-
                 }
                 default:
                     return 0.0;
@@ -698,67 +724,22 @@ double coffe_integrate(
                     return result;
                 }
                 case MULTIPOLES:{
-                    const int dims = 2;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-
-                    Cuhre(dims, 1,
-                        multipoles_single_integrated_integrand,
-                        (void *)&test, 1,
-                        1e-6, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    integrand.f = &multipoles_single_integrated_integrand;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * signal_integrate_multidimensional(
+                        &multipoles_single_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        2,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 3;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_single_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_single_integrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * signal_integrate_multidimensional(
+                        &average_multipoles_single_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        3,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
                 }
                 default:
                     return 0.0;
@@ -775,36 +756,13 @@ double coffe_integrate(
 
             switch (flag_output){
                 case CORRFUNC:{
-                    const int dims = 2;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-
-                    Cuhre(dims, 1,
-                        corrfunc_double_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    integrand.f = &corrfunc_double_integrated_integrand;
-                    signal_integrate_gsl(
-                        integrand,
+                    return signal_integrate_multidimensional(
+                        &corrfunc_double_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        2,
+                        par->integration_bins
                     );
-
-                    return result;
-                    #endif
                 }
                 case MULTIPOLES:{
                     double final_result = 0;
@@ -861,69 +819,24 @@ double coffe_integrate(
                             !par->flatsky_lensing_lensing
                         )
                     ){
-                        const int dims = 3;
-                        #ifdef HAVE_CUBA
-                        int nregions, neval, fail;
-                        double result[1], error[1], prob[1];
-
-                        Cuhre(dims, 1,
-                            multipoles_double_integrated_integrand,
-                            (void *)&test, 1,
-                            5e-4, 0, 0,
-                            1, par->integration_bins, 7,
-                            NULL, NULL,
-                            &nregions, &neval, &fail, result, error, prob
-                        );
-                        final_result += (2*l + 1)*result[0];
-                        #else
-                        double result;
-                        gsl_monte_function integrand;
-                        integrand.dim = dims;
-                        integrand.params = &test;
-                        integrand.f = &multipoles_double_integrated_integrand;
-                        signal_integrate_gsl(
-                            integrand,
+                        final_result += (2 * l + 1) * signal_integrate_multidimensional(
+                            &multipoles_double_integrated_integrand,
+                            (void *)&test,
                             par->integration_method,
-                            dims,
-                            par->integration_bins,
-                            &result
+                            3,
+                            par->integration_bins
                         );
-
-                        final_result += (2*l + 1)*result;
-                        #endif
                     }
                     return final_result;
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 4;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_double_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_double_integrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * signal_integrate_multidimensional(
+                        &average_multipoles_double_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        4,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
                 }
                 default:
                     return 0.0;
