@@ -345,7 +345,7 @@ static double integrals_integrate_function(
 )
 {
     struct integrals_params test;
-    test.result = input;
+    test.result = (struct coffe_interpolation *) input;
     test.n = n;
     test.l = l;
     test.state_n = state_n;
@@ -428,7 +428,7 @@ static double integrals_renormalization_integrand(
 **/
 
 static double integrals_renormalization(
-    const struct coffe_interpolation *result,
+    const struct coffe_interpolation *input,
     const double chi1,
     const double chi2,
     const double kmin,
@@ -436,7 +436,7 @@ static double integrals_renormalization(
 )
 {
     struct integrals_divergent_params test;
-    test.result = result;
+    test.result = (struct coffe_interpolation*) input;
     test.chi1 = chi1;
     test.chi2 = chi2;
 
