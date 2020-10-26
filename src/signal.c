@@ -24,15 +24,6 @@
 #include <gsl/gsl_monte_vegas.h>
 #endif
 
-/* computes the l-dependent prefactor for lensing-lensing multipoles */
-/* this differs from the C(l) definition by a factor of (2 l + 1) / 2 */
-static double flatsky_lensing_lensing_coefficient(
-    const int l
-)
-{
-    return (2 * l + 1) * gsl_sf_fact(l) / pow(2, l) / pow(gsl_sf_fact(l / 2), 2);
-}
-
 
 static double corrfunc_single_integrated_integrand(
     double x,
@@ -630,8 +621,8 @@ double coffe_integrate(
                             0,
                             1
                         );
-
-                        final_result += 2 * M_PI * M_PI * flatsky_lensing_lensing_coefficient(l) * result;
+                        /* the factor of 2 pi^2 is because of the definition of the I^n_l integrals */
+                        final_result += 2 * M_PI * M_PI * result;
                     }
                     /* this part can run now that we have lensing-lensing multipoles */
                     if (

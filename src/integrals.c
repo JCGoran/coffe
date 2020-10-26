@@ -890,6 +890,7 @@ int coffe_integrals_init(
 
         integral->size += 1;
     }
+    /* lensing-lensing multipoles are special */
     if (
         par->flatsky_lensing_lensing &&
         par->output_type == 2

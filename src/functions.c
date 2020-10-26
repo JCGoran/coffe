@@ -2705,7 +2705,8 @@ double functions_flatsky_lensing_lensing_multipoles(
     else{
 #endif
         result =
-            9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+            (2 * l + 1) * gsl_sf_fact(l) / pow(2, l) / pow(gsl_sf_fact(l / 2), 2)
+          * 9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
           * (2 - 5 * sz_mean1)
           * (2 - 5 * sz_mean2)
           * pow(chi_mean, 3)
