@@ -1071,7 +1071,7 @@ double functions_single_integrated(
         /* den-len + len-den modified in flatsky */
         if (par->flatsky_density_lensing){
             result +=
-               -3 * (par->Omega0_cdm + par->Omega0_baryon) / M_PI / 4
+               -3 * (par->Omega0_cdm + par->Omega0_baryon) / M_PI / 8
                *coffe_interp_spline(&bg->D1, z_mean)
                *coffe_interp_spline(&bg->D1, z_mean)
                *(1 + z_mean)
@@ -1081,9 +1081,15 @@ double functions_single_integrated(
                     (2 - 5 * sz_mean1) * bz_mean2
                     +
                     (2 - 5 * sz_mean2) * bz_mean1
-                ) / 2.
+                )
                *coffe_interp_spline(
-                    &coffe_find_integral(integral, 1, -1, COFFE_HALF_INTEGER, COFFE_HALF_INTEGER)->result,
+                    &coffe_find_integral(
+                        integral,
+                        1,
+                        -1,
+                        COFFE_HALF_INTEGER,
+                        COFFE_HALF_INTEGER
+                    )->result,
                     sep * sqrt(1 - mu * mu)
                 );
         }
