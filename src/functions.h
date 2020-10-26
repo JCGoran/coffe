@@ -59,5 +59,13 @@ double functions_flatsky_lensing_lensing_multipoles(
     const double x
 );
 
-#endif
+double functions_flatsky_density_lensing_multipoles(
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integral_array_t *integral,
+    const double z_mean,
+    const double sep,
+    const int l
+);
 
+#endif

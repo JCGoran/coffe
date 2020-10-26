@@ -566,13 +566,60 @@ double coffe_integrate(
                     return result;
                 }
                 case MULTIPOLES:{
-                    return (2 * l + 1) * coffe_integrate_multidimensional(
-                        &multipoles_single_integrated_integrand,
-                        (void *)&test,
-                        par->integration_method,
-                        2,
-                        par->integration_bins
-                    );
+                    double final_result = 0;
+                    /* flatsky density-lensing is special */
+                    if (
+                        par->correlation_contrib.den &&
+                        par->correlation_contrib.len &&
+                        par->flatsky_density_lensing
+                    ){
+                        const double result = functions_flatsky_density_lensing_multipoles(
+                            par,
+                            bg,
+                            integral,
+                            par->z_mean,
+                            sep,
+                            l
+                        );
+                        final_result += 2 * M_PI * M_PI * result;
+                    }
+                    if (
+                        (par->correlation_contrib.len && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g3) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.den) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g3) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.den) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g3) ||
+                        (
+                            par->correlation_contrib.den &&
+                            par->correlation_contrib.len &&
+                            !par->flatsky_density_lensing
+                        )
+                    ){
+
+                        final_result += (2 * l + 1) * coffe_integrate_multidimensional(
+                            &multipoles_single_integrated_integrand,
+                            (void *)&test,
+                            par->integration_method,
+                            2,
+                            par->integration_bins
+                        );
+                    }
+                    return final_result;
                 }
                 case AVERAGE_MULTIPOLES:{
                     return (2 * l + 1) * coffe_integrate_multidimensional(

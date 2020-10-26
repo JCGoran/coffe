@@ -1069,7 +1069,10 @@ double functions_single_integrated(
         par->correlation_contrib.len
     ){
         /* den-len + len-den modified in flatsky */
-        if (par->flatsky_density_lensing){
+        if (
+            par->flatsky_density_lensing &&
+            par->output_type != 2
+        ){
             result +=
                -3 * (par->Omega0_cdm + par->Omega0_baryon) / M_PI / 8
                *coffe_interp_spline(&bg->D1, z_mean)
@@ -1093,7 +1096,7 @@ double functions_single_integrated(
                     sep * sqrt(1 - mu * mu)
                 );
         }
-        else{
+        else if (!par->flatsky_density_lensing){
             if (r21 != 0.0 && r22 != 0.0){
 #ifdef HAVE_CLASS
                 if (par->pk_type){
@@ -2755,4 +2758,137 @@ double functions_flatsky_lensing_lensing_multipoles(
         return result * x * sep;
     else
         return result;
+}
+
+
+/* density-lensing multipoles are special */
+double functions_flatsky_density_lensing_multipoles(
+    const struct coffe_parameters_t *par,
+    const struct coffe_background_t *bg,
+    const struct coffe_integral_array_t *integral,
+    const double z_mean,
+    const double sep,
+    const int l
+)
+{
+    const double chi_mean = coffe_interp_spline(
+        &bg->comoving_distance,
+        z_mean
+    );
+
+    const double sz_mean1 = coffe_interp_spline(
+        &par->magnification_bias1,
+        z_mean
+    );
+    const double sz_mean2 = coffe_interp_spline(
+        &par->magnification_bias2,
+        z_mean
+    );
+
+    const double bz_mean1 = coffe_interp_spline(
+        &par->matter_bias1,
+        z_mean
+    );
+    const double bz_mean2 = coffe_interp_spline(
+        &par->matter_bias2,
+        z_mean
+    );
+
+#if 0
+#ifdef HAVE_CLASS
+    struct coffe_interpolation fftlog;
+
+    if (par->pk_type)
+        functions_nonlinear_mean(
+            par,
+            coffe_interp_spline(
+                &bg->z_as_chi,
+                lambda
+            ),
+            l,
+            &fftlog
+        );
+#endif
+#endif
+
+    double result = 0;
+
+#if 0
+#ifdef HAVE_CLASS
+    if (par->pk_type){
+        result =
+            9 * pow(par->Omega0_cdm + par->Omega0_baryon, 2)
+          * (2 - 5 * sz_mean1)
+          * (2 - 5 * sz_mean2)
+          * pow(chi_mean, 3)
+          / 8. / M_PI
+            /* integrand */
+          * coffe_interp_spline(
+                &fftlog,
+                x * sep
+            )
+            /* (1 + z)^2 */
+          * pow(
+                1 + coffe_interp_spline(
+                    &bg->z_as_chi,
+                    lambda
+                ),
+                2
+            )
+          * pow(x * (1 - x), 2);
+    }
+    else{
+#endif
+#endif
+        /* part with even multipoles */
+        if (l % 2 == 0){
+            for (size_t k = 0; k <= (size_t)l / 2; ++k){
+                result +=
+                    pow(-1, k)
+                   /pow(2, k)
+                   *gsl_sf_choose(l, k)
+                   *gsl_sf_choose(2 * l - 2 * k, l)
+                   *gsl_sf_fact(l / 2 - k)
+                   *coffe_interp_spline(
+                        &coffe_find_integral(
+                            integral,
+                            l - 2 * k + 3,
+                            l - 2 * k + 1,
+                            COFFE_HALF_INTEGER,
+                            COFFE_HALF_INTEGER
+                        )->result,
+                        sep
+                    );
+            }
+            result *=
+               -3 * (par->Omega0_cdm + par->Omega0_baryon) / M_PI / 8
+               *(2 * l + 1)
+               *coffe_interp_spline(&bg->D1, z_mean)
+               *coffe_interp_spline(&bg->D1, z_mean)
+               *(1 + z_mean)
+               *sep
+               *(
+                    (2 - 5 * sz_mean1) * bz_mean2
+                    +
+                    (2 - 5 * sz_mean2) * bz_mean1
+                )
+               *pow(2, 1 - l / 2);
+
+        }
+        /* part with odd multipoles (TODO) */
+        else{
+            result += 0;
+        }
+#if 0
+#ifdef HAVE_CLASS
+    }
+#endif
+
+#ifdef HAVE_CLASS
+    if (par->pk_type)
+        coffe_free_spline(&fftlog);
+#endif
+#endif
+
+    return result / sqrt(2 * M_PI);
 }

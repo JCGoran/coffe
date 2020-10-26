@@ -948,6 +948,67 @@ int coffe_integrals_init(
             integral->size += 1;
         }
     }
+    /* density-lensing multipoles are also special */
+    if (
+        par->flatsky_density_lensing &&
+        par->output_type == 2
+    ){
+        for (size_t i = 0; i < par->multipole_values_len; ++i){
+            const int l = par->multipole_values[i];
+            for (size_t k = 0; k <= (size_t)l / 2; ++k){
+
+                const size_t current_index = integral->size;
+                /* alloc the space */
+                if (current_index == 0)
+                    integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                else
+                    integral->integral = realloc(
+                        integral->integral,
+                        sizeof(struct coffe_integral_t) * (current_index + 1)
+                    );
+                integral->integral[current_index].n = l - 2 * k + 3;
+                integral->integral[current_index].l = l - 2 * k + 1;
+                integral->integral[current_index].state_n = COFFE_HALF_INTEGER;
+                integral->integral[current_index].state_l = COFFE_HALF_INTEGER;
+                integral->integral[current_index].renormalization.spline = NULL;
+                integral->integral[current_index].renormalization.xaccel = NULL;
+                integral->integral[current_index].renormalization.yaccel = NULL;
+
+                /* if integral is not divergent, use implementation of 2FAST */
+                const size_t npoints = par->bessel_bins;
+                double *final_sep = NULL;
+                double *final_result = NULL;
+                size_t output_real_len = 0;
+
+                coffe_integrals_renormalizable(
+                    &final_sep,
+                    &final_result,
+                    npoints,
+                    &output_real_len,
+                    &par->power_spectrum_norm,
+                    integral->integral[current_index].n,
+                    integral->integral[current_index].l,
+                    integral->integral[current_index].state_n,
+                    integral->integral[current_index].state_l,
+                    par->k_min_norm,
+                    par->k_max_norm
+                );
+
+                coffe_init_spline(
+                    &integral->integral[current_index].result,
+                    final_sep,
+                    final_result,
+                    output_real_len,
+                    par->interp_method
+                );
+                free(final_sep);
+                free(final_result);
+
+                integral->size += 1;
+            }
+        }
+    }
+
 
     gsl_set_error_handler(default_handler);
     end = clock();
