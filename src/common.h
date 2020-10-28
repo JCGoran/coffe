@@ -27,6 +27,10 @@
 #include "cuba.h"
 #endif
 
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+#include "tanhsinh.h"
+#endif
+
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
                         "Copyright (C) 2019 Goran Jelic-Cizmek\n" \
