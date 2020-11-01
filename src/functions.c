@@ -260,7 +260,10 @@ double functions_nonintegrated(
 #endif
 
     /* den-den term */
-    if (par->correlation_contrib.den){
+    if (
+        par->correlation_contrib.den &&
+        !par->only_cross_correlations
+    ){
         /* den-den modified by flatsky */
         if (par->flatsky_standard_standard){
             result += bz_mean1*bz_mean2
@@ -279,7 +282,10 @@ double functions_nonintegrated(
         }
     }
     /* rsd-rsd term */
-    if (par->correlation_contrib.rsd){
+    if (
+        par->correlation_contrib.rsd &&
+        !par->only_cross_correlations
+    ){
         /* rsd-rsd modified by flatsky */
         if (par->flatsky_standard_standard){
             result +=
@@ -334,7 +340,10 @@ double functions_nonintegrated(
         }
     }
     /* d1-d1 term */
-    if (par->correlation_contrib.d1){
+    if (
+        par->correlation_contrib.d1 &&
+        !par->only_cross_correlations
+    ){
         /* TODO should this be yet another flag, or go under standard? */
         if (par->flatsky_standard_standard){
             result +=
@@ -393,7 +402,10 @@ double functions_nonintegrated(
         }
     }
     /* d2-d2 term */
-    if (par->correlation_contrib.d2){
+    if (
+        par->correlation_contrib.d2 &&
+        !par->only_cross_correlations
+    ){
         result +=
             (3 - fevo1)*(3 - fevo2)*pow(curlyH1, 2)*pow(curlyH2, 2)*f1*f2
            *(
@@ -408,7 +420,10 @@ double functions_nonintegrated(
             );
     }
     /* g1-g1 term */
-    if (par->correlation_contrib.g1){
+    if (
+        par->correlation_contrib.g1 &&
+        !par->only_cross_correlations
+    ){
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(1 + G1)*(1 + G2)/4/a1/a2
            *(
@@ -423,7 +438,10 @@ double functions_nonintegrated(
             );
     }
     /* g2-g2 term */
-    if (par->correlation_contrib.g2){
+    if (
+        par->correlation_contrib.g2 &&
+        !par->only_cross_correlations
+    ){
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(5*s1 - 2)*(5*s2 - 2)/4/a1/a2
            *(
@@ -438,7 +456,10 @@ double functions_nonintegrated(
             );
     }
     /* g3-g3 term */
-    if (par->correlation_contrib.g3){
+    if (
+        par->correlation_contrib.g3 &&
+        !par->only_cross_correlations
+    ){
         result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(f1 - 1)*(f2 - 1)/4/a1/a2
            *(
@@ -2187,7 +2208,10 @@ double functions_double_integrated(
     }
 
     /* len-len term */
-    if (par->correlation_contrib.len){
+    if (
+        par->correlation_contrib.len &&
+        !par->only_cross_correlations
+    ){
         if (par->flatsky_lensing_lensing && par->output_type != 2){
             /* len-len modified by flatsky */
             result +=
@@ -2371,7 +2395,10 @@ double functions_double_integrated(
         }
     }
     /* g4-g4 term */
-    if (par->correlation_contrib.g4){
+    if (
+        par->correlation_contrib.g4 &&
+        !par->only_cross_correlations
+    ){
         result +=
         /* constant in front */
         9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)*(2 - 5*s1)*(2 - 5*s2)
@@ -2384,7 +2411,10 @@ double functions_double_integrated(
            *ren;
     }
     /* g5-g5 term */
-    if (par->correlation_contrib.g5){
+    if (
+        par->correlation_contrib.g5 &&
+        !par->only_cross_correlations
+    ){
         result +=
         /* constant in front */
         9*(par->Omega0_cdm + par->Omega0_baryon)*(par->Omega0_cdm + par->Omega0_baryon)

@@ -88,6 +88,7 @@ def get_default_parameters():
         'covariance_interpolation_method' : 2,
         'covariance_minimum_separation' : 20,
         'verbose' : 1,
+        'only_cross_correlations' : 0,
     }
 
 def _check_value(value):

@@ -659,6 +659,7 @@ double coffe_integrate(
                     if (
                         par->correlation_contrib.len &&
                         par->flatsky_lensing_lensing &&
+                        !par->only_cross_correlations &&
                         /* the odd ones are zero by construction, so we care only about the even */
                         l % 2 == 0
                     ){

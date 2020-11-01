@@ -313,6 +313,8 @@ struct coffe_parameters_t
 
     int zeldovich_approximation;
 
+    int only_cross_correlations;
+
 };
 
 char *coffe_get_time(void);

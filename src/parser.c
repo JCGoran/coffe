@@ -492,6 +492,8 @@ int coffe_parse_default_parameters(
     par->ln_10_pow_10_A_s = 3.06;
     par->n_s = 0.96;
 
+    par->only_cross_correlations = 0;
+
     par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 150.};
     par->sep = coffe_malloc(
@@ -1122,6 +1124,9 @@ int coffe_parser_init(
     /* parsing the window */
     parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
     parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
+
+    /* parsing whether we want just cross-correlations or not */
+    parse_int(conf, "only_cross_correlations", &par->only_cross_correlations, COFFE_TRUE);
 
     /* parsing the size of the window (in Mpc/h) */
     if (par->have_window){
