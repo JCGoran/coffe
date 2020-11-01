@@ -197,7 +197,7 @@ static int coffe_test_multipoles(
                     )
                 ){
                     weak_assert(
-                        approx_equal(y_expected, y_obtained),
+                        approx_equal_const_epsilon(y_expected, y_obtained),
                         &error_flag
                     );
                 }
@@ -260,7 +260,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -321,7 +321,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -382,7 +382,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -442,7 +442,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -492,7 +492,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -500,6 +500,68 @@ static int coffe_test_multipoles(
         reset_signal(&par->correlation_contrib);
         par->flatsky_lensing_lensing = 0;
     }
+    {
+        /* odd multipoles */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.rsd = 1;
+        par->correlation_contrib.d1 = 1;
+        par->correlation_contrib.d2 = 1;
+        par->correlation_contrib.g1 = 1;
+        par->correlation_contrib.g2 = 1;
+        par->correlation_contrib.g3 = 1;
+        par->correlation_contrib.len = 1;
+        par->correlation_contrib.g4 = 1;
+        par->correlation_contrib.g5 = 1;
+        const int odd_multipoles[] = {1, 3};
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(odd_multipoles); ++i){
+            const int l = odd_multipoles[i];
+            /* number of separations */
+            const size_t size = 15;
+
+            for (size_t k = 0; k < size; ++k){
+                const double step = 20.;
+                /* dimensionless separation */
+                const double x =  step * (k + 1) * COFFE_H0;
+                const double y_expected = 0;
+                const double y_obtained = coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    NONINTEGRATED, MULTIPOLES
+                )
+                +
+                coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    SINGLE_INTEGRATED, MULTIPOLES
+                )
+                +
+                coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    DOUBLE_INTEGRATED, MULTIPOLES
+                );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type all, expected = %e, obtained = %e\n",
+                    l, step * (k + 1), y_expected, y_obtained
+                );
+
+                weak_assert(
+                    approx_equal(
+                        y_expected,
+                        y_obtained,
+                        5e-4,
+                        1e-14
+                    ),
+                    &error_flag
+                );
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+        par->flatsky_lensing_lensing = 0;
+    }
+
     if (!error_flag)
         COFFE_TESTS_PRINT_SUCCESS;
 

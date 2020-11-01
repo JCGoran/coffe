@@ -29,7 +29,7 @@ static int coffe_test_background(
 
         /* test H(z) */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 Hz[i] / COFFE_H0,
                 coffe_interp_spline(&bg->Hz, z[i])
             ),
@@ -38,7 +38,7 @@ static int coffe_test_background(
 
         /* test conformal H(z) */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 conformal_Hz[i] / COFFE_H0,
                 coffe_interp_spline(&bg->conformal_Hz, z[i])
             ),
@@ -47,7 +47,7 @@ static int coffe_test_background(
 
         /* test conformal_Hz_prime */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 conformal_Hz_prime[i] / COFFE_H0 / COFFE_H0,
                 coffe_interp_spline(&bg->conformal_Hz_prime, z[i])
             ),
@@ -56,7 +56,7 @@ static int coffe_test_background(
 
         /* test D1 */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 D1[i] / D1[0],
                 coffe_interp_spline(&bg->D1, z[i])
             ),
@@ -65,7 +65,7 @@ static int coffe_test_background(
 
         /* test f */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 f[i],
                 coffe_interp_spline(&bg->f, z[i])
             ),
@@ -74,7 +74,7 @@ static int coffe_test_background(
 
         /* test comoving_distance */
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 comoving_distance[i] * COFFE_H0,
                 coffe_interp_spline(&bg->comoving_distance, z[i])
             ),

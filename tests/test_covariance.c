@@ -66,7 +66,7 @@ static int coffe_test_covariance(
                         covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
                     );
                     weak_assert(
-                        approx_equal(
+                        approx_equal_const_epsilon(
                             result[i * obtained_size + j],
                             covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
                         ),

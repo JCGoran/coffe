@@ -167,7 +167,7 @@ static int coffe_test_corrfunc(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -228,7 +228,7 @@ static int coffe_test_corrfunc(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -289,7 +289,7 @@ static int coffe_test_corrfunc(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -350,7 +350,7 @@ static int coffe_test_corrfunc(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -410,7 +410,7 @@ static int coffe_test_corrfunc(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }

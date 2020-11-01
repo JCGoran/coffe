@@ -12,7 +12,7 @@
 #endif
 
 /* 1 if equal, else 0 */
-static int approx_equal(
+static int approx_equal_const_epsilon(
     const double a,
     const double b
 )
@@ -36,6 +36,31 @@ static int approx_equal(
     }
 }
 
+/* 1 if equal, else 0 */
+static int approx_equal(
+    const double a,
+    const double b,
+    const double rel_epsilon,
+    const double abs_epsilon
+)
+{
+    if (a != 0 && b != 0){
+        if (fabs(a - b) / fabs(a) < rel_epsilon)
+            return 1;
+        else{
+            fprintf(stderr, "ERROR: %e != %e to %e\n", a, b, rel_epsilon);
+            return 0;
+        }
+    }
+    else{
+        if (fabs(a - b) < abs_epsilon)
+            return 1;
+        else{
+            fprintf(stderr, "ERROR: %e != %e to %e\n", a, b, abs_epsilon);
+            return 0;
+        }
+    }
+}
 /* a version of assert that DOESN'T exit on error */
 void weak_assert(
     const int value,

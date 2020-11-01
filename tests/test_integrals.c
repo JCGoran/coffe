@@ -75,7 +75,7 @@ static int coffe_test_integrals(
                 integral, terms[integral].n, terms[integral].l, x, y_expected, y_obtained
             );
             weak_assert(
-                approx_equal(y_expected, y_obtained),
+                approx_equal_const_epsilon(y_expected, y_obtained),
                 &error_flag
             );
         }
@@ -119,7 +119,7 @@ static int coffe_test_integrals(
                 (size_t)9, 1, -1, x, y_expected, y_obtained
             );
             weak_assert(
-                approx_equal(y_expected, y_obtained),
+                approx_equal_const_epsilon(y_expected, y_obtained),
                 &error_flag
             );
         }
@@ -165,7 +165,7 @@ static int coffe_test_integrals(
         );
 
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 y_expected,
                 y_obtained
             ),
@@ -225,7 +225,7 @@ static int coffe_test_integrals(
         );
 
         weak_assert(
-            approx_equal(
+            approx_equal_const_epsilon(
                 y_expected,
                 y_obtained
             ),
