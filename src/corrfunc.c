@@ -134,7 +134,10 @@ int coffe_corrfunc_init(
 )
 {
 #ifdef HAVE_CUBA
-    cubacores(0, 10000);
+    {
+        int n = 0, p = 10000;
+        cubacores(&n, &p);
+    }
 #endif
     cf_ang->flag = 0;
     corrfunc->flag = 0;

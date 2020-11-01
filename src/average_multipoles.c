@@ -103,7 +103,10 @@ int coffe_average_multipoles_init(
 )
 {
 #ifdef HAVE_CUBA
-    cubacores(0, 10000);
+    {
+        int n = 0, p = 10000;
+        cubacores(&n, &p);
+    }
 #endif
     ramp->flag = 0;
     if (par->output_type == 3){
