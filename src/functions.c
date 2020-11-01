@@ -2801,11 +2801,6 @@ double functions_flatsky_density_lensing_multipoles(
     const int l
 )
 {
-    const double chi_mean = coffe_interp_spline(
-        &bg->comoving_distance,
-        z_mean
-    );
-
     const double sz_mean1 = coffe_interp_spline(
         &par->magnification_bias1,
         z_mean
