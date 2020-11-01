@@ -11,6 +11,7 @@ RUN apt-get update && \
     libconfig-dev \
     libgsl-dev \
     libfftw3-dev \
+    python3-pip \
     wget && \
     apt-get clean && apt-get autoremove -y
 # get CUBA and build it
@@ -19,7 +20,7 @@ RUN wget http://www.feynarts.de/cuba/Cuba-4.2.tar.gz
 RUN tar xf /tmp/Cuba-4.2.tar.gz -C /tmp/
 WORKDIR /tmp/Cuba-4.2/
 RUN ./configure
-RUN make
+RUN make -j
 RUN make install
 RUN rm -rf /tmp/Cuba*
 # get CLASS and set it up
@@ -41,5 +42,6 @@ RUN git checkout future
 RUN autoreconf -i
 RUN ./configure --enable-cuba --enable-class
 RUN make -j
+RUN pip3 install -r python/requirements.txt
 RUN ln -s /coffe/coffe /usr/bin/coffe
 WORKDIR /data/
