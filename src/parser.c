@@ -495,7 +495,7 @@ int coffe_parse_default_parameters(
     par->only_cross_correlations = 0;
 
     par->file_sep[0] = 0;
-    const double separations[] = {10., 20., 40., 100., 150.};
+    const double separations[] = {10., 20., 40., 100., 120., 150., 200., 250., 300., 350.};
     par->sep = coffe_malloc(
         sizeof(double) * COFFE_ARRAY_SIZE(separations)
     );
