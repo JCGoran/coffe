@@ -231,10 +231,10 @@ double functions_nonintegrated(
     const double curlyH1 = coffe_interp_spline(&bg->conformal_Hz, z1); // dimensionless
     const double curlyH2 = coffe_interp_spline(&bg->conformal_Hz, z2); // dimensionless
     const double curlyH_mean = coffe_interp_spline(&bg->conformal_Hz, z_mean); // dimensionless
-    const double b1 = coffe_interp_spline(&par->matter_bias1, z1);
-    const double b2 = coffe_interp_spline(&par->matter_bias2, z2);
-    const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
-    const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
+    const double b1 = coffe_interp_spline(&par->galaxy_bias1, z1);
+    const double b2 = coffe_interp_spline(&par->galaxy_bias2, z2);
+    const double bz_mean1 = coffe_interp_spline(&par->galaxy_bias1, z_mean);
+    const double bz_mean2 = coffe_interp_spline(&par->galaxy_bias2, z_mean);
     const double G1 = coffe_interp_spline(&bg->G1, z1);
     const double G2 = coffe_interp_spline(&bg->G2, z2);
     const double Gz_mean1 = coffe_interp_spline(&bg->G1, z_mean);
@@ -1033,10 +1033,10 @@ double functions_single_integrated(
     const double s2 = coffe_interp_spline(&par->magnification_bias2, z2_const);
     const double sz_mean1 = coffe_interp_spline(&par->magnification_bias1, z_mean);
     const double sz_mean2 = coffe_interp_spline(&par->magnification_bias2, z_mean);
-    const double b1 = coffe_interp_spline(&par->matter_bias1, z1_const);
-    const double b2 = coffe_interp_spline(&par->matter_bias2, z2_const);
-    const double bz_mean1 = coffe_interp_spline(&par->matter_bias1, z_mean);
-    const double bz_mean2 = coffe_interp_spline(&par->matter_bias2, z_mean);
+    const double b1 = coffe_interp_spline(&par->galaxy_bias1, z1_const);
+    const double b2 = coffe_interp_spline(&par->galaxy_bias2, z2_const);
+    const double bz_mean1 = coffe_interp_spline(&par->galaxy_bias1, z_mean);
+    const double bz_mean2 = coffe_interp_spline(&par->galaxy_bias2, z_mean);
 
 #ifdef HAVE_CLASS
     struct coffe_interpolation
@@ -2811,11 +2811,11 @@ double functions_flatsky_density_lensing_multipoles(
     );
 
     const double bz_mean1 = coffe_interp_spline(
-        &par->matter_bias1,
+        &par->galaxy_bias1,
         z_mean
     );
     const double bz_mean2 = coffe_interp_spline(
-        &par->matter_bias2,
+        &par->galaxy_bias2,
         z_mean
     );
 

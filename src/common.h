@@ -198,15 +198,15 @@ struct coffe_parameters_t
     double k_max_norm; /* max value to be taken from PS file */
 
     /* different biases */
-    int read_matter_bias1, read_matter_bias2;
+    int read_galaxy_bias1, read_galaxy_bias2;
 
-    char file_matter_bias1[COFFE_MAX_STRLEN], file_matter_bias2[COFFE_MAX_STRLEN];
+    char file_galaxy_bias1[COFFE_MAX_STRLEN], file_galaxy_bias2[COFFE_MAX_STRLEN];
 
-    struct coffe_interpolation matter_bias1, matter_bias2;
+    struct coffe_interpolation galaxy_bias1, galaxy_bias2;
 
     int read_magnification_bias1, read_magnification_bias2;
 
-    int matter_bias_analytic;
+    int galaxy_bias_analytic;
 
     char file_magnification_bias1[COFFE_MAX_STRLEN], file_magnification_bias2[COFFE_MAX_STRLEN];
 

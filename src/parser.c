@@ -547,18 +547,18 @@ int coffe_parse_default_parameters(
         free(pk_norm);
     }
 
-    par->matter_bias_analytic = 0;
+    par->galaxy_bias_analytic = 0;
     parse_bias_default(
-        1.0, &par->matter_bias1, par->interp_method
+        1.0, &par->galaxy_bias1, par->interp_method
     );
-    par->read_matter_bias1 = 0;
-    par->file_matter_bias1[0] = 0;
+    par->read_galaxy_bias1 = 0;
+    par->file_galaxy_bias1[0] = 0;
 
     parse_bias_default(
-        1.0, &par->matter_bias2, par->interp_method
+        1.0, &par->galaxy_bias2, par->interp_method
     );
-    par->read_matter_bias2 = 0;
-    par->file_matter_bias2[0] = 0;
+    par->read_galaxy_bias2 = 0;
+    par->file_galaxy_bias2[0] = 0;
 
     parse_bias_default(
         0.0, &par->magnification_bias1, par->interp_method
@@ -840,31 +840,31 @@ int coffe_parser_init(
     parse_double(conf, "w0", &par->w0, COFFE_TRUE);
     parse_double(conf, "wa", &par->wa, COFFE_TRUE);
 
-    /* the analytic matter bias has been disabled for now */
-    //parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
+    /* the analytic galaxy bias has been disabled for now */
+    //parse_int(conf, "galaxy_bias_analytic", &par->galaxy_bias_analytic, COFFE_FALSE);
 
-    /* parsing the matter bias */
-    if (!par->matter_bias_analytic){
-        parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
+    /* parsing the galaxy bias */
+    if (!par->galaxy_bias_analytic){
+        parse_int(conf, "read_galaxy_bias1", &par->read_galaxy_bias1, COFFE_FALSE);
         parse_bias(
             conf,
-            "input_matter_bias1",
-            par->file_matter_bias1,
-            "matter_bias1",
-            &par->matter_bias1,
+            "input_galaxy_bias1",
+            par->file_galaxy_bias1,
+            "galaxy_bias1",
+            &par->galaxy_bias1,
             par->interp_method,
-            par->read_matter_bias1
+            par->read_galaxy_bias1
         );
 
-        parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
+        parse_int(conf, "read_galaxy_bias2", &par->read_galaxy_bias2, COFFE_FALSE);
         parse_bias(
             conf,
-            "input_matter_bias2",
-            par->file_matter_bias2,
-            "matter_bias2",
-            &par->matter_bias2,
+            "input_galaxy_bias2",
+            par->file_galaxy_bias2,
+            "galaxy_bias2",
+            &par->galaxy_bias2,
             par->interp_method,
-            par->read_matter_bias2
+            par->read_galaxy_bias2
         );
     }
     else{
@@ -878,13 +878,13 @@ int coffe_parser_init(
             y[i] = coffe_galaxy_bias(x[i]);
         }
         coffe_init_spline(
-            &par->matter_bias1,
+            &par->galaxy_bias1,
             x, y, bins,
             par->interp_method
         );
 
         coffe_init_spline(
-            &par->matter_bias2,
+            &par->galaxy_bias2,
             x, y, bins,
             par->interp_method
         );
