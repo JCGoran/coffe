@@ -27,6 +27,16 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 
+#ifdef HAVE_CUBA
+#include "cuba.h"
+#else
+#include <gsl/gsl_monte_plain.h>
+#include <gsl/gsl_monte.h>
+#include <gsl/gsl_monte_miser.h>
+#include <gsl/gsl_monte_vegas.h>
+#endif
+
+
 #include "common.h"
 #include "errors.h"
 
@@ -987,7 +997,7 @@ double coffe_integrate_multidimensional(
     gsl_monte_function integrand;
     integrand.f = func;
     integrand.dim = dims;
-    integrand.params = parameters;
+    integrand.params = (void *)parameters;
     gsl_rng_env_setup();
     const gsl_rng_type *rng = gsl_rng_default;
     gsl_rng *random = gsl_rng_alloc(rng);
@@ -1006,7 +1016,7 @@ double coffe_integrate_multidimensional(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, &error
+                &result, &error
             );
             gsl_monte_plain_free(state);
             break;
@@ -1018,7 +1028,7 @@ double coffe_integrate_multidimensional(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, &error
+                &result, &error
             );
             gsl_monte_miser_free(state);
             break;
@@ -1030,7 +1040,7 @@ double coffe_integrate_multidimensional(
                 &integrand, lower, upper,
                 dims, integration_bins, random,
                 state,
-                result, &error
+                &result, &error
             );
             gsl_monte_vegas_free(state);
             break;
