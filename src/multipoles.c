@@ -59,7 +59,7 @@ static int multipoles_check_range(
     qsort(*separations, *len, sizeof(double), coffe_compare_descending);
 
     double min_separation = (*separations)[*len - 1];
-    double lower_limit = 0.1; /* arbitrary limit */
+    double lower_limit = 0.0; /* arbitrary limit */
 
     size_t counter_neg = 0;
     for (size_t i = 0; i<*len; ++i){
@@ -111,12 +111,15 @@ static int multipoles_check_range(
 int coffe_multipoles_init(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     struct coffe_multipoles_t *mp
 )
 {
 #ifdef HAVE_CUBA
-    cubacores(0, 10000);
+    {
+        int n = 0, p = 10000;
+        cubacores(&n, &p);
+    }
 #endif
     mp->flag = 0;
     if (par->output_type == 2){
@@ -136,7 +139,7 @@ int coffe_multipoles_init(
             par->sep_len
         );
         mp->l = (int *)coffe_malloc(sizeof(int)*par->multipole_values_len);
-        for (int i = 0; i<par->multipole_values_len; ++i){
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
             mp->l[i] = (int)par->multipole_values[i];
         }
         mp->l_len = (size_t)par->multipole_values_len;
@@ -154,10 +157,16 @@ int coffe_multipoles_init(
             bg
         );
 
+        for (size_t i = 0; i<mp->l_len; ++i){
+            for (size_t j = 0; j<mp->sep_len; ++j){
+                mp->result[i][j] = 0.0;
+            }
+        }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] =
+                mp->result[i][j] +=
                     coffe_integrate(
                         par, bg, integral,
                         mp->sep[j]*COFFE_H0, 0, mp->l[i],
@@ -165,6 +174,7 @@ int coffe_multipoles_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){
@@ -176,6 +186,7 @@ int coffe_multipoles_init(
                     );
             }
         }
+
         #pragma omp parallel for num_threads(par->nthreads) collapse(2)
         for (size_t i = 0; i<mp->l_len; ++i){
             for (size_t j = 0; j<mp->sep_len; ++j){

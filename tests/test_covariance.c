@@ -66,7 +66,7 @@ static int coffe_test_covariance(
                         covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
                     );
                     weak_assert(
-                        approx_equal(
+                        approx_equal_const_epsilon(
                             result[i * obtained_size + j],
                             covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
                         ),
@@ -123,7 +123,7 @@ int main(void)
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integrals_t integrals[10];
+    struct coffe_integral_array_t integrals[10];
     coffe_integrals_init(&par, &bg, integrals);
 
     /* can't really integrate just one...*/

@@ -99,7 +99,7 @@ static void reset_signal(
 static int coffe_test_multipoles(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral
+    struct coffe_integral_array_t *integral
 )
 {
     /* no errors initially */
@@ -197,7 +197,7 @@ static int coffe_test_multipoles(
                     )
                 ){
                     weak_assert(
-                        approx_equal(y_expected, y_obtained),
+                        approx_equal_const_epsilon(y_expected, y_obtained),
                         &error_flag
                     );
                 }
@@ -260,7 +260,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -321,7 +321,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -382,7 +382,7 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
                     &error_flag
                 );
             }
@@ -442,7 +442,118 @@ static int coffe_test_multipoles(
                 );
 
                 weak_assert(
-                    approx_equal(y_expected, y_obtained),
+                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+        par->flatsky_lensing_lensing = 0;
+    }
+    {
+        /* flatsky density-lensing */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.len = 1;
+        par->flatsky_density_lensing = 1;
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
+            const int l = multipoles[i];
+            const size_t size_name = 256;
+            char name[size_name];
+            snprintf(
+                name,
+                size_name,
+                "tests/benchmarks/benchmark_flatsky_density_lensing_multipoles%d.dat",
+                l
+            );
+
+            double *xvalue, *yvalue;
+            size_t size;
+            /* reading the benchmark file */
+            coffe_read_ncol(
+                name,
+                2,
+                &size,
+                &xvalue, &yvalue
+            );
+
+            for (size_t k = 0; k < size; ++k){
+                const double x = xvalue[k] * COFFE_H0;
+                const double y_expected = yvalue[k];
+                const double y_obtained = coffe_integrate(
+                            par, bg, integral,
+                            x, 0, l,
+                            SINGLE_INTEGRATED, MULTIPOLES
+                        );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type density-lensing (flatsky), expected = %e, obtained = %e\n",
+                    l, xvalue[k], y_expected, y_obtained
+                );
+
+                weak_assert(
+                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
+        }
+        reset_signal(&par->correlation_contrib);
+        par->flatsky_lensing_lensing = 0;
+    }
+    {
+        /* odd multipoles */
+        par->correlation_contrib.den = 1;
+        par->correlation_contrib.rsd = 1;
+        par->correlation_contrib.d1 = 1;
+        par->correlation_contrib.d2 = 1;
+        par->correlation_contrib.g1 = 1;
+        par->correlation_contrib.g2 = 1;
+        par->correlation_contrib.g3 = 1;
+        par->correlation_contrib.len = 1;
+        par->correlation_contrib.g4 = 1;
+        par->correlation_contrib.g5 = 1;
+        const int odd_multipoles[] = {1, 3};
+        for (size_t i = 0; i < COFFE_ARRAY_SIZE(odd_multipoles); ++i){
+            const int l = odd_multipoles[i];
+            /* number of separations */
+            const size_t size = 15;
+
+            for (size_t k = 0; k < size; ++k){
+                const double step = 20.;
+                /* dimensionless separation */
+                const double x =  step * (k + 1) * COFFE_H0;
+                const double y_expected = 0;
+                const double y_obtained = coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    NONINTEGRATED, MULTIPOLES
+                )
+                +
+                coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    SINGLE_INTEGRATED, MULTIPOLES
+                )
+                +
+                coffe_integrate(
+                    par, bg, integral,
+                    x, 0, l,
+                    DOUBLE_INTEGRATED, MULTIPOLES
+                );
+
+                fprintf(
+                    stderr,
+                    "l = %d, separation = %.3f, type all, expected = %e, obtained = %e\n",
+                    l, step * (k + 1), y_expected, y_obtained
+                );
+
+                weak_assert(
+                    approx_equal(
+                        y_expected,
+                        y_obtained,
+                        5e-4,
+                        1e-14
+                    ),
                     &error_flag
                 );
             }
@@ -472,16 +583,18 @@ int main(void)
     struct coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integrals_t integrals[10];
+    struct coffe_integral_array_t integrals;
     par.flatsky_lensing_lensing = 1;
-    coffe_integrals_init(&par, &bg, integrals);
+    par.flatsky_density_lensing = 1;
+    coffe_integrals_init(&par, &bg, &integrals);
     par.flatsky_lensing_lensing = 0;
+    par.flatsky_density_lensing = 0;
 
-    const int error_flag = coffe_test_multipoles(&par, &bg, integrals);
+    const int error_flag = coffe_test_multipoles(&par, &bg, &integrals);
 
     coffe_parameters_free(&par);
     coffe_background_free(&bg);
-    coffe_integrals_free(integrals);
+    coffe_integrals_free(&integrals);
 
     return error_flag;
 }

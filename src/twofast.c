@@ -105,54 +105,69 @@ static double complex twofast_lgamma(long double complex z)
         9.9843695780195716e-6,
         1.5056327351493116e-7
     };
-    static const int gamma_coeff_len =
-        sizeof(gamma_coeff)/sizeof(gamma_coeff[0]);
+    static const size_t gamma_coeff_size =
+        sizeof(gamma_coeff) / sizeof(gamma_coeff[0]);
     long double complex result;
     if (creall(z) < 0.5){
-        result = logl(M_PIl) - clogl(csinl(M_PIl*z)) - twofast_lgamma(1 - z);
-        if (!gsl_finite(result)){
-            printf(
-                "Values: z = %Lf + i%Lf, "
-                "result = %Lf + i%Lf\n",
-                creall(z), cimagl(z),
-                creall(result), cimagl(result)
-            );
-        }
+        result = logl(M_PIl) - clogl(csinl(M_PIl * z)) - twofast_lgamma(1 - z);
     }
     else{
         long double complex x = 0.99999999999980993;
         z -= 1;
-        for (int i = 0; i<gamma_coeff_len; ++i)
-            x += (long double complex)gamma_coeff[i]/(z + i + 1);
-        long double complex t = z + gamma_coeff_len - 0.5;
-        result = logl(2*M_PIl)/2. + (z + 0.5)*clogl(t) - t + clogl(x);
+        for (size_t i = 0; i < gamma_coeff_size; ++i)
+            x += (long double complex)gamma_coeff[i] / (z + i + 1);
+        long double complex t = z + gamma_coeff_size - 0.5;
+        result = logl(2 * M_PIl) / 2. + (z + 0.5) * clogl(t) - t + clogl(x);
         if (!gsl_finite(result)){
-            printf(
-                "Values: z = %Lf + i%Lf, x = %Lf + i%Lf, "
-                "t = %Lf + i%Lf, result = %Lf + i%Lf\n",
-                creall(z), cimagl(z), creall(x), cimagl(x),
+            fprintf(
+                stderr,
+                "ERROR: file %s, function %s\n", __FILE__, __func__
+            );
+            fprintf(
+                stderr,
+                "Values: "
+                "z = %.3Le + %.3LeI, "
+                "x = %.3Le + %.3LeI, "
+                "t = %.3Le + %.3LeI, "
+                "result = %.3Le + %.3LeI\n",
+                creall(z), cimagl(z),
+                creall(x), cimagl(x),
                 creall(t), cimagl(t),
                 creall(result), cimagl(result)
             );
+            exit(EXIT_FAILURE);
         }
     }
 
-    if (gsl_finite(result)) return result;
-    else{
-        fprintf(stderr, "ERROR: file %s, function %s\n", __FILE__, __func__);
-        exit(EXIT_FAILURE);
-    }
+    return result;
 }
 
-static double complex twofast_mql(double t, double q, double l, double alpha)
+static double complex twofast_mql(
+    double t,
+    double q,
+    double l,
+double alpha
+)
 {
-    const double complex n = q - 1 - t*I;
+    const double complex n = q - 1 - t * I;
     double complex unl =
-        cpow(2, n - 1)*SQRT_PI
-       *cexp(twofast_lgamma((1 + l + n)/2) - twofast_lgamma((2 + l - n)/2));
-    if (gsl_finite(unl)) return cpow(alpha, t*I - q)*unl;
+        cpow(2, n - 1)
+       *SQRT_PI
+       *cexp(
+            twofast_lgamma((1 + l + n) / 2) - twofast_lgamma((2 + l - n) / 2)
+        );
+    if (gsl_finite(unl)){
+        return cpow(alpha, t * I - q) * unl;
+    }
     else{
-        fprintf(stderr, "ERROR: file %s, function %s\ninputs: t = %e, q = %e, l = %e, alpha = %e\n", __FILE__, __func__, t, q, l, alpha);
+        fprintf(
+            stderr,
+            "ERROR: "
+            "file %s, function %s\n"
+            "inputs: t = %e, q = %e, l = %e, alpha = %e\n",
+            __FILE__, __func__,
+            t, q, l, alpha
+        );
         exit(EXIT_FAILURE);
     }
 }

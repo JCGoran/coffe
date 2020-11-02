@@ -276,16 +276,16 @@ static int parse_external_power_spectrum(
     struct coffe_parameters_t *par
 )
 {
-    struct precision ppr;
-    struct background pba;
-    struct thermo pth;
-    struct perturbs ppt;
-    struct primordial ppm;
-    struct spectra psp;
-    struct nonlinear pnl;
-    struct output pop;
-    struct transfers ptr;
-    struct lensing ple;
+    struct precision *ppr = coffe_malloc(sizeof(struct precision));
+    struct background *pba = coffe_malloc(sizeof(struct background));
+    struct thermo *pth = coffe_malloc(sizeof(struct thermo));
+    struct perturbs *ppt = coffe_malloc(sizeof(struct perturbs));
+    struct primordial *ppm = coffe_malloc(sizeof(struct primordial));
+    struct spectra *psp = coffe_malloc(sizeof(struct spectra));
+    struct nonlinear *pnl = coffe_malloc(sizeof(struct nonlinear));
+    struct output *pop = coffe_malloc(sizeof(struct output));
+    struct transfers *ptr = coffe_malloc(sizeof(struct transfers));
+    struct lensing *ple = coffe_malloc(sizeof(struct lensing));
     ErrorMsg errmsg;
 
     clock_t class_start, class_end;
@@ -294,93 +294,115 @@ static int parse_external_power_spectrum(
         printf("Launching CLASS...\n");
 
     class_start = clock();
-    struct file_content fc;
+    struct file_content *fc = coffe_malloc(sizeof(struct file_content));
 
-    size_t class_parameters_len = 18, counter = 0;
+    size_t class_parameters_len = 20, counter = 0;
 
-    parser_init(&fc, class_parameters_len, "", errmsg);
+    parser_init(fc, class_parameters_len, "", errmsg);
 
     /*
         not sure which values are actually necessary
         (maybe give the user the ability to read all of them?)
     */
 
-    sprintf(fc.name[counter], "h");
-    sprintf(fc.value[counter], "%e", par->h);
+    sprintf(fc->name[counter], "h");
+    sprintf(fc->value[counter], "%e", par->h);
     ++counter;
 
-    sprintf(fc.name[counter], "T_cmb");
-    sprintf(fc.value[counter], "%e", 2.7255);
+    sprintf(fc->name[counter], "T_cmb");
+    sprintf(fc->value[counter], "%e", 2.7255);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_b");
-    sprintf(fc.value[counter], "%e", par->Omega0_baryon);
+    sprintf(fc->name[counter], "Omega_b");
+    sprintf(fc->value[counter], "%e", par->Omega0_baryon);
     ++counter;
 
-    sprintf(fc.name[counter], "N_ur");
-    sprintf(fc.value[counter], "%e", 3.046);
+    sprintf(fc->name[counter], "N_ur");
+    sprintf(fc->value[counter], "%e", 3.046);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_cdm");
-    sprintf(fc.value[counter], "%e", par->Omega0_cdm);
+    sprintf(fc->name[counter], "Omega_cdm");
+    sprintf(fc->value[counter], "%e", par->Omega0_cdm);
     ++counter;
 
-    sprintf(fc.name[counter], "Omega_k");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "Omega_k");
+    sprintf(fc->value[counter], "%e", 0.0);
     ++counter;
 
-    sprintf(fc.name[counter], "w0_fld");
-    sprintf(fc.value[counter], "%e", par->w0);
+    sprintf(fc->name[counter], "w0_fld");
+    sprintf(fc->value[counter], "%e", par->w0);
     ++counter;
 
-    sprintf(fc.name[counter], "wa_fld");
-    sprintf(fc.value[counter], "%e", par->wa);
+    sprintf(fc->name[counter], "wa_fld");
+    sprintf(fc->value[counter], "%e", par->wa);
     ++counter;
 
-    sprintf(fc.name[counter], "output");
-    sprintf(fc.value[counter], "mPk");
+    sprintf(fc->name[counter], "output");
+    sprintf(fc->value[counter], "mPk");
     ++counter;
 
-    sprintf(fc.name[counter], "gauge");
-    sprintf(fc.value[counter], "synchronous");
+    sprintf(fc->name[counter], "gauge");
+    sprintf(fc->value[counter], "synchronous");
     ++counter;
 
-    sprintf(fc.name[counter], "P_k_ini type");
-    sprintf(fc.value[counter], "analytic_Pk");
+    sprintf(fc->name[counter], "P_k_ini type");
+    sprintf(fc->value[counter], "analytic_Pk");
     ++counter;
 
-    sprintf(fc.name[counter], "k_pivot");
-    sprintf(fc.value[counter], "%e", par->k_pivot);
+    sprintf(fc->name[counter], "k_pivot");
+    sprintf(fc->value[counter], "%e", par->k_pivot);
     ++counter;
 
-    sprintf(fc.name[counter], "ln10^{10}A_s");
-    sprintf(fc.value[counter], "%e", par->ln_10_pow_10_A_s);
+    sprintf(fc->name[counter], "ln10^{10}A_s");
+    sprintf(fc->value[counter], "%e", par->ln_10_pow_10_A_s);
     ++counter;
 
-    sprintf(fc.name[counter], "n_s");
-    sprintf(fc.value[counter], "%e", par->n_s);
+    sprintf(fc->name[counter], "n_s");
+    sprintf(fc->value[counter], "%e", par->n_s);
     ++counter;
 
-    sprintf(fc.name[counter], "alpha_s");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "alpha_s");
+    sprintf(fc->value[counter], "%e", 0.0);
     ++counter;
 
-    sprintf(fc.name[counter], "k_min_tau0");
-    sprintf(fc.value[counter], "%e", 0.002);
+    sprintf(fc->name[counter], "k_min_tau0");
+    sprintf(fc->value[counter], "%e", 0.002);
     ++counter;
 
-    sprintf(fc.name[counter], "P_k_max_h/Mpc");
-    sprintf(fc.value[counter], "%e", par->k_max);
+    sprintf(fc->name[counter], "P_k_max_h/Mpc");
+    sprintf(fc->value[counter], "%e", par->k_max);
     ++counter;
 
-    sprintf(fc.name[counter], "z_pk");
-    sprintf(fc.value[counter], "%e", 0.0);
+    sprintf(fc->name[counter], "z_pk");
+    sprintf(fc->value[counter], "%e", 0.0);
+    ++counter;
+
+    sprintf(fc->name[counter], "z_max_pk");
+    sprintf(fc->value[counter], "%e", 3.0);
+    ++counter;
+
+    sprintf(fc->name[counter], "non linear");
+
+    if (par->pk_type == 2)
+        sprintf(fc->value[counter], "%s", "halofit");
+    else if (par->pk_type == 3)
+        sprintf(fc->value[counter], "%s", "hmcode");
     ++counter;
 
     if (
         input_init(
-            &fc, &ppr, &pba, &pth, &ppt, &ptr,
-            &ppm, &psp, &pnl, &ple, &pop, errmsg
+            fc,
+            ppr,
+            pba,
+            pth,
+            ppt,
+            ptr,
+            ppm,
+            psp,
+            pnl,
+            ple,
+            pop,
+            errmsg
         ) == _FAILURE_
     ){
         fprintf(stderr, "\n\nError running input_init\n=>%s\n", errmsg);
@@ -389,13 +411,13 @@ static int parse_external_power_spectrum(
 
     /* the main CLASS sequence */
 
-    background_init(&ppr, &pba);
-    thermodynamics_init(&ppr, &pba, &pth);
-    perturb_init(&ppr, &pba, &pth, &ppt);
-    primordial_init(&ppr, &ppt, &ppm);
-    nonlinear_init(&ppr, &pba, &pth, &ppt, &ppm, &pnl);
-    transfer_init(&ppr, &pba, &pth, &ppt, &pnl, &ptr);
-    spectra_init(&ppr, &pba, &ppt, &ppm, &pnl, &ptr, &psp);
+    background_init(ppr, pba);
+    thermodynamics_init(ppr, pba, pth);
+    perturb_init(ppr, pba, pth, ppt);
+    primordial_init(ppr, ppt, ppm);
+    nonlinear_init(ppr, pba, pth, ppt, ppm, pnl);
+    transfer_init(ppr, pba, pth, ppt, pnl, ptr);
+    spectra_init(ppr, pba, ppt, ppm, pnl, ptr, psp);
 
     class_end = clock();
     if (par->verbose)
@@ -404,14 +426,25 @@ static int parse_external_power_spectrum(
             (double)(class_end - class_start) / CLOCKS_PER_SEC
         );
 
-    double *k = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
-    double *pk = (double *)coffe_malloc(sizeof(double) * pnl.k_size);
-    size_t pk_len = pnl.k_size;
+    double *k = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+    double *pk = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+    size_t pk_len = pnl->k_size;
+
+    nonlinear_pk_at_z(
+        pba,
+        pnl,
+        logarithmic,
+        pk_linear,
+        0,
+        pnl->index_pk_total,
+        pk,
+        NULL
+    );
 
     /* rescaling as CLASS internally uses units of 1/Mpc */
     for (size_t i = 0; i < pk_len; ++i){
-        k[i] = pnl.k[i] / par->h;
-        pk[i] = exp(pnl.ln_pk_l[0][i]) * pow(par->h, 3);
+        k[i] = pnl->k[i] / par->h;
+        pk[i] = exp(pk[i]) * pow(par->h, 3);
     }
     if (par->have_window){
         for (size_t i = 0; i < pk_len; ++i)
@@ -426,16 +459,16 @@ static int parse_external_power_spectrum(
     free(k);
     free(pk);
 
-    /* freeing the memory of CLASS structures */
+    /* keeping it for later reuse */
 
-    background_free(&pba);
-    thermodynamics_free(&pth);
-    perturb_free(&ppt);
-    primordial_free(&ppm);
-    nonlinear_free(&pnl);
-    transfer_free(&ptr);
-    spectra_free(&psp);
-    parser_free(&fc);
+    par->class_file_content = fc;
+    par->class_background = pba;
+    par->class_thermodynamics = pth;
+    par->class_perturb = ppt;
+    par->class_primordial = ppm;
+    par->class_nonlinear = pnl;
+    par->class_transfer = ptr;
+    par->class_spectra = psp;
 
     return EXIT_SUCCESS;
 }
@@ -458,6 +491,8 @@ int coffe_parse_default_parameters(
     par->k_pivot = 0.05;
     par->ln_10_pow_10_A_s = 3.06;
     par->n_s = 0.96;
+
+    par->only_cross_correlations = 0;
 
     par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 150.};
@@ -489,6 +524,8 @@ int coffe_parse_default_parameters(
     );
     par->k_min = 1e-5;
     par->k_max = 300.;
+    par->pk_type = 0;
+    par->zeldovich_approximation = 0;
     {
         size_t len = par->power_spectrum.spline->size;
         double *k_norm =
@@ -510,18 +547,18 @@ int coffe_parse_default_parameters(
         free(pk_norm);
     }
 
-    par->matter_bias_analytic = 0;
+    par->galaxy_bias_analytic = 0;
     parse_bias_default(
-        1.0, &par->matter_bias1, par->interp_method
+        1.0, &par->galaxy_bias1, par->interp_method
     );
-    par->read_matter_bias1 = 0;
-    par->file_matter_bias1[0] = 0;
+    par->read_galaxy_bias1 = 0;
+    par->file_galaxy_bias1[0] = 0;
 
     parse_bias_default(
-        1.0, &par->matter_bias2, par->interp_method
+        1.0, &par->galaxy_bias2, par->interp_method
     );
-    par->read_matter_bias2 = 0;
-    par->file_matter_bias2[0] = 0;
+    par->read_galaxy_bias2 = 0;
+    par->file_galaxy_bias2[0] = 0;
 
     parse_bias_default(
         0.0, &par->magnification_bias1, par->interp_method
@@ -803,29 +840,31 @@ int coffe_parser_init(
     parse_double(conf, "w0", &par->w0, COFFE_TRUE);
     parse_double(conf, "wa", &par->wa, COFFE_TRUE);
 
-    /* parsing the matter bias */
-    parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
-    if (!par->matter_bias_analytic){
-        parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
+    /* the analytic galaxy bias has been disabled for now */
+    //parse_int(conf, "galaxy_bias_analytic", &par->galaxy_bias_analytic, COFFE_FALSE);
+
+    /* parsing the galaxy bias */
+    if (!par->galaxy_bias_analytic){
+        parse_int(conf, "read_galaxy_bias1", &par->read_galaxy_bias1, COFFE_FALSE);
         parse_bias(
             conf,
-            "input_matter_bias1",
-            par->file_matter_bias1,
-            "matter_bias1",
-            &par->matter_bias1,
+            "input_galaxy_bias1",
+            par->file_galaxy_bias1,
+            "galaxy_bias1",
+            &par->galaxy_bias1,
             par->interp_method,
-            par->read_matter_bias1
+            par->read_galaxy_bias1
         );
 
-        parse_int(conf, "read_matter_bias2", &par->read_matter_bias2, COFFE_FALSE);
+        parse_int(conf, "read_galaxy_bias2", &par->read_galaxy_bias2, COFFE_FALSE);
         parse_bias(
             conf,
-            "input_matter_bias2",
-            par->file_matter_bias2,
-            "matter_bias2",
-            &par->matter_bias2,
+            "input_galaxy_bias2",
+            par->file_galaxy_bias2,
+            "galaxy_bias2",
+            &par->galaxy_bias2,
             par->interp_method,
-            par->read_matter_bias2
+            par->read_galaxy_bias2
         );
     }
     else{
@@ -839,13 +878,13 @@ int coffe_parser_init(
             y[i] = coffe_galaxy_bias(x[i]);
         }
         coffe_init_spline(
-            &par->matter_bias1,
+            &par->galaxy_bias1,
             x, y, bins,
             par->interp_method
         );
 
         coffe_init_spline(
-            &par->matter_bias2,
+            &par->galaxy_bias2,
             x, y, bins,
             par->interp_method
         );
@@ -1073,6 +1112,7 @@ int coffe_parser_init(
 
     /* flatsky parameters */
     parse_int(conf, "flatsky_standard_standard", &par->flatsky_standard_standard, COFFE_TRUE);
+    parse_int(conf, "flatsky_density_lensing", &par->flatsky_density_lensing, COFFE_TRUE);
     parse_int(conf, "flatsky_lensing_lensing", &par->flatsky_lensing_lensing, COFFE_TRUE);
 
     if (par->flatsky_density_lensing || par->flatsky_lensing_lensing){
@@ -1085,6 +1125,9 @@ int coffe_parser_init(
 
     /* parsing the window */
     parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
+
+    /* parsing whether we want just cross-correlations or not */
+    parse_int(conf, "only_cross_correlations", &par->only_cross_correlations, COFFE_TRUE);
 
     /* parsing the size of the window (in Mpc/h) */
     if (par->have_window){
@@ -1101,6 +1144,10 @@ int coffe_parser_init(
 
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
+        parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
+        if (par->pk_type){
+            parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
+        }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);

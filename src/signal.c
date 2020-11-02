@@ -1,5 +1,8 @@
 #include <stdlib.h>
+#include <math.h>
 #include <gsl/gsl_sf_legendre.h>
+/* for the factorial function */
+#include <gsl/gsl_sf_gamma.h>
 #include "common.h"
 #include "background.h"
 #include "integrals.h"
@@ -35,7 +38,7 @@ static double corrfunc_single_integrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_background_t *bg = test->bg;
     const struct coffe_parameters_t *par = test->par;
-    const struct coffe_integrals_t *integral = test->integral;
+    const struct coffe_integral_array_t *integral = test->integral;
     const double mu = test->mu;
     const double sep = test->sep;
     return
@@ -62,7 +65,7 @@ static double corrfunc_double_integrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_background_t *bg = test->bg;
     const struct coffe_parameters_t *par = test->par;
-    const struct coffe_integrals_t *integral = test->integral;
+    const struct coffe_integral_array_t *integral = test->integral;
     const double mu = test->mu;
     const double sep = test->sep;
     const double x1 = var[0], x2 = var[1];
@@ -98,7 +101,7 @@ static double multipoles_nonintegrated_integrand(
         (const struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = all_params->par;
     const struct coffe_background_t *bg = all_params->bg;
-    const struct coffe_integrals_t *integral = all_params->integral;
+    const struct coffe_integral_array_t *integral = all_params->integral;
     const double sep = all_params->sep;
     const int l = all_params->l;
 
@@ -118,6 +121,35 @@ static double multipoles_nonintegrated_integrand(
     }
 }
 
+static double multipoles_flatsky_integrand(
+    double x,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+    const void *p
+#else
+    void *p
+#endif
+)
+{
+    const struct coffe_integration_parameters_t *all_params =
+        (const struct coffe_integration_parameters_t *) p;
+    const struct coffe_parameters_t *par = all_params->par;
+    const struct coffe_background_t *bg = all_params->bg;
+    const struct coffe_integral_array_t *integral = all_params->integral;
+    const double sep = all_params->sep;
+    const int l = all_params->l;
+
+    return functions_flatsky_lensing_lensing_multipoles(
+        par,
+        bg,
+        integral,
+        par->z_mean,
+        sep,
+        l,
+        x
+    );
+}
+
+
 #ifdef HAVE_CUBA
 static int multipoles_single_integrated_integrand(
     const int *ndim, const cubareal var[],
@@ -133,7 +165,7 @@ static double multipoles_single_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (const struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double mu = 2*var[0] - 1, x = var[1];
@@ -182,7 +214,7 @@ static double multipoles_double_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double mu = 2*var[0] - 1, x1 = var[1], x2 = var[2];
@@ -233,7 +265,7 @@ static double average_multipoles_nonintegrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -303,7 +335,7 @@ static double average_multipoles_single_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -372,7 +404,7 @@ static double average_multipoles_double_integrated_integrand(
     const struct coffe_integration_parameters_t *params = (struct coffe_integration_parameters_t *) p;
     const struct coffe_parameters_t *par = params->par;
     const struct coffe_background_t *bg = params->bg;
-    const struct coffe_integrals_t *integral = params->integral;
+    const struct coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
 
     const double z1 =
@@ -423,68 +455,6 @@ static double average_multipoles_double_integrated_integrand(
 #endif
 }
 
-#ifndef HAVE_CUBA
-static int signal_integrate_gsl(
-    gsl_monte_function integrand,
-    const int integration_method,
-    const int dims,
-    const int integration_bins,
-    double *result
-)
-{
-    gsl_rng_env_setup();
-    const gsl_rng_type *rng = gsl_rng_default;
-    gsl_rng *random = gsl_rng_alloc(rng);
-    double lower[dims];
-    double upper[dims];
-    double error;
-    for (int i = 0; i<dims; ++i){
-        lower[i] = 0.0;
-        upper[i] = 1.0;
-    }
-    switch (integration_method){
-        case 0:{
-            gsl_monte_plain_state *state =
-                gsl_monte_plain_alloc(dims);
-            gsl_monte_plain_integrate(
-                &integrand, lower, upper,
-                dims, integration_bins, random,
-                state,
-                result, &error
-            );
-            gsl_monte_plain_free(state);
-            break;
-        }
-        case 1:{
-            gsl_monte_miser_state *state =
-                gsl_monte_miser_alloc(dims);
-            gsl_monte_miser_integrate(
-                &integrand, lower, upper,
-                dims, integration_bins, random,
-                state,
-                result, &error
-            );
-            gsl_monte_miser_free(state);
-            break;
-        }
-        case 2:{
-            gsl_monte_vegas_state *state =
-                gsl_monte_vegas_alloc(dims);
-            gsl_monte_vegas_integrate(
-                &integrand, lower, upper,
-                dims, integration_bins, random,
-                state,
-                result, &error
-            );
-            gsl_monte_vegas_free(state);
-            break;
-        }
-    }
-    gsl_rng_free(random);
-
-    return EXIT_SUCCESS;
-}
-#endif
 
 /**
     Computes all of the integrals for the output.
@@ -495,7 +465,7 @@ static int signal_integrate_gsl(
 double coffe_integrate(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     double sep,
     double mu,
     int l,
@@ -536,64 +506,22 @@ double coffe_integrate(
                     );
                 }
                 case MULTIPOLES:{
-                    double result, error;
-                    #ifdef HAVE_DOUBLE_EXPONENTIAL
-                    result = tanhsinh_quad(
+                    const double result = coffe_integrate_1d(
                         &multipoles_nonintegrated_integrand,
                         &test,
-                        0., 1., 0.,
-                        &error, NULL
+                        0,
+                        1
                     );
-                    #else
-                    const double prec = 1E-5;
-                    gsl_function integrand;
-                    integrand.function = &multipoles_nonintegrated_integrand;
-                    integrand.params = &test;
-
-                    gsl_integration_workspace *wspace =
-                        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-                    gsl_integration_qag(
-                        &integrand, 0., 1., 0,
-                        prec, COFFE_MAX_INTSPACE,
-                        GSL_INTEG_GAUSS61, wspace,
-                        &result, &error
-                    );
-                    gsl_integration_workspace_free(wspace);
-                    #endif
-                    return (2*l + 1)*result;
+                    return (2 * l + 1) * result;
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 2;
-
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_nonintegrated_integrand,
-                        (void *)&test, 1,
-                        1e-3, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_nonintegrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * coffe_integrate_multidimensional(
+                        &average_multipoles_nonintegrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        2,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
-
                 }
                 default:
                     return 0.0;
@@ -628,96 +556,79 @@ double coffe_integrate(
 
             switch(flag_output){
                 case CORRFUNC:{
-                    double result, error;
-
-                    #ifdef HAVE_DOUBLE_EXPONENTIAL
-                    result = tanhsinh_quad(
+                    const double result = coffe_integrate_1d(
                         &corrfunc_single_integrated_integrand,
                         &test,
-                        0., 1., 0.,
-                        &error, NULL
+                        0,
+                        1
                     );
-                    #else
-                    const double prec = 1E-5;
-                    gsl_function integrand;
-                    integrand.function = &corrfunc_single_integrated_integrand;
-                    integrand.params = &test;
-
-                    gsl_integration_workspace *wspace =
-                        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-                    gsl_integration_qag(
-                        &integrand, 0., 1., 0,
-                        prec, COFFE_MAX_INTSPACE,
-                        GSL_INTEG_GAUSS61, wspace,
-                        &result, &error
-                    );
-                    gsl_integration_workspace_free(wspace);
-                    #endif
 
                     return result;
                 }
                 case MULTIPOLES:{
-                    const int dims = 2;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
+                    double final_result = 0;
+                    /* flatsky density-lensing is special */
+                    if (
+                        par->correlation_contrib.den &&
+                        par->correlation_contrib.len &&
+                        par->flatsky_density_lensing
+                    ){
+                        const double result = functions_flatsky_density_lensing_multipoles(
+                            par,
+                            bg,
+                            integral,
+                            par->z_mean,
+                            sep,
+                            l
+                        );
+                        final_result += 2 * M_PI * M_PI * result;
+                    }
+                    if (
+                        (par->correlation_contrib.len && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.len && par->correlation_contrib.g3) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.den) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.g4 && par->correlation_contrib.g3) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.den) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.rsd) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.d1) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.d2) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g1) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g2) ||
+                        (par->correlation_contrib.g5 && par->correlation_contrib.g3) ||
+                        (
+                            par->correlation_contrib.den &&
+                            par->correlation_contrib.len &&
+                            !par->flatsky_density_lensing
+                        )
+                    ){
 
-                    Cuhre(dims, 1,
-                        multipoles_single_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    integrand.f = &multipoles_single_integrated_integrand;
-                    signal_integrate_gsl(
-                        integrand,
-                        par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
-                    );
-
-                    return (2*l + 1)*result;
-                    #endif
+                        final_result += (2 * l + 1) * coffe_integrate_multidimensional(
+                            &multipoles_single_integrated_integrand,
+                            (void *)&test,
+                            par->integration_method,
+                            2,
+                            par->integration_bins
+                        );
+                    }
+                    return final_result;
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 3;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_single_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_single_integrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * coffe_integrate_multidimensional(
+                        &average_multipoles_single_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        3,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
                 }
                 default:
                     return 0.0;
@@ -734,99 +645,60 @@ double coffe_integrate(
 
             switch (flag_output){
                 case CORRFUNC:{
-                    const int dims = 2;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-
-                    Cuhre(dims, 1,
-                        corrfunc_double_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    integrand.f = &corrfunc_double_integrated_integrand;
-                    signal_integrate_gsl(
-                        integrand,
+                    return coffe_integrate_multidimensional(
+                        &corrfunc_double_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        2,
+                        par->integration_bins
                     );
-
-                    return result;
-                    #endif
                 }
                 case MULTIPOLES:{
-                    const int dims = 3;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-
-                    Cuhre(dims, 1,
-                        multipoles_double_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    integrand.f = &multipoles_double_integrated_integrand;
-                    signal_integrate_gsl(
-                        integrand,
-                        par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
-                    );
-
-                    return (2*l + 1)*result;
-                    #endif
+                    double final_result = 0;
+                    /* lensing-lensing is special */
+                    if (
+                        par->correlation_contrib.len &&
+                        par->flatsky_lensing_lensing &&
+                        !par->only_cross_correlations &&
+                        /* the odd ones are zero by construction, so we care only about the even */
+                        l % 2 == 0
+                    ){
+                        const double result = coffe_integrate_1d(
+                            &multipoles_flatsky_integrand,
+                            &test,
+                            0,
+                            1
+                        );
+                        /* the factor of 2 pi^2 is because of the definition of the I^n_l integrals */
+                        final_result += 2 * M_PI * M_PI * result;
+                    }
+                    /* this part can run now that we have lensing-lensing multipoles */
+                    if (
+                        par->correlation_contrib.g4 ||
+                        par->correlation_contrib.g5 ||
+                        (
+                            par->correlation_contrib.len &&
+                            !par->flatsky_lensing_lensing
+                        )
+                    ){
+                        final_result += (2 * l + 1) * coffe_integrate_multidimensional(
+                            &multipoles_double_integrated_integrand,
+                            (void *)&test,
+                            par->integration_method,
+                            3,
+                            par->integration_bins
+                        );
+                    }
+                    return final_result;
                 }
                 case AVERAGE_MULTIPOLES:{
-                    const int dims = 4;
-                    #ifdef HAVE_CUBA
-                    int nregions, neval, fail;
-                    double result[1], error[1], prob[1];
-                    Cuhre(dims, 1,
-                        average_multipoles_double_integrated_integrand,
-                        (void *)&test, 1,
-                        5e-4, 0, 0,
-                        1, par->integration_bins, 7,
-                        NULL, NULL,
-                        &nregions, &neval, &fail, result, error, prob
-                    );
-                    return (2*l + 1)*result[0];
-                    #else
-                    double result;
-                    gsl_monte_function integrand;
-                    integrand.f = &average_multipoles_double_integrated_integrand;
-                    integrand.dim = dims;
-                    integrand.params = &test;
-                    signal_integrate_gsl(
-                        integrand,
+                    return (2 * l + 1) * coffe_integrate_multidimensional(
+                        &average_multipoles_double_integrated_integrand,
+                        (void *)&test,
                         par->integration_method,
-                        dims,
-                        par->integration_bins,
-                        &result
+                        4,
+                        par->integration_bins
                     );
-
-                    return (2*l + 1)*result;
-                    #endif
                 }
                 default:
                     return 0.0;

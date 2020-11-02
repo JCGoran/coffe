@@ -52,7 +52,7 @@ static int average_multipoles_check_range(
     /* checking for min separation */
     qsort(*separations, *len, sizeof(double), coffe_compare_descending);
 
-    double lower_limit = 0.1; /* arbitrary limit */
+    double lower_limit = 0.0; /* arbitrary limit */
 
     size_t counter_neg = 0;
     for (size_t i = 0; i<*len; ++i){
@@ -98,12 +98,15 @@ static int average_multipoles_check_range(
 int coffe_average_multipoles_init(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     struct coffe_average_multipoles_t *ramp
 )
 {
 #ifdef HAVE_CUBA
-    cubacores(0, 10000);
+    {
+        int n = 0, p = 10000;
+        cubacores(&n, &p);
+    }
 #endif
     ramp->flag = 0;
     if (par->output_type == 3){
@@ -123,7 +126,7 @@ int coffe_average_multipoles_init(
             par->sep_len
         );
         ramp->l = (int *)coffe_malloc(sizeof(int)*par->multipole_values_len);
-        for (int i = 0; i<par->multipole_values_len; ++i){
+        for (size_t i = 0; i<par->multipole_values_len; ++i){
             ramp->l[i] = (int)par->multipole_values[i];
         }
         ramp->l_len = (size_t)par->multipole_values_len;

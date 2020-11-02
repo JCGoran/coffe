@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 {
     struct coffe_parameters_t par;
     struct coffe_background_t bg;
-    struct coffe_integrals_t integral[10];
+    struct coffe_integral_array_t integral;
     struct coffe_corrfunc_ang_t cf_ang;
     struct coffe_corrfunc_t cf;
     struct coffe_multipoles_t mp;
@@ -127,20 +127,20 @@ int main(int argc, char *argv[])
 
     coffe_background_init(&par, &bg);
 
-    coffe_integrals_init(&par, &bg, integral);
+    coffe_integrals_init(&par, &bg, &integral);
 
-    coffe_corrfunc_init(&par, &bg, integral, &cf_ang, &cf, &cf2d);
+    coffe_corrfunc_init(&par, &bg, &integral, &cf_ang, &cf, &cf2d);
 
-    coffe_multipoles_init(&par, &bg, integral, &mp);
+    coffe_multipoles_init(&par, &bg, &integral, &mp);
 
-    coffe_average_multipoles_init(&par, &bg, integral, &ramp);
+    coffe_average_multipoles_init(&par, &bg, &integral, &ramp);
 
     coffe_covariance_init(&par, &bg, &cov_mp, &cov_ramp);
 
     coffe_output_init(
         &par, &bg,
 #ifdef HAVE_INTEGRALS
-        integral,
+        &integral,
 #endif
         &cf_ang, &cf,
         &mp, &ramp,
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 
     coffe_background_free(&bg);
 
-    coffe_integrals_free(integral);
+    coffe_integrals_free(&integral);
 
     coffe_corrfunc_ang_free(&cf_ang);
 

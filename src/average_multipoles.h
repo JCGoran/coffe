@@ -32,7 +32,7 @@ struct coffe_average_multipoles_t
 int coffe_average_multipoles_init(
     struct coffe_parameters_t *par,
     struct coffe_background_t *bg,
-    struct coffe_integrals_t *integral,
+    struct coffe_integral_array_t *integral,
     struct coffe_average_multipoles_t *ramp
 );
 

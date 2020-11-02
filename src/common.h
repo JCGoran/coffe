@@ -23,6 +23,14 @@
 #include <gsl/gsl_spline2d.h>
 #include <libconfig.h>
 
+#ifdef HAVE_CUBA
+#include "cuba.h"
+#endif
+
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+#include "tanhsinh.h"
+#endif
+
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
                         "Copyright (C) 2019 Goran Jelic-Cizmek\n" \
@@ -190,15 +198,15 @@ struct coffe_parameters_t
     double k_max_norm; /* max value to be taken from PS file */
 
     /* different biases */
-    int read_matter_bias1, read_matter_bias2;
+    int read_galaxy_bias1, read_galaxy_bias2;
 
-    char file_matter_bias1[COFFE_MAX_STRLEN], file_matter_bias2[COFFE_MAX_STRLEN];
+    char file_galaxy_bias1[COFFE_MAX_STRLEN], file_galaxy_bias2[COFFE_MAX_STRLEN];
 
-    struct coffe_interpolation matter_bias1, matter_bias2;
+    struct coffe_interpolation galaxy_bias1, galaxy_bias2;
 
     int read_magnification_bias1, read_magnification_bias2;
 
-    int matter_bias_analytic;
+    int galaxy_bias_analytic;
 
     char file_magnification_bias1[COFFE_MAX_STRLEN], file_magnification_bias2[COFFE_MAX_STRLEN];
 
@@ -289,7 +297,23 @@ struct coffe_parameters_t
 
     double k_pivot; /* for CLASS */
 
+    /* in C we can use void for anything that's a pointer */
+    void *class_file_content,
+         *class_background,
+         *class_thermodynamics,
+         *class_perturb,
+         *class_primordial,
+         *class_nonlinear,
+         *class_transfer,
+         *class_spectra;
+
     int flag;
+
+    int pk_type;
+
+    int zeldovich_approximation;
+
+    int only_cross_correlations;
 
 };
 
@@ -429,5 +453,83 @@ double coffe_galaxy_bias(
     const double z
 );
 
+
+/**
+    multiplies every item of a double `array` of `size` by a double `factor`
+    MUST be alloc'd beforehand
+**/
+void coffe_rescale_array(
+    double *array,
+    const size_t size,
+    const double factor
+);
+
+
+/**
+    multiplies every item of a double `array` of `size` by a double `factor`
+    MUST be alloc'd beforehand
+**/
+void coffe_rescale_array(
+    double *array,
+    const size_t size,
+    const double factor
+);
+
+
+/**
+    computes `array1` * `array2`^`power`, of same `size`,
+    and stores the result into `array_out`
+    MUST be alloc'd beforehand
+**/
+void coffe_multiply_power_array(
+    double *array_out,
+    const double *array1,
+    const double *array2,
+    const size_t size,
+    const double power
+);
+
+
+/**
+    integrates any 1D function `func` with arbitrary parameters `parameters`
+    between `a` and `b` and returns `result`
+**/
+
+double coffe_integrate_1d(
+    double (*func)(
+        double,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        const void*
+#else
+        void*
+#endif
+    ),
+    const void *parameters,
+    const double a,
+    const double b
+);
+
+
+double coffe_integrate_multidimensional(
+#ifdef HAVE_CUBA
+    int (*func)(
+        const int *,
+        const cubareal *,
+        const int *,
+        cubareal *,
+        void *
+    ),
+#else
+    double (*func)(
+        double *,
+        size_t,
+        void *
+    ),
+#endif
+    const void *parameters,
+    const int integration_method,
+    const int dims,
+    const int integration_bins
+);
 
 #endif
