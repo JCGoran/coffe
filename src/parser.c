@@ -648,7 +648,7 @@ int coffe_parse_default_parameters(
     par->z_min = 0.9;
     par->z_max = 1.1;
 
-    const double multipoles[] = {0, 2, 4};
+    const int multipoles[] = {0, 2, 4};
     par->multipole_values = coffe_malloc(
         sizeof(double) * COFFE_ARRAY_SIZE(multipoles)
     );
