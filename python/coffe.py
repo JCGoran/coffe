@@ -74,7 +74,7 @@ def get_default_parameters():
         'k_min' : 1e-5,
         'k_max' : 300.,
         'interpolation' : 5,
-        'have_class' : 0,
+        'have_class' : 1,
         'pk_type' : 0,
         'zeldovich_approximation' : 0,
         'h' : 0.67,
@@ -127,12 +127,6 @@ def run_coffe(
         **get_default_parameters(),
         **parameters,
     } if isinstance(parameters, dict) else get_default_parameters()
-
-    # some special cases
-    _check_value(default_parameters.get('input_separations'))
-
-    if default_parameters.get('have_class') == 0:
-        _check_value(default_parameters.get('input_power_spectrum'))
 
     for _name in ['matter', 'magnification', 'evolution']:
         for _index in [1, 2]:
