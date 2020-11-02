@@ -786,7 +786,7 @@ int coffe_parser_init(
         if (error == EXIT_FAILURE){
             fprintf(
                 stderr,
-                "Warning: cannot process file %s; using default separations instead!\n",
+                "WARNING: cannot process file %s; using default separations instead!\n",
                 par->file_sep
             );
         }
@@ -1169,7 +1169,7 @@ int coffe_parser_init(
         else{
             fprintf(
                 stderr,
-                "Warning: cannot process file %s; using default P(k) instead!\n",
+                "WARNING: cannot process file %s; using default P(k) instead!\n",
                 par->file_power_spectrum
             );
 #ifdef HAVE_CLASS
