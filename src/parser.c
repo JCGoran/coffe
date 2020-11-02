@@ -632,16 +632,6 @@ int coffe_parse_default_parameters(
 
     par->divergent = 0;
 
-    par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
-    par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
-    par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
-    par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
-    par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
-    par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
-    par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
-    par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
-    par->nonzero_terms[8].n = -1, par->nonzero_terms[8].l = -1;
-
     par->type_bg = NULL;
     par->type_bg_len = 0;
 
@@ -1029,10 +1019,6 @@ int coffe_parser_init(
         );
     }
 
-    for (int i = 0; i<9; ++i){
-        par->nonzero_terms[i].l = -1, par->nonzero_terms[i].n = -1;
-    }
-
     /* parsing the contributions to the correlation function and covariance */
     char **correlation_contributions = NULL;
     size_t correlation_contributions_len = 0;
@@ -1080,17 +1066,6 @@ int coffe_parser_init(
         free(correlation_contributions[i]);
     free(correlation_contributions);
 
-    par->divergent = 0;
-
-    par->nonzero_terms[0].n = 0, par->nonzero_terms[0].l = 0;
-    par->nonzero_terms[1].n = 0, par->nonzero_terms[1].l = 2;
-    par->nonzero_terms[2].n = 0, par->nonzero_terms[2].l = 4;
-    par->nonzero_terms[3].n = 1, par->nonzero_terms[3].l = 1;
-    par->nonzero_terms[4].n = 1, par->nonzero_terms[4].l = 3;
-    par->nonzero_terms[5].n = 2, par->nonzero_terms[5].l = 0;
-    par->nonzero_terms[6].n = 2, par->nonzero_terms[6].l = 2;
-    par->nonzero_terms[7].n = 3, par->nonzero_terms[7].l = 1;
-
     /* isolating the term requiring renormalization */
     if (
         par->correlation_contrib.d2 ||
@@ -1100,7 +1075,6 @@ int coffe_parser_init(
         par->correlation_contrib.g4 ||
         par->correlation_contrib.g5
     ){
-        par->nonzero_terms[8].n = 4, par->nonzero_terms[8].l = 0;
         par->divergent = 1;
     }
 
@@ -1114,10 +1088,6 @@ int coffe_parser_init(
     parse_int(conf, "flatsky_standard_standard", &par->flatsky_standard_standard, COFFE_TRUE);
     parse_int(conf, "flatsky_density_lensing", &par->flatsky_density_lensing, COFFE_TRUE);
     parse_int(conf, "flatsky_lensing_lensing", &par->flatsky_lensing_lensing, COFFE_TRUE);
-
-    if (par->flatsky_density_lensing || par->flatsky_lensing_lensing){
-        par->nonzero_terms[9].n = -10, par->nonzero_terms[9].l = -10;
-    }
 
     /* parsing the k range */
     parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);

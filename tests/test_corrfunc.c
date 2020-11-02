@@ -431,7 +431,6 @@ int main(void)
     coffe_parse_default_parameters(&par);
 
     par.divergent = 1;
-    par.nonzero_terms[8].n = 4, par.nonzero_terms[8].l = 0;
     par.output_type = 1;
 
     {

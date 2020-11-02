@@ -145,8 +145,6 @@ struct coffe_parameters_t
 
     struct coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
 
-    struct nl_terms nonzero_terms[10]; /* contrains all of the integrals we need to compute */
-
     char **type_bg; /* background values to output */
 
     size_t type_bg_len; /* number of background values */
