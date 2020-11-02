@@ -840,8 +840,10 @@ int coffe_parser_init(
     parse_double(conf, "w0", &par->w0, COFFE_TRUE);
     parse_double(conf, "wa", &par->wa, COFFE_TRUE);
 
+    /* the analytic matter bias has been disabled for now */
+    //parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
+
     /* parsing the matter bias */
-    parse_int(conf, "matter_bias_analytic", &par->matter_bias_analytic, COFFE_FALSE);
     if (!par->matter_bias_analytic){
         parse_int(conf, "read_matter_bias1", &par->read_matter_bias1, COFFE_FALSE);
         parse_bias(
@@ -1123,7 +1125,6 @@ int coffe_parser_init(
 
     /* parsing the window */
     parse_int(conf, "have_window", &par->have_window, COFFE_TRUE);
-    parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
 
     /* parsing whether we want just cross-correlations or not */
     parse_int(conf, "only_cross_correlations", &par->only_cross_correlations, COFFE_TRUE);
@@ -1144,6 +1145,9 @@ int coffe_parser_init(
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
         parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
+        if (par->pk_type){
+            parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
+        }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
