@@ -656,7 +656,7 @@ int coffe_parse_default_parameters(
         par->multipole_values[i] = multipoles[i];
     par->multipole_values_len = COFFE_ARRAY_SIZE(multipoles);
 
-    par->flatsky_standard_standard = 0;
+    par->flatsky_local = 0;
 
     par->flatsky_density_lensing = 0;
 
@@ -1093,7 +1093,7 @@ int coffe_parser_init(
     parse_string(conf, "output_prefix", par->output_prefix, COFFE_TRUE);
 
     /* flatsky parameters */
-    parse_int(conf, "flatsky_standard_standard", &par->flatsky_standard_standard, COFFE_TRUE);
+    parse_int(conf, "flatsky_local", &par->flatsky_local, COFFE_TRUE);
     parse_int(conf, "flatsky_density_lensing", &par->flatsky_density_lensing, COFFE_TRUE);
     parse_int(conf, "flatsky_lensing_lensing", &par->flatsky_lensing_lensing, COFFE_TRUE);
 

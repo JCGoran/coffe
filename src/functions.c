@@ -265,7 +265,7 @@ double functions_nonintegrated(
         !par->only_cross_correlations
     ){
         /* den-den modified by flatsky */
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result += bz_mean1*bz_mean2
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
         }
@@ -287,7 +287,7 @@ double functions_nonintegrated(
         !par->only_cross_correlations
     ){
         /* rsd-rsd modified by flatsky */
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result +=
                 fmean*fmean*coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)/5.
                 -
@@ -345,7 +345,7 @@ double functions_nonintegrated(
         !par->only_cross_correlations
     ){
         /* TODO should this be yet another flag, or go under standard? */
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result +=
              (
                 curlyH_mean
@@ -479,7 +479,7 @@ double functions_nonintegrated(
         par->correlation_contrib.rsd
     ){
         /* den-rsd modified by flatsky */
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result +=
                 (bz_mean1*fmean/3. + bz_mean2*fmean/3.)
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
@@ -519,7 +519,7 @@ double functions_nonintegrated(
         par->correlation_contrib.den &&
         par->correlation_contrib.d1
     ){
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result += (
                     bz_mean1
                    *fmean
@@ -606,7 +606,7 @@ double functions_nonintegrated(
         par->correlation_contrib.rsd &&
         par->correlation_contrib.d1
     ){
-        if (par->flatsky_standard_standard){
+        if (par->flatsky_local){
             result += (
                 -3. / 5. * (
                     fmean

@@ -63,7 +63,7 @@ def get_default_parameters():
             'conformal_H', 'conformal_H_prime',
             'D1', 'f', 'comoving_distance',
         ],
-        'flatsky_standard_standard' : 0,
+        'flatsky_local' : 0,
         'flatsky_density_lensing' : 0,
         'flatsky_lensing_lensing' : 0,
         'background_sampling' : 10000,
