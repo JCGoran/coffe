@@ -777,11 +777,19 @@ int coffe_parser_init(
     /* the custom separations for the ang/full correlation function or multipoles */
     if (par->output_type == 1 || par->output_type == 2 || par->output_type == 3){
         parse_string(conf, "input_separations", par->file_sep, COFFE_TRUE);
-        read_1col(
+        const int error = read_1col(
             par->file_sep,
             &par->sep,
             &par->sep_len
         );
+        /* hack: use default separations if the file is not available */
+        if (error == EXIT_FAILURE){
+            fprintf(
+                stderr,
+                "Warning: cannot process file %s; using default separations instead!\n",
+                par->file_sep
+            );
+        }
     }
 
     /* number of points to sample the integral of the Bessel function */
@@ -1136,25 +1144,41 @@ int coffe_parser_init(
         double *k, *pk;
         size_t pk_len;
 
-        read_2col(
+        const int error = read_2col(
             par->file_power_spectrum,
             &k,
             &pk,
             &pk_len
         );
 
-        if (par->have_window){
-            for (size_t i = 0; i < pk_len; ++i)
-                pk[i] *= pow(
-                    coffe_resolution_window(par->window_size * k[i]),
-                    2
-                );
+        if (error == EXIT_SUCCESS){
+            if (par->have_window){
+                for (size_t i = 0; i < pk_len; ++i)
+                    pk[i] *= pow(
+                        coffe_resolution_window(par->window_size * k[i]),
+                        2
+                    );
+            }
+
+            coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+
+            free(k);
+            free(pk);
         }
-
-        coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
-
-        free(k);
-        free(pk);
+        /* hack: use default power spectrum */
+        else{
+            fprintf(
+                stderr,
+                "Warning: cannot process file %s; using default P(k) instead!\n",
+                par->file_power_spectrum
+            );
+#ifdef HAVE_CLASS
+            fprintf(
+                stderr,
+                "Hint: consider setting the value of `have_class` to 1 to generate P(k) on the fly\n"
+            );
+#endif
+        }
 #ifdef HAVE_CLASS
     }
 #endif
