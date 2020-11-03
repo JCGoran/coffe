@@ -54,3 +54,4 @@ RUN pip3 install \
 # installing dependencies for COFFE python "wrapper"
 RUN pip3 install -r python/requirements.txt
 RUN ln -s /coffe/coffe /usr/bin/coffe
+WORKDIR /data/
