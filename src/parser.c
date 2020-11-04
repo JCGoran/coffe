@@ -658,9 +658,9 @@ int coffe_parse_default_parameters(
 
     par->flatsky_local = 0;
 
-    par->flatsky_density_lensing = 0;
+    par->flatsky_local_nonlocal = 0;
 
-    par->flatsky_lensing_lensing = 0;
+    par->flatsky_nonlocal = 0;
 
     par->theta_len = 0;
 
@@ -1094,8 +1094,8 @@ int coffe_parser_init(
 
     /* flatsky parameters */
     parse_int(conf, "flatsky_local", &par->flatsky_local, COFFE_TRUE);
-    parse_int(conf, "flatsky_density_lensing", &par->flatsky_density_lensing, COFFE_TRUE);
-    parse_int(conf, "flatsky_lensing_lensing", &par->flatsky_lensing_lensing, COFFE_TRUE);
+    parse_int(conf, "flatsky_local_nonlocal", &par->flatsky_local_nonlocal, COFFE_TRUE);
+    parse_int(conf, "flatsky_nonlocal", &par->flatsky_nonlocal, COFFE_TRUE);
 
     /* parsing the k range */
     parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);

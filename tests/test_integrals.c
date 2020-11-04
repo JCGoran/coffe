@@ -252,7 +252,7 @@ int main(void)
     coffe_parse_default_parameters(&par);
 
     par.divergent = 1;
-    par.flatsky_lensing_lensing = 1;
+    par.flatsky_nonlocal = 1;
 
     #ifdef _OPENMP
     par.nthreads = omp_get_num_procs();

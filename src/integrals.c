@@ -830,8 +830,8 @@ int coffe_integrals_init(
     }
 
     if (
-        par->flatsky_density_lensing ||
-        par->flatsky_lensing_lensing
+        par->flatsky_local_nonlocal ||
+        par->flatsky_nonlocal
     ){
         const size_t current_index = integral->size;
         /* alloc the space */
@@ -892,7 +892,7 @@ int coffe_integrals_init(
     }
     /* lensing-lensing multipoles are special */
     if (
-        par->flatsky_lensing_lensing &&
+        par->flatsky_nonlocal &&
         par->output_type == 2
     ){
         for (size_t i = 0; i < par->multipole_values_len; ++i){
@@ -950,7 +950,7 @@ int coffe_integrals_init(
     }
     /* density-lensing multipoles are also special */
     if (
-        par->flatsky_density_lensing &&
+        par->flatsky_local_nonlocal &&
         par->output_type == 2
     ){
         for (size_t i = 0; i < par->multipole_values_len; ++i){

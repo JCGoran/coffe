@@ -277,9 +277,9 @@ struct coffe_parameters_t
 
     int flatsky_local;
 
-    int flatsky_density_lensing;
+    int flatsky_local_nonlocal;
 
-    int flatsky_lensing_lensing;
+    int flatsky_nonlocal;
 
     int verbose;
 

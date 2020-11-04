@@ -360,7 +360,7 @@ static int coffe_test_corrfunc(
     {
         /* flatsky lensing-lensing */
         par->correlation_contrib.len = 1;
-        par->flatsky_lensing_lensing = 1;
+        par->flatsky_nonlocal = 1;
         for (size_t i = 0; i < COFFE_ARRAY_SIZE(mu); ++i){
             const double m = mu[i];
             const size_t size_name = 256;
@@ -416,7 +416,7 @@ static int coffe_test_corrfunc(
             }
         }
         reset_signal(&par->correlation_contrib);
-        par->flatsky_lensing_lensing = 0;
+        par->flatsky_nonlocal = 0;
     }
 
     if (!error_flag)
@@ -450,9 +450,9 @@ int main(void)
     coffe_background_init(&par, &bg);
 
     struct coffe_integral_array_t integrals;
-    par.flatsky_lensing_lensing = 1;
+    par.flatsky_nonlocal = 1;
     coffe_integrals_init(&par, &bg, &integrals);
-    par.flatsky_lensing_lensing = 0;
+    par.flatsky_nonlocal = 0;
 
     const int error_flag = coffe_test_corrfunc(&par, &bg, &integrals);
 

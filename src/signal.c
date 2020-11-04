@@ -567,25 +567,30 @@ double coffe_integrate(
                 }
                 case MULTIPOLES:{
                     double final_result = 0;
-                    /* flatsky density-lensing is special */
+                    /* flatsky density|RSD|d1-lensing are special */
                     if (
-                        par->correlation_contrib.den &&
+                        (
+                            par->correlation_contrib.den ||
+                            par->correlation_contrib.rsd ||
+                            par->correlation_contrib.d1
+                        ) &&
                         par->correlation_contrib.len &&
-                        par->flatsky_density_lensing
+                        par->flatsky_local_nonlocal
                     ){
-                        const double result = functions_flatsky_density_lensing_multipoles(
-                            par,
-                            bg,
-                            integral,
-                            par->z_mean,
-                            sep,
-                            l
-                        );
-                        final_result += 2 * M_PI * M_PI * result;
+                        /* only density-lensing is non-zero in flat-sky */
+                        if (par->correlation_contrib.den){
+                            const double result = functions_flatsky_density_lensing_multipoles(
+                                par,
+                                bg,
+                                integral,
+                                par->z_mean,
+                                sep,
+                                l
+                            );
+                            final_result += 2 * M_PI * M_PI * result;
+                        }
                     }
                     if (
-                        (par->correlation_contrib.len && par->correlation_contrib.rsd) ||
-                        (par->correlation_contrib.len && par->correlation_contrib.d1) ||
                         (par->correlation_contrib.len && par->correlation_contrib.d2) ||
                         (par->correlation_contrib.len && par->correlation_contrib.g1) ||
                         (par->correlation_contrib.len && par->correlation_contrib.g2) ||
@@ -605,9 +610,13 @@ double coffe_integrate(
                         (par->correlation_contrib.g5 && par->correlation_contrib.g2) ||
                         (par->correlation_contrib.g5 && par->correlation_contrib.g3) ||
                         (
-                            par->correlation_contrib.den &&
+                            (
+                                par->correlation_contrib.den ||
+                                par->correlation_contrib.rsd ||
+                                par->correlation_contrib.d1
+                            ) &&
                             par->correlation_contrib.len &&
-                            !par->flatsky_density_lensing
+                            !par->flatsky_local_nonlocal
                         )
                     ){
 
@@ -658,7 +667,7 @@ double coffe_integrate(
                     /* lensing-lensing is special */
                     if (
                         par->correlation_contrib.len &&
-                        par->flatsky_lensing_lensing &&
+                        par->flatsky_nonlocal &&
                         !par->only_cross_correlations &&
                         /* the odd ones are zero by construction, so we care only about the even */
                         l % 2 == 0
@@ -678,7 +687,7 @@ double coffe_integrate(
                         par->correlation_contrib.g5 ||
                         (
                             par->correlation_contrib.len &&
-                            !par->flatsky_lensing_lensing
+                            !par->flatsky_nonlocal
                         )
                     ){
                         final_result += (2 * l + 1) * coffe_integrate_multidimensional(

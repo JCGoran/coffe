@@ -392,7 +392,7 @@ static int coffe_test_multipoles(
     {
         /* flatsky lensing-lensing */
         par->correlation_contrib.len = 1;
-        par->flatsky_lensing_lensing = 1;
+        par->flatsky_nonlocal = 1;
         for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
@@ -448,13 +448,13 @@ static int coffe_test_multipoles(
             }
         }
         reset_signal(&par->correlation_contrib);
-        par->flatsky_lensing_lensing = 0;
+        par->flatsky_nonlocal = 0;
     }
     {
         /* flatsky density-lensing */
         par->correlation_contrib.den = 1;
         par->correlation_contrib.len = 1;
-        par->flatsky_density_lensing = 1;
+        par->flatsky_local_nonlocal = 1;
         for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i){
             const int l = multipoles[i];
             const size_t size_name = 256;
@@ -498,7 +498,7 @@ static int coffe_test_multipoles(
             }
         }
         reset_signal(&par->correlation_contrib);
-        par->flatsky_lensing_lensing = 0;
+        par->flatsky_nonlocal = 0;
     }
     {
         /* odd multipoles */
@@ -559,7 +559,7 @@ static int coffe_test_multipoles(
             }
         }
         reset_signal(&par->correlation_contrib);
-        par->flatsky_lensing_lensing = 0;
+        par->flatsky_nonlocal = 0;
     }
 
     if (!error_flag)
@@ -583,11 +583,11 @@ int main(void)
     coffe_background_init(&par, &bg);
 
     struct coffe_integral_array_t integrals;
-    par.flatsky_lensing_lensing = 1;
-    par.flatsky_density_lensing = 1;
+    par.flatsky_nonlocal = 1;
+    par.flatsky_local_nonlocal = 1;
     coffe_integrals_init(&par, &bg, &integrals);
-    par.flatsky_lensing_lensing = 0;
-    par.flatsky_density_lensing = 0;
+    par.flatsky_nonlocal = 0;
+    par.flatsky_local_nonlocal = 0;
 
     const int error_flag = coffe_test_multipoles(&par, &bg, &integrals);
 
