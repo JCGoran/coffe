@@ -124,7 +124,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_%s_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_%s_multipoles%d.dat",
                 type,
                 l
             );
@@ -218,7 +218,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_multipoles%d.dat",
                 l
             );
 
@@ -279,7 +279,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_len_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_len_multipoles%d.dat",
                 l
             );
 
@@ -340,7 +340,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_d1_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_d1_multipoles%d.dat",
                 l
             );
 
@@ -400,7 +400,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_flatsky_lensing_lensing_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_multipoles%d.dat",
                 l
             );
 
@@ -462,7 +462,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_flatsky_density_lensing_multipoles%d.dat",
+                DATADIR "/tests/benchmarks/benchmark_flatsky_density_lensing_multipoles%d.dat",
                 l
             );
 

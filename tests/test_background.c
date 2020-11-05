@@ -19,7 +19,7 @@ static int coffe_test_background(
 
     /* load the file */
     coffe_read_ncol(
-        "tests/benchmarks/benchmark_background.dat",
+        DATADIR "/tests/benchmarks/benchmark_background.dat",
         8, &size,
         &z, &a, &Hz, &conformal_Hz,
         &conformal_Hz_prime, &D1, &f, &comoving_distance

@@ -124,7 +124,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_%s_corrfunc%zu.dat",
+                DATADIR "/tests/benchmarks/benchmark_%s_corrfunc%zu.dat",
                 type,
                 i
             );
@@ -186,7 +186,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_corrfunc%zu.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_corrfunc%zu.dat",
                 i
             );
 
@@ -247,7 +247,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_len_corrfunc%zu.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_len_corrfunc%zu.dat",
                 i
             );
 
@@ -308,7 +308,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_std_d1_corrfunc%zu.dat",
+                DATADIR "/tests/benchmarks/benchmark_std_d1_corrfunc%zu.dat",
                 i
             );
 
@@ -368,7 +368,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                "tests/benchmarks/benchmark_flatsky_lensing_lensing_corrfunc%zu.dat",
+                DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_corrfunc%zu.dat",
                 i
             );
 

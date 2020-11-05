@@ -30,7 +30,7 @@ static int coffe_test_integrals(
         snprintf(
             name,
             size_name,
-            "tests/benchmarks/benchmark_integral%zu.dat",
+            DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
             i
         );
         coffe_read_ncol(
@@ -88,7 +88,7 @@ static int coffe_test_integrals(
         snprintf(
             name,
             size_name,
-            "tests/benchmarks/benchmark_integral%zu.dat",
+            DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
             (size_t)9
         );
         double *x_array, *y_array;
@@ -137,7 +137,7 @@ static int coffe_test_integrals(
     size_t divergent_size;
 
     coffe_read_ncol(
-        "tests/benchmarks/benchmark_integral8.dat",
+        DATADIR "/tests/benchmarks/benchmark_integral8.dat",
         2,
         &divergent_size,
         &divergent_x,
@@ -182,7 +182,7 @@ static int coffe_test_integrals(
     size_t ren_size;
 
     coffe_read_ncol(
-        "tests/benchmarks/benchmark_integral8_renormalization.dat",
+        DATADIR "/tests/benchmarks/benchmark_integral8_renormalization.dat",
         3,
         &ren_size,
         &ren_x,
