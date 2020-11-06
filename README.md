@@ -1,6 +1,17 @@
 # COFFE
-This is the public repository for the code COFFE (COrrelation Function Full-sky Estimator).
-The relevant theoretical papers are [arXiv:1708.00492](https://arxiv.org/abs/1708.00492) and [arXiv:1806.11090](https://arxiv.org/abs/1806.11090).
+This is the public repository for the code COFFE (COrrelation Function Full-sky Estimator), which can be used to compute the following quantities in linear perturbation theory:
+
+* full-sky and flat-sky 2-point correlation function (2PCF) of galaxy number counts, taking into account all of the effects (density, RSD, lensing, etc.)
+* full-sky and flat-sky multipoles of the 2PCF
+* redshift-averaged multipoles of the 2PCF
+* flat-sky Gaussian covariance matrix of the multipoles of the 2PCF
+* flat-sky Gaussian covariance matrix of the redshift-averaged multipoles of the 2PCF
+
+The relevant theoretical papers are:
+
+* [The full-sky relativistic correlation function and power spectrum of galaxy number counts: I. Theoretical aspects, arXiv:1708.00492](https://arxiv.org/abs/1708.00492)
+* [COFFE: a code for the full-sky relativistic galaxy correlation function, arXiv:1806.11090](https://arxiv.org/abs/1806.11090)
+* [The flat-sky approximation to galaxy number counts - redshift space correlation function, arXiv:2011.01878](https://arxiv.org/abs/2011.01878)
 
 ## Installation and running
 There are a couple of ways to install and run the code:
@@ -23,6 +34,27 @@ from the directory in which COFFE was extracted.
 If you wish to enable the CUBA library, you can specify the flag `--enable-cuba` for the `configure` script.
 You can also enable CLASS as a library using `--enable-class` and double exponential quadrature using `--enable-doubleexp`.
 
+The CLASS and CUBA libraries as well as their corresponding header files need to be installed in the search path of the compiler and the linker, otherwise you **must** manually set them, by running `configure` with additional options which specify the paths:
+
+```
+./configure \
+    CPPFLAGS="$CPPFLAGS -I/path/to/class_headers/ -I/path/to/cuba_headers/" \
+    LDLAGS="$LDFLAGS -L/path/to/class_library/ -L/path/to/cuba_library/" \
+    LIBS="$LIBS -lclass -lcuba"
+```
+
+You can get the default search path for the headers using the command (tested with `gcc`):
+
+```
+cc -v -E -xc /dev/null -o /dev/null
+```
+
+and the corresponding one for the libraries (using `ld`):
+
+```
+ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012
+```
+
 To run the code:
 ```
 coffe -s [SETTINGSFILE] -n [NUMTHREADS]
@@ -44,7 +76,7 @@ autoreconf -i
 From there, you may proceed as under point 1.
 
 ### 3. From DockerHub (compatible with Docker, Singularity and Shifter)
-COFFE has a [Docker](https://docs.docker.com/install/) version available.
+COFFE has a [Docker](https://docs.docker.com/install/) version available, which comes packaged with the CLASS and CUBA libraries.
 To pull the Docker image from DockerHub:
 ```
 docker pull jcgoran/coffe:[TAG]
@@ -54,7 +86,7 @@ and then run a container using
 docker run -ti jcgoran/coffe:[TAG]
 ```
 where `[TAG]` is the tag of the release (`latest` by default).
-The binary can be run from any directory _inside_ the container.
+The `coffe` binary can be run from any directory _inside_ the container.
 Copying the input/output can be done using `docker cp` as described in the manual.
 To run the code without having to use `docker cp`, you may run COFFE as follows:
 ```
@@ -73,6 +105,12 @@ coffe -s [SETTINGSFILE] -n [NUMTHREADS]
 **NOTE**: when running the Docker version and using `output=$TIME` in the settings file, the system time of the Docker image is not necessarily synchronized with your local time.
 To circumvent this, you may run the above command with an additional mount flag `-v /etc/localtime:/etc/localtime:ro`, which should synchronize the system time of the Docker image with your local time.
 
+**NOTE 2**: due to Docker's permission model, the default permissions of the output files may be wrong when using the `-v [MOUNT]` flag, i.e. they may belong to `root`, so you may not be able to access them; to fix this, you can either:
+
+1. run `sudo chmod -R $USER:$USER [DIRECTORY]` on the output directory every you run the Docker image
+2. add `--user "$(id -u):$(id -g)"` to the above Docker command
+
+### Docker alternatives
 Alternatively, one can run the Docker image using [Singularity](https://github.com/sylabs/singularity).
 To pull the image from DockerHub using Singularity:
 ```
@@ -96,8 +134,8 @@ shifter run jcgoran/coffe:[TAG] coffe -s [SETTINGSFILE] -n [NUMTHREADS]
 The above may need some adjustments depending on your HPC environment (using `srun` or similar).
 
 ## Testing
-To test the output of the code, you can use use the command `make check`.
-Alternatively, you can build tests one by one using `make test_[MODULE]`, where `[MODULE]` can currently be one of `background`, `integrals`, `corrfunc`, `multipoles`, `covariance`.
+To test the output of the code, you can use the command `make check`, which will build the binaries `test_[MODULE]`, where `[MODULE]` can currently be one of `background`, `integrals`, `corrfunc`, `multipoles`, `covariance`, and automatically run them.
+Alternatively, you can build them one by one using `make test_[MODULE]`, and run them manually via `./test_[MODULE]`.
 This is primarily useful when modifying the code itself, to make sure the old results of the code weren't broken by some new change (feature, bugfix, etc.).
 
 ## Bug reports and feature requests
