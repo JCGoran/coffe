@@ -158,7 +158,8 @@ EXTRA_DIST = \
     tests/benchmarks/benchmark_std_len_multipoles4.dat \
     tests/benchmarks/benchmark_std_multipoles0.dat \
     tests/benchmarks/benchmark_std_multipoles2.dat \
-    tests/benchmarks/benchmark_std_multipoles4.dat
+    tests/benchmarks/benchmark_std_multipoles4.dat \
+    README.md
 
 AM_CPPFLAGS = \
 	-DDATADIR=\"$(srcdir)/\" \
