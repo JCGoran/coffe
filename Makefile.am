@@ -159,7 +159,8 @@ EXTRA_DIST = \
     tests/benchmarks/benchmark_std_multipoles0.dat \
     tests/benchmarks/benchmark_std_multipoles2.dat \
     tests/benchmarks/benchmark_std_multipoles4.dat \
-    README.md
+    README.md \
+    manual/coffe_manual.pdf
 
 AM_CPPFLAGS = \
 	-DDATADIR=\"$(srcdir)/\" \
