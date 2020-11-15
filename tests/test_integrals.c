@@ -193,29 +193,16 @@ static int coffe_test_integrals(
     for (size_t i = 0; i < ren_size; ++i){
 
         const double y_expected = ren_z[i];
-        const double y_obtained = gsl_spline2d_eval(
-            coffe_find_integral(
+        const double y_obtained = coffe_interp_spline2d(
+            &coffe_find_integral(
                 integrals,
                 4,
                 0,
                 COFFE_INTEGER,
                 COFFE_INTEGER
-            )->renormalization.spline,
-            ren_x[i], ren_y[i],
-            coffe_find_integral(
-                integrals,
-                4,
-                0,
-                COFFE_INTEGER,
-                COFFE_INTEGER
-            )->renormalization.xaccel,
-            coffe_find_integral(
-                integrals,
-                4,
-                0,
-                COFFE_INTEGER,
-                COFFE_INTEGER
-            )->renormalization.yaccel
+            )->renormalization,
+            ren_x[i],
+            ren_y[i]
         );
 
         fprintf(

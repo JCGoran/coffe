@@ -411,11 +411,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -429,11 +435,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -447,11 +459,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -465,11 +483,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -854,11 +878,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -875,11 +905,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -896,11 +932,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -917,11 +959,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -938,11 +986,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                 /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -959,11 +1013,17 @@ double functions_nonintegrated(
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
             /* renormalization term */
-               -gsl_spline2d_eval(
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                    chi1, chi2,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                    coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                -
+                coffe_interp_spline2d(
+                    &coffe_find_integral(
+                        integral,
+                        4,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->renormalization,
+                    chi1,
+                    chi2
                 )
             );
     }
@@ -1067,21 +1127,33 @@ double functions_single_integrated(
         if (r21 == 0.0) ren1 = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization_zero_separation, lambda2);
         else ren1 = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sqrt(r21))
                     /* renormalization term */
-                   -gsl_spline2d_eval(
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                        lambda2, chi1,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
-                );
+                    -
+                    coffe_interp_spline2d(
+                        &coffe_find_integral(
+                            integral,
+                            4,
+                            0,
+                            COFFE_INTEGER,
+                            COFFE_INTEGER
+                        )->renormalization,
+                        lambda2,
+                        chi1
+                    );
         if (r22 == 0.0) ren2 = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization_zero_separation, lambda1);
         else ren2 = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sqrt(r22))
                     /* renormalization term */
-                   -gsl_spline2d_eval(
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                        lambda1, chi2,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
-                );
+                    -
+                    coffe_interp_spline2d(
+                        &coffe_find_integral(
+                            integral,
+                            4,
+                            0,
+                            COFFE_INTEGER,
+                            COFFE_INTEGER
+                        )->renormalization,
+                        lambda1,
+                        chi2
+                    );
     }
 
     /* den-len + len-den term */
@@ -2204,11 +2276,17 @@ double functions_double_integrated(
         else{
             ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sqrt(r2))
                     /* renormalization term */
-                   -gsl_spline2d_eval(
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.spline,
-                        lambda1, lambda2,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.xaccel,
-                        coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization.yaccel
+                    -
+                    coffe_interp_spline2d(
+                        &coffe_find_integral(
+                            integral,
+                            4,
+                            0,
+                            COFFE_INTEGER,
+                            COFFE_INTEGER
+                        )->renormalization,
+                        lambda1,
+                        lambda2
                     );
         }
     }

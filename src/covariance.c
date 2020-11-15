@@ -232,31 +232,13 @@ static int covariance_integrate_fftlog(
         free(result_pk[i]);
     free(result_pk);
 
-    gsl_interp2d_type *T;
-    switch (interpolation_method){
-        case 1:
-            T = (gsl_interp2d_type *)gsl_interp2d_bilinear;
-            break;
-        case 2:
-            T = (gsl_interp2d_type *)gsl_interp2d_bicubic;
-            break;
-        default:
-            T = (gsl_interp2d_type *)gsl_interp2d_bicubic;
-            break;
-    }
+    struct coffe_interpolation2d pk;
 
-    gsl_spline2d *spline_pk = gsl_spline2d_alloc(
-        /* TODO should we use something other than bicubic? */
-        T, sampling_points, sampling_points
-    );
-    gsl_interp_accel *xaccel_pk = gsl_interp_accel_alloc();
-    gsl_interp_accel *yaccel_pk = gsl_interp_accel_alloc();
-
-    /* NOTE here result2d should be a 1D array!!! */
-    gsl_spline2d_init(
-        spline_pk,
+    coffe_init_spline2d(
+        &pk,
         r1, r2, result2d_pk,
-        sampling_points, sampling_points
+        sampling_points, sampling_points,
+        interpolation_method
     );
 
     /* we don't need r1, r2, result2d_pk anymore */
@@ -268,19 +250,16 @@ static int covariance_integrate_fftlog(
         for (size_t n = 0; n < npixels_max; ++n){
             /* this one is dimensionless */
             result[npixels_max * n + m] =
-                gsl_spline2d_eval(
-                    spline_pk,
+                coffe_interp_spline2d(
+                    &pk,
                     COFFE_H0 * separations[m],
-                    COFFE_H0 * separations[n],
-                    xaccel_pk, yaccel_pk
+                    COFFE_H0 * separations[n]
                 );
         }
     }
 
     /* final memory cleanup */
-    gsl_spline2d_free(spline_pk);
-    gsl_interp_accel_free(xaccel_pk);
-    gsl_interp_accel_free(yaccel_pk);
+    coffe_free_spline2d(&pk);
 
     return EXIT_SUCCESS;
 }
@@ -733,10 +712,8 @@ int coffe_covariance_init(
         free(separations);
         free(integral_pk);
         free(integral_pk2);
-        gsl_spline_free(integrand_pk.spline);
-        gsl_interp_accel_free(integrand_pk.accel);
-        gsl_spline_free(integrand_pk2.spline);
-        gsl_interp_accel_free(integrand_pk2.accel);
+        coffe_free_spline(&integrand_pk);
+        coffe_free_spline(&integrand_pk2);
 
         end = clock();
 
