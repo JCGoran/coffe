@@ -24,6 +24,7 @@
 #include <math.h>
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_interp.h>
+#include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 
@@ -557,6 +558,44 @@ int coffe_init_spline(
 }
 
 
+int coffe_init_spline2d(
+    struct coffe_interpolation2d *interp,
+    const double *xi,
+    const double *yi,
+    const double *zi,
+    const size_t binsx,
+    const size_t binsy,
+    const int interpolation_type
+)
+{
+    if (binsx <= 0 || binsy <= 0){
+        print_error(PROG_VALUE_ERROR);
+        exit(EXIT_FAILURE);
+    }
+    const gsl_interp2d_type *T;
+    switch(interpolation_type){
+        case 1:
+            T = gsl_interp2d_bilinear;
+            break;
+        case 2:
+            T = gsl_interp2d_bicubic;
+            break;
+        default:
+            T = gsl_interp2d_bicubic;
+            break;
+    }
+    interp->spline
+        = gsl_spline2d_alloc(T, binsx, binsy);
+    interp->xaccel
+        = gsl_interp_accel_alloc();
+    interp->yaccel
+        = gsl_interp_accel_alloc();
+    gsl_spline2d_init(interp->spline, xi, yi, zi, binsx, binsy);
+    return EXIT_SUCCESS;
+}
+
+
+
 int coffe_free_spline(
     struct coffe_interpolation *interp
 )
@@ -567,6 +606,23 @@ int coffe_free_spline(
         gsl_interp_accel_free(interp->accel);
     if (interp->spline != NULL) interp->spline = NULL;
     if (interp->accel != NULL) interp->accel = NULL;
+    return EXIT_SUCCESS;
+}
+
+int coffe_free_spline2d(
+    struct coffe_interpolation2d *interp
+)
+{
+    if (interp->spline != NULL)
+        gsl_spline2d_free(interp->spline);
+    if (interp->xaccel != NULL)
+        gsl_interp_accel_free(interp->xaccel);
+    if (interp->yaccel != NULL)
+        gsl_interp_accel_free(interp->yaccel);
+
+    if (interp->spline != NULL) interp->spline = NULL;
+    if (interp->xaccel != NULL) interp->xaccel = NULL;
+    if (interp->yaccel != NULL) interp->yaccel = NULL;
     return EXIT_SUCCESS;
 }
 
@@ -630,6 +686,15 @@ double coffe_interp_spline(
 )
 {
     return gsl_spline_eval(interp->spline, value, interp->accel);
+}
+
+double coffe_interp_spline2d(
+    const struct coffe_interpolation2d *interp,
+    const double value1,
+    const double value2
+)
+{
+    return gsl_spline2d_eval(interp->spline, value1, value2, interp->xaccel, interp->yaccel);
 }
 
 int coffe_parameters_free(

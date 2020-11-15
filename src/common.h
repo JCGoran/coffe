@@ -407,13 +407,33 @@ int coffe_init_spline(
     const int interpolation_type
 );
 
+int coffe_init_spline2d(
+    struct coffe_interpolation2d *interp,
+    const double *xi,
+    const double *yi,
+    const double *zi,
+    const size_t binsx,
+    const size_t binsy,
+    const int interpolation_type
+);
+
 double coffe_interp_spline(
     const struct coffe_interpolation *interp,
     double value
 );
 
+double coffe_interp_spline2d(
+    const struct coffe_interpolation2d *interp,
+    const double value1,
+    const double value2
+);
+
 int coffe_free_spline(
     struct coffe_interpolation *interp
+);
+
+int coffe_free_spline2d(
+    struct coffe_interpolation2d *interp
 );
 
 int coffe_compare_ascending(
