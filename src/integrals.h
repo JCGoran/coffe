@@ -26,6 +26,8 @@ struct coffe_integral_t
 {
     /* result I^n_l, or r^(n - l) I^n_l if n > l */
     struct coffe_interpolation result;
+    /* result I^n_l(r, z), or r^(n - l) I^n_l if n > l */
+    struct coffe_interpolation2d result2d;
     /* the suitable renormalization (if necessary) */
     struct coffe_interpolation2d renormalization;
     /* the suitable renormalization at zero separation (if necessary) */

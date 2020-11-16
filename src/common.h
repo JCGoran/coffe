@@ -311,6 +311,8 @@ struct coffe_parameters_t
 
     int zeldovich_approximation;
 
+    int midpoint_approximation;
+
     int only_cross_correlations;
 
 };

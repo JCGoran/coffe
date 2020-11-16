@@ -271,9 +271,22 @@ double functions_nonintegrated(
         }
         else{
 #ifdef HAVE_CLASS
-            if (par->pk_type){
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
                 result += b1*b2
-                   *coffe_interp_spline(&nonlinear_fft[0], sep);
+                   *coffe_interp_spline2d(
+                        &coffe_find_integral(
+                            integral,
+                            0,
+                            0,
+                            COFFE_INTEGER,
+                            COFFE_INTEGER
+                        )->result2d,
+                        par->z_mean,
+                        sep
+                    );
             }
             else
 #endif

@@ -77,6 +77,7 @@ def get_default_parameters():
         'have_class' : 1,
         'pk_type' : 0,
         'zeldovich_approximation' : 0,
+        'midpoint_approximation' : 0,
         'h' : 0.67,
         'k_pivot' : 0.05,
         'ln_10_pow_10_A_s' : 3.06,

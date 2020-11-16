@@ -36,6 +36,10 @@
 #include "integrals.h"
 #include "twofast.h"
 
+#ifdef HAVE_CLASS
+#include "class.h"
+#endif
+
 
 #ifndef NORM
 #define NORM(X) (X*COFFE_H0)
@@ -600,18 +604,6 @@ int coffe_integrals_init(
     integral->integral = NULL;
     integral->size = 0;
 
-    /* the default renormalizable linear theory integrals in full-sky */
-    const struct nl_terms terms[] = {
-        {.n = 0, .l = 0},
-        {.n = 0, .l = 2},
-        {.n = 0, .l = 4},
-        {.n = 1, .l = 1},
-        {.n = 1, .l = 3},
-        {.n = 2, .l = 0},
-        {.n = 2, .l = 2},
-        {.n = 3, .l = 1}
-    };
-
     if (
         par->output_type == 0 ||
         par->output_type == 1 ||
@@ -619,6 +611,17 @@ int coffe_integrals_init(
         par->output_type == 3 ||
         par->output_type == 6
     ){
+        /* the default renormalizable linear theory integrals in full-sky */
+        const struct nl_terms terms[] = {
+            {.n = 0, .l = 0},
+            {.n = 0, .l = 2},
+            {.n = 0, .l = 4},
+            {.n = 1, .l = 1},
+            {.n = 1, .l = 3},
+            {.n = 2, .l = 0},
+            {.n = 2, .l = 2},
+            {.n = 3, .l = 1}
+        };
 
         integral->integral = coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
 
@@ -675,6 +678,109 @@ int coffe_integrals_init(
 
             free(final_sep);
             free(final_result);
+
+#ifdef HAVE_CLASS
+            if (par->midpoint_approximation){
+
+                /* do we want the linear, or the nonlinear one? */
+                enum pk_outputs pk_type = pk_linear;
+                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+
+                /* TODO make the upper bound modular */
+                const double z_min = 0.0, z_max = 3.0;
+                /* TODO make this modular */
+                const size_t z_size = 100;
+
+                /* list of all the redshifts */
+                double *z = (double *)coffe_malloc(sizeof(double) * z_size);
+
+                for (size_t i = 0; i < z_size; ++i)
+                    z[i] = z_min + z_max * (double)i / z_size;
+
+                /* alloc memory for 2D interpolation */
+                double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * output_real_len);
+
+                for (size_t i = 0; i < z_size; ++i){
+                    const size_t k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                    /* alloc memory for k and pk */
+                    double *k = (double *)coffe_malloc(sizeof(double) * k_size);
+                    double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
+
+                    /* get (non)linear power spectrum at redshift z (and store it in pk) */
+                    nonlinear_pk_at_z(
+                        (struct background *)par->class_background,
+                        (struct nonlinear *)par->class_nonlinear,
+                        logarithmic,
+                        pk_type,
+                        z[i],
+                        ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                        pk,
+                        NULL
+                    );
+
+                    /* need to rescale since CLASS internally works in units of 1/Mpc */
+                    /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
+                    for (size_t j = 0; j < k_size; ++j){
+                        k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h / COFFE_H0;
+                        pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                    }
+
+                    /* setup the interpolation of the power spectrum */
+                    struct coffe_interpolation pk_at_z;
+                    coffe_init_spline(
+                        &pk_at_z,
+                        k,
+                        pk,
+                        k_size,
+                        par->interp_method
+                    );
+
+                    /* memory cleanup */
+                    free(k);
+                    free(pk);
+
+                    /* get the FFTlog of the power spectra at redshift z (I^n_ell(r, z)) */
+                    coffe_integrals_renormalizable(
+                        &final_sep,
+                        &final_result,
+                        npoints,
+                        &output_real_len,
+                        &pk_at_z,
+                        integral->integral[current_index].n,
+                        integral->integral[current_index].l,
+                        integral->integral[current_index].state_n,
+                        integral->integral[current_index].state_l,
+                        par->k_min_norm,
+                        par->k_max_norm
+                    );
+
+                    /* save everything into a big array */
+                    for (size_t j = 0; j < output_real_len; ++j)
+                        /* first index redshift, second separation */
+                        pk_at_z2d[j * z_size + i] = final_result[j];
+
+                    /* memory cleanup */
+                    if (i != z_size - 1) free(final_sep);
+                    free(final_result);
+
+                }
+
+                /* now setup the 2D interpolation */
+                coffe_init_spline2d(
+                    &integral->integral[current_index].result2d,
+                    z,
+                    final_sep,
+                    pk_at_z2d,
+                    z_size,
+                    output_real_len,
+                    2
+                );
+
+                /* we didn't free it above, so we do it here */
+                free(final_sep);
+
+            }
+#endif
 
             integral->size += 1;
         }
@@ -1018,10 +1124,6 @@ int coffe_integrals_init(
     return EXIT_SUCCESS;
 }
 
-
-/**
-    TODO
-**/
 
 int coffe_integrals_free(
     struct coffe_integral_array_t *array

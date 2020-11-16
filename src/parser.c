@@ -522,10 +522,13 @@ int coffe_parse_default_parameters(
         k, pk, COFFE_ARRAY_SIZE(k),
         par->interp_method
     );
+
     par->k_min = 1e-5;
     par->k_max = 300.;
     par->pk_type = 0;
     par->zeldovich_approximation = 0;
+    par->midpoint_approximation = 0;
+
     {
         size_t len = par->power_spectrum.spline->size;
         double *k_norm =
@@ -1122,6 +1125,7 @@ int coffe_parser_init(
 
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
+        parse_int(conf, "midpoint_approximation", &par->midpoint_approximation, COFFE_TRUE);
         parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
         if (par->pk_type){
             parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
