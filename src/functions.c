@@ -618,8 +618,11 @@ double functions_nonintegrated(
         }
         else{
 #ifdef HAVE_CLASS
-            if (par->pk_type){
-                result += (b1*f2/3. + b2*f1/3.)
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
+                result += (b1 * f2 / 3. + b2 * f1 / 3.)
                    *coffe_interp_spline2d(
                         &coffe_find_integral(
                             integral,
@@ -633,9 +636,9 @@ double functions_nonintegrated(
                     )
                     -
                     (
-                        b1*f2*(2./3. - (1. - pow(costheta, 2))*pow(chi1/sep, 2))
+                        b1 * f2 * (2. / 3. - (1. - pow(costheta, 2)) * pow(chi1 / sep, 2))
                         +
-                        b2*f1*(2./3. - (1. - pow(costheta, 2))*pow(chi2/sep, 2))
+                        b2*f1*(2. / 3. - (1. - pow(costheta, 2))*pow(chi2 / sep, 2))
                     )
                    *coffe_interp_spline2d(
                         &coffe_find_integral(
@@ -651,13 +654,13 @@ double functions_nonintegrated(
             }
             else
 #endif
-                result += (b1*f2/3. + b2*f1/3.)
+                result += (b1 * f2 / 3. + b2 * f1 / 3.)
                    *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                    -
                     (
-                        b1*f2*(2./3. - (1. - pow(costheta, 2))*pow(chi1/sep, 2))
+                        b1 * f2 * (2. / 3. - (1. - pow(costheta, 2)) * pow(chi1 / sep, 2))
                         +
-                        b2*f1*(2./3. - (1. - pow(costheta, 2))*pow(chi2/sep, 2))
+                        b2 * f1 * (2. / 3. - (1. - pow(costheta, 2)) * pow(chi2 / sep, 2))
                     )
                    *coffe_interp_spline(&coffe_find_integral(integral, 0, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
         }
@@ -668,6 +671,29 @@ double functions_nonintegrated(
         par->correlation_contrib.d1
     ){
         if (par->flatsky_local){
+#ifdef HAVE_CLASS
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
+            result += (
+                    bz_mean1
+                   *fmean
+                   *curlyH_mean
+                   *Gz_mean2
+                   *gsl_sf_legendre_P1(mu)
+                    +
+                    bz_mean2
+                   *fmean
+                   *curlyH_mean
+                   *Gz_mean1
+                   *gsl_sf_legendre_P1(-mu)
+                )
+               *sep
+               *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 1, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep);
+            }
+            else
+#endif
             result += (
                     bz_mean1
                    *fmean
@@ -685,6 +711,28 @@ double functions_nonintegrated(
                *coffe_interp_spline(&coffe_find_integral(integral, 1, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
         }
         else{
+#ifdef HAVE_CLASS
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
+            result += -(
+                    b1
+                   *f2
+                   *curlyH2
+                   *G2
+                   *(chi1 * costheta - chi2)
+                    +
+                    b2
+                   *f1
+                   *curlyH1
+                   *G1
+                   *(chi2 * costheta - chi1)
+                )
+               *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 1, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep);
+            }
+            else
+#endif
             result += -(
                     b1
                    *f2
@@ -755,6 +803,46 @@ double functions_nonintegrated(
         par->correlation_contrib.d1
     ){
         if (par->flatsky_local){
+#ifdef HAVE_CLASS
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
+                result += (
+                    -3. / 5. * (
+                        fmean
+                       *fmean
+                       *curlyH_mean
+                       *Gz_mean2
+                       *gsl_sf_legendre_P1(-mu)
+                        +
+                        fmean
+                       *fmean
+                       *curlyH_mean
+                       *Gz_mean1
+                       *gsl_sf_legendre_P1(mu)
+                    )
+                   *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 1, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep)
+                   *sep
+                    + (
+                        fmean
+                       *fmean
+                       *curlyH_mean
+                       *Gz_mean2
+                       *2. / 5. * gsl_sf_legendre_Pl(3, -mu)
+                        +
+                        fmean
+                       *fmean
+                       *curlyH_mean
+                       *Gz_mean1
+                       *2. / 5. * gsl_sf_legendre_Pl(3, mu)
+                    )
+                   *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 3, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep)
+                   *sep
+                );
+            }
+            else
+#endif
             result += (
                 -3. / 5. * (
                     fmean
@@ -789,6 +877,89 @@ double functions_nonintegrated(
             );
         }
         else{
+#ifdef HAVE_CLASS
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
+                result += (
+                    (
+                        f1
+                       *f2
+                       *curlyH2
+                       *G2
+                       *(
+                            (1. + 2 * pow(costheta, 2)) * chi2
+                           -3 * chi1 * costheta
+                        )
+                       /5.
+                        +
+                        f2
+                       *f1
+                       *curlyH1
+                       *G1
+                       *(
+                            (1. + 2 * pow(costheta, 2)) * chi1
+                           -3 * chi2 * costheta
+                        )
+                       /5.
+                    )
+                   *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 1, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep)
+                    + (
+                        f1
+                       *f2
+                       *curlyH2
+                       *G2
+                       *(
+                            (1. - 3 * costheta * costheta)
+                           *pow(chi2, 3)
+                            +
+                            costheta
+                           *(5. + pow(costheta, 2))
+                           *pow(chi2, 2)
+                           *chi1
+                            -
+                            2
+                           *(2. + pow(costheta, 2))
+                           *chi2
+                           *pow(chi1, 2)
+                            +
+                            2
+                           *pow(chi1, 3)
+                           *costheta
+                        )
+                       /5
+                        +
+                        f2
+                       *f1
+                       *curlyH1
+                       *G1
+                       *(
+                            (1. - 3 * costheta * costheta)
+                           *pow(chi1, 3)
+                            +
+                            costheta
+                           *(5. + pow(costheta, 2))
+                           *pow(chi1, 2)
+                           *chi2
+                            -
+                            2
+                           *(2. + pow(costheta, 2))
+                           *chi1
+                           *pow(chi2, 2)
+                            +
+                            2
+                           *pow(chi2, 3)
+                           *costheta
+                        )
+                       /5
+                    )
+                   *coffe_interp_spline2d(&coffe_find_integral(integral, 1, 3, COFFE_INTEGER, COFFE_INTEGER)->result2d, z_mean, sep)
+                   /pow(sep, 2)
+                );
+            }
+            else
+#endif
             result += (
                 (
                     f1
