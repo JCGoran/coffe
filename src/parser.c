@@ -454,10 +454,22 @@ static int parse_external_power_spectrum(
             );
     }
 
+    double *k_norm = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+    double *pk_norm = (double *)coffe_malloc(sizeof(double) * pnl->k_size);
+
+    /* rescaling to the normalized one */
+    for (size_t i = 0; i < pk_len; ++i){
+        k_norm[i] = k[i] / COFFE_H0;
+        pk_norm[i] = pk[i] * pow(COFFE_H0, 3);
+    }
+
     coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
+    coffe_init_spline(&par->power_spectrum_norm, k_norm, pk_norm, pk_len, par->interp_method);
 
     free(k);
     free(pk);
+    free(k_norm);
+    free(pk_norm);
 
     /* keeping it for later reuse */
 
