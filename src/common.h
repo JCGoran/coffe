@@ -291,6 +291,10 @@ struct coffe_parameters_t
 
     double ln_10_pow_10_A_s; /* amplitude of primordial power spectrum A_s */
 
+    double T_cmb, N_ur, m_ncdm;
+
+    int N_ncdm;
+
     double h; /* Damn you, little h! */
 
     double k_pivot; /* for CLASS */

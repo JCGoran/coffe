@@ -296,7 +296,7 @@ static int parse_external_power_spectrum(
     class_start = clock();
     struct file_content *fc = coffe_malloc(sizeof(struct file_content));
 
-    size_t class_parameters_len = 20, counter = 0;
+    size_t class_parameters_len = 24, counter = 0;
 
     parser_init(fc, class_parameters_len, "", errmsg);
 
@@ -310,7 +310,7 @@ static int parse_external_power_spectrum(
     ++counter;
 
     sprintf(fc->name[counter], "T_cmb");
-    sprintf(fc->value[counter], "%e", 2.7255);
+    sprintf(fc->value[counter], "%e", par->T_cmb);
     ++counter;
 
     sprintf(fc->name[counter], "Omega_b");
@@ -318,7 +318,7 @@ static int parse_external_power_spectrum(
     ++counter;
 
     sprintf(fc->name[counter], "N_ur");
-    sprintf(fc->value[counter], "%e", 3.046);
+    sprintf(fc->value[counter], "%e", par->N_ur);
     ++counter;
 
     sprintf(fc->name[counter], "Omega_cdm");
@@ -349,12 +349,30 @@ static int parse_external_power_spectrum(
     sprintf(fc->value[counter], "analytic_Pk");
     ++counter;
 
+    sprintf(fc->name[counter], "N_ncdm");
+    sprintf(fc->value[counter], "%d", par->N_ncdm);
+    ++counter;
+
+    sprintf(fc->name[counter], "m_ncdm");
+    sprintf(fc->value[counter], "%e", par->m_ncdm);
+    ++counter;
+
+//    sprintf(fc->name[counter], "T_ncdm");
+//    sprintf(fc->value[counter], "%e", 0.71611);
+//    ++counter;
+
+//    sprintf(fc->name[counter], "omega_ncdm");
+//    sprintf(fc->value[counter], "%e", 0.000645145613);
+//    ++counter;
+
     sprintf(fc->name[counter], "k_pivot");
     sprintf(fc->value[counter], "%e", par->k_pivot);
     ++counter;
 
-    sprintf(fc->name[counter], "ln10^{10}A_s");
+    sprintf(fc->name[counter], "A_s");
     sprintf(fc->value[counter], "%e", par->ln_10_pow_10_A_s);
+    //sprintf(fc->name[counter], "sigma8");
+    //sprintf(fc->value[counter], "%e", 0.816);
     ++counter;
 
     sprintf(fc->name[counter], "n_s");
@@ -371,6 +389,10 @@ static int parse_external_power_spectrum(
 
     sprintf(fc->name[counter], "P_k_max_h/Mpc");
     sprintf(fc->value[counter], "%e", par->k_max);
+    ++counter;
+
+    sprintf(fc->name[counter], "tau_reio");
+    sprintf(fc->value[counter], "%e", 0.0925);
     ++counter;
 
     sprintf(fc->name[counter], "z_pk");
@@ -499,6 +521,10 @@ int coffe_parse_default_parameters(
     par->w0 = -1.0;
     par->wa = 0.0;
     par->have_class = 0;
+    par->N_ur = 2.0328;
+    par->T_cmb = 2.726;
+    par->N_ncdm = 1;
+    par->m_ncdm = 0.06;
     par->h = 0.67;
     par->k_pivot = 0.05;
     par->ln_10_pow_10_A_s = 3.06;
@@ -1146,6 +1172,11 @@ int coffe_parser_init(
         parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
+        // new stuff for forecast
+        parse_double(conf, "T_cmb", &par->T_cmb, COFFE_FALSE);
+        parse_double(conf, "N_ur", &par->N_ur, COFFE_FALSE);
+        parse_double(conf, "m_ncdm", &par->m_ncdm, COFFE_FALSE);
+        parse_int(conf, "N_ncdm", &par->N_ncdm, COFFE_FALSE);
         parse_external_power_spectrum(par);
     }
     else{

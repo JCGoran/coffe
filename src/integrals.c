@@ -680,7 +680,10 @@ int coffe_integrals_init(
             free(final_result);
 
 #ifdef HAVE_CLASS
-            if (par->midpoint_approximation){
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
@@ -994,7 +997,10 @@ int coffe_integrals_init(
             free(final_result);
 
 #ifdef HAVE_CLASS
-            if (par->midpoint_approximation){
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
@@ -1156,7 +1162,10 @@ int coffe_integrals_init(
                 free(final_result);
 
 #ifdef HAVE_CLASS
-            if (par->midpoint_approximation){
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
@@ -1319,7 +1328,10 @@ int coffe_integrals_init(
                     free(final_result);
 
 #ifdef HAVE_CLASS
-            if (par->midpoint_approximation){
+            if (
+                par->pk_type &&
+                par->midpoint_approximation
+            ){
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
