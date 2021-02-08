@@ -84,7 +84,7 @@ def get_default_parameters():
         'midpoint_approximation' : 0,
         'h' : 0.67,
         'k_pivot' : 0.05,
-        'ln_10_pow_10_A_s' : 3.06,
+        'A_s' : 2.12605e-9,
         'n_s' : 0.96,
         'have_window' : 0,
         'window_size' : 5,

@@ -362,7 +362,7 @@ static int parse_external_power_spectrum(
     ++counter;
 
     sprintf(fc->name[counter], "A_s");
-    sprintf(fc->value[counter], "%e", par->ln_10_pow_10_A_s);
+    sprintf(fc->value[counter], "%e", par->A_s);
     ++counter;
 
     sprintf(fc->name[counter], "n_s");
@@ -517,7 +517,7 @@ int coffe_parse_default_parameters(
     par->m_ncdm = 0.06;
     par->h = 0.67;
     par->k_pivot = 0.05;
-    par->ln_10_pow_10_A_s = 3.06;
+    par->A_s = 2.12605e-9;
     par->n_s = 0.96;
 
     par->only_cross_correlations = 0;
@@ -1159,7 +1159,7 @@ int coffe_parser_init(
             parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
         }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
-        parse_double(conf, "ln_10_pow_10_A_s", &par->ln_10_pow_10_A_s, COFFE_TRUE);
+        parse_double(conf, "A_s", &par->A_s, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
         // new stuff for forecast

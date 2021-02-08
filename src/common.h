@@ -289,7 +289,7 @@ struct coffe_parameters_t
 
     double n_s; /* spectral index n_s */
 
-    double ln_10_pow_10_A_s; /* amplitude of primordial power spectrum A_s */
+    double A_s; /* amplitude of primordial power spectrum A_s */
 
     double T_cmb, N_ur, m_ncdm;
 
