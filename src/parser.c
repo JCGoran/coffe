@@ -357,22 +357,12 @@ static int parse_external_power_spectrum(
     sprintf(fc->value[counter], "%e", par->m_ncdm);
     ++counter;
 
-//    sprintf(fc->name[counter], "T_ncdm");
-//    sprintf(fc->value[counter], "%e", 0.71611);
-//    ++counter;
-
-//    sprintf(fc->name[counter], "omega_ncdm");
-//    sprintf(fc->value[counter], "%e", 0.000645145613);
-//    ++counter;
-
     sprintf(fc->name[counter], "k_pivot");
     sprintf(fc->value[counter], "%e", par->k_pivot);
     ++counter;
 
     sprintf(fc->name[counter], "A_s");
     sprintf(fc->value[counter], "%e", par->ln_10_pow_10_A_s);
-    //sprintf(fc->name[counter], "sigma8");
-    //sprintf(fc->value[counter], "%e", 0.816);
     ++counter;
 
     sprintf(fc->name[counter], "n_s");
