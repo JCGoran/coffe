@@ -133,7 +133,7 @@ def run_coffe(
         **parameters,
     } if isinstance(parameters, dict) else get_default_parameters()
 
-    for _name in ['matter', 'magnification', 'evolution']:
+    for _name in ['galaxy', 'magnification', 'evolution']:
         for _index in [1, 2]:
             if default_parameters.get(f'read_{_name}_bias{_index}'):
                 _check_value(default_parameters.get(f'input_{_name}_bias{_index}'))
