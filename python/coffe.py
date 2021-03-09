@@ -127,6 +127,16 @@ def run_coffe(
             'make sure the `path` variable is set correctly!'
         )
 
+    if isinstance(parameters, dict):
+        _temp_parameters = get_default_parameters()
+        # check that there isn't a malformed parameter passed
+        for key in parameters:
+            if key not in _temp_parameters:
+                raise ValueError(
+                    f'The value `{key}` doesn\'t exist,' \
+                    'are you sure you spelled it correctly?'
+                )
+
     # overwrite defaults if input is something
     default_parameters = {
         **get_default_parameters(),
