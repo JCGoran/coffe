@@ -133,7 +133,7 @@ def run_coffe(
         for key in parameters:
             if key not in _temp_parameters:
                 raise ValueError(
-                    f'The value `{key}` doesn\'t exist,' \
+                    f'The variable `{key}` doesn\'t exist,' \
                     'are you sure you spelled it correctly?'
                 )
 
