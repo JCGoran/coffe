@@ -258,6 +258,8 @@ struct coffe_parameters_t
 
     double covariance_pixelsize;
 
+    double covariance_step_size;
+
     double covariance_minimum_separation;
 
     int covariance_integration_method;

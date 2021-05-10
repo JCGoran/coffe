@@ -114,6 +114,7 @@ int main(void)
     par.covariance_fsky_len = 1;
 
     par.covariance_pixelsize = 50.0;
+    par.covariance_step_size = 50.0;
     par.covariance_minimum_separation = 50.0;
 
     #ifdef _OPENMP

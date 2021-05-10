@@ -625,6 +625,7 @@ int coffe_parse_default_parameters(
     par->covariance_fsky = NULL;
     par->covariance_fsky_len = 0;
     par->covariance_pixelsize = 10.0;
+    par->covariance_step_size = 10.0;
     par->covariance_zmin = NULL;
     par->covariance_zmin_len = 0;
     par->covariance_zmax = NULL;
@@ -986,6 +987,12 @@ int coffe_parser_init(
             conf,
             "covariance_pixelsize",
             &par->covariance_pixelsize,
+            COFFE_TRUE
+        );
+        parse_double(
+            conf,
+            "covariance_step_size",
+            &par->covariance_step_size,
             COFFE_TRUE
         );
         parse_double(

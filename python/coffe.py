@@ -50,6 +50,7 @@ def get_default_parameters():
         'covariance_density' : [0.1, 0.2, 0.01],
         'covariance_fsky' : [0.3, 0.5, 0.2],
         'covariance_pixelsize' : 10.0,
+        'covariance_step_size' : 10.0,
         'covariance_zmin' : [2.0, 2.2, 2.3],
         'covariance_zmax' : [2.5, 2.8, 2.5],
         'output_path' : 'results/',

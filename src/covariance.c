@@ -304,7 +304,7 @@ int coffe_covariance_init(
 
             cov_mp->density = (double *)par->covariance_density;
             cov_mp->fsky = (double *)par->covariance_fsky;
-            cov_mp->pixelsize = (double)par->covariance_pixelsize;
+            cov_mp->pixelsize = (double)par->covariance_step_size;
             cov_mp->list_len = (size_t)par->covariance_density_len;
 
             cov_mp->sep = (double **)coffe_malloc(sizeof(double *)*cov_mp->list_len);
@@ -322,7 +322,7 @@ int coffe_covariance_init(
 
             cov_ramp->density = (double *)par->covariance_density;
             cov_ramp->fsky = (double *)par->covariance_fsky;
-            cov_ramp->pixelsize = (double)par->covariance_pixelsize;
+            cov_ramp->pixelsize = (double)par->covariance_step_size;
             cov_ramp->list_len = (size_t)par->covariance_density_len;
 
             cov_ramp->sep = (double **)coffe_malloc(sizeof(double *)*cov_ramp->list_len);
@@ -406,7 +406,7 @@ int coffe_covariance_init(
 
         for (size_t i = 0; i < par->covariance_density_len; ++i){
             npixels[i] = (size_t)(
-                upper_limit[i] / par->covariance_pixelsize
+                upper_limit[i] / par->covariance_step_size
             );
 
             if (par->output_type == 4){
@@ -425,7 +425,7 @@ int coffe_covariance_init(
         /* all of the separations */
         double *separations = (double *)coffe_malloc(sizeof(double) * npixels_max);
         for (size_t i = 0; i<npixels_max; ++i)
-            separations[i] = par->covariance_minimum_separation + i * par->covariance_pixelsize;
+            separations[i] = par->covariance_minimum_separation + i * par->covariance_step_size;
 
         /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
         double **integral_pk =
