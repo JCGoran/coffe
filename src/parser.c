@@ -361,12 +361,12 @@ static int parse_external_power_spectrum(
     sprintf(fc->value[counter], "%e", par->k_pivot);
     ++counter;
 
-    sprintf(fc->name[counter], "A_s");
-    sprintf(fc->value[counter], "%e", par->A_s);
-    ++counter;
-
     sprintf(fc->name[counter], "n_s");
     sprintf(fc->value[counter], "%e", par->n_s);
+    ++counter;
+
+    sprintf(fc->name[counter], "sigma8");
+    sprintf(fc->value[counter], "%e", par->sigma8);
     ++counter;
 
     sprintf(fc->name[counter], "alpha_s");
@@ -504,8 +504,9 @@ int coffe_parse_default_parameters(
 {
     par->nthreads = 1;
     /* cosmological parameters */
-    par->Omega0_cdm = 0.25;
+    par->Omega0_m = 0.3;
     par->Omega0_baryon = 0.05;
+    par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon;
     par->Omega0_gamma = 9e-5;
     par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
     par->w0 = -1.0;
@@ -517,8 +518,12 @@ int coffe_parse_default_parameters(
     par->m_ncdm = 0.06;
     par->h = 0.67;
     par->k_pivot = 0.05;
-    par->A_s = 2.12605e-9;
+    par->sigma8 = 0.8156;
     par->n_s = 0.96;
+    par->b_derivative = 0;
+    par->f_derivative = 0;
+    par->b_tilde_derivative = 0;
+    par->f_tilde_derivative = 0;
 
     par->only_cross_correlations = 0;
 
@@ -624,7 +629,8 @@ int coffe_parse_default_parameters(
     par->covariance_deltaz_len = 0;
     par->covariance_fsky = NULL;
     par->covariance_fsky_len = 0;
-    par->covariance_pixelsize = 10.0;
+    par->covariance_pixelsize = NULL;
+    par->covariance_pixelsize_len = 0;
     par->covariance_step_size = 10.0;
     par->covariance_zmin = NULL;
     par->covariance_zmin_len = 0;
@@ -745,8 +751,9 @@ int coffe_parser_init(
     parse_int(conf, "background_sampling", &par->background_bins, COFFE_TRUE);
 
     /* cosmological parameters */
-    parse_double(conf, "omega_cdm", &par->Omega0_cdm, COFFE_TRUE);
+    parse_double(conf, "omega_m", &par->Omega0_m, COFFE_TRUE);
     parse_double(conf, "omega_baryon", &par->Omega0_baryon, COFFE_TRUE);
+    par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon;
     parse_double(conf, "omega_gamma", &par->Omega0_gamma, COFFE_TRUE);
 
     par->Omega0_de = 1. - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
@@ -983,11 +990,11 @@ int coffe_parser_init(
             &par->covariance_fsky,
             &par->covariance_fsky_len
         );
-        parse_double(
+        parse_double_array(
             conf,
             "covariance_pixelsize",
             &par->covariance_pixelsize,
-            COFFE_TRUE
+            &par->covariance_pixelsize_len
         );
         parse_double(
             conf,
@@ -1019,7 +1026,8 @@ int coffe_parser_init(
         if (
             par->covariance_density_len != par->covariance_fsky_len ||
             par->covariance_density_len != par->covariance_z_mean_len ||
-            par->covariance_density_len != par->covariance_deltaz_len
+            par->covariance_density_len != par->covariance_deltaz_len ||
+            par->covariance_density_len != par->covariance_pixelsize_len
         ){
             fprintf(
                 stderr,
@@ -1135,6 +1143,26 @@ int coffe_parser_init(
     parse_int(conf, "flatsky_local_nonlocal", &par->flatsky_local_nonlocal, COFFE_TRUE);
     parse_int(conf, "flatsky_nonlocal", &par->flatsky_nonlocal, COFFE_TRUE);
 
+    /* parameters for the Fisher forcat */
+    parse_int(conf, "b_derivative", &par->b_derivative, COFFE_TRUE);
+    parse_int(conf, "f_derivative", &par->f_derivative, COFFE_TRUE);
+    parse_int(conf, "b_tilde_derivative", &par->b_tilde_derivative, COFFE_TRUE);
+    parse_int(conf, "f_tilde_derivative", &par->f_tilde_derivative, COFFE_TRUE);
+
+    /* cant have two or more at the same time */
+    if (
+        par->b_derivative
+        +
+        par->f_derivative
+        +
+        par->b_tilde_derivative
+        +
+        par->f_tilde_derivative > 1
+    ){
+        print_error_verbose(PROG_VALUE_ERROR, "derivatives");
+        exit(EXIT_FAILURE);
+    }
+
     /* parsing the k range */
     parse_double(conf, "k_min", &par->k_min, COFFE_TRUE);
     parse_double(conf, "k_max", &par->k_max, COFFE_TRUE);
@@ -1166,7 +1194,7 @@ int coffe_parser_init(
             parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
         }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
-        parse_double(conf, "A_s", &par->A_s, COFFE_TRUE);
+        parse_double(conf, "sigma8", &par->sigma8, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
         // new stuff for forecast

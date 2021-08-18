@@ -17,7 +17,7 @@ def get_default_parameters():
     return {
         'input_separations' : 'separations.dat',
         'input_power_spectrum' : 'PkL_CLASS.dat',
-        'omega_cdm' : 0.25,
+        'omega_m' : 0.3,
         'omega_baryon' : 0.05,
         'omega_gamma' : 9e-5,
         'T_cmb' : 2.726,
@@ -49,7 +49,7 @@ def get_default_parameters():
         'covariance_deltaz' : [0.1, 0.1, 0.2],
         'covariance_density' : [0.1, 0.2, 0.01],
         'covariance_fsky' : [0.3, 0.5, 0.2],
-        'covariance_pixelsize' : 10.0,
+        'covariance_pixelsize' : [10.0, 10.0, 10.0],
         'covariance_step_size' : 10.0,
         'covariance_zmin' : [2.0, 2.2, 2.3],
         'covariance_zmax' : [2.5, 2.8, 2.5],
@@ -85,7 +85,7 @@ def get_default_parameters():
         'midpoint_approximation' : 0,
         'h' : 0.67,
         'k_pivot' : 0.05,
-        'A_s' : 2.12605e-9,
+        'sigma8' : 0.8156,
         'n_s' : 0.96,
         'have_window' : 0,
         'window_size' : 5,
@@ -95,6 +95,10 @@ def get_default_parameters():
         'covariance_minimum_separation' : 20,
         'verbose' : 1,
         'only_cross_correlations' : 0,
+        'b_derivative' : 0,
+        'f_derivative' : 0,
+        'b_tilde_derivative' : 0,
+        'f_tilde_derivative' : 0,
     }
 
 def _check_value(value):

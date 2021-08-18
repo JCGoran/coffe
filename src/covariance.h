@@ -24,7 +24,7 @@ struct coffe_covariance_t
     double *z_mean, *deltaz, *density, *fsky;
     double *zmin, *zmax; /* placeholder for RAMPs */
     size_t list_len; /* length of z_mean, density and fsky */
-    double pixelsize;
+    double *pixelsize;
     double **sep;
     int *l;
     size_t *sep_len, l_len; /* sep_len is actually number of pixels */

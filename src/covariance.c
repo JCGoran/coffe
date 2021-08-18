@@ -304,7 +304,7 @@ int coffe_covariance_init(
 
             cov_mp->density = (double *)par->covariance_density;
             cov_mp->fsky = (double *)par->covariance_fsky;
-            cov_mp->pixelsize = (double)par->covariance_step_size;
+            //cov_mp->pixelsize = (double *)par->covariance_step_size;
             cov_mp->list_len = (size_t)par->covariance_density_len;
 
             cov_mp->sep = (double **)coffe_malloc(sizeof(double *)*cov_mp->list_len);
@@ -322,7 +322,7 @@ int coffe_covariance_init(
 
             cov_ramp->density = (double *)par->covariance_density;
             cov_ramp->fsky = (double *)par->covariance_fsky;
-            cov_ramp->pixelsize = (double)par->covariance_step_size;
+            //cov_ramp->pixelsize = (double *)par->covariance_step_size;
             cov_ramp->list_len = (size_t)par->covariance_density_len;
 
             cov_ramp->sep = (double **)coffe_malloc(sizeof(double *)*cov_ramp->list_len);
@@ -334,41 +334,6 @@ int coffe_covariance_init(
                 cov_ramp->l[i] = (int)par->multipole_values[i];
             }
         }
-
-        double *temp_spectrum_pk =
-            (double *)coffe_malloc(sizeof(double)*par->power_spectrum.spline->size);
-        double *temp_spectrum_pk2 =
-            (double *)coffe_malloc(sizeof(double)*par->power_spectrum.spline->size);
-        struct coffe_interpolation integrand_pk, integrand_pk2;
-
-        /* setting the power spectra P(k) and P^2(k) */
-        for (size_t i = 0; i<par->power_spectrum.spline->size; ++i){
-            temp_spectrum_pk[i] =
-                par->power_spectrum.spline->y[i];
-            temp_spectrum_pk2[i] =
-                par->power_spectrum.spline->y[i]*par->power_spectrum.spline->y[i];
-        }
-
-        /* interpolations of P(k) and P^2(k) */
-        coffe_init_spline(
-            &integrand_pk,
-            par->power_spectrum.spline->x,
-            temp_spectrum_pk,
-            par->power_spectrum.spline->size,
-            5
-        );
-
-        coffe_init_spline(
-            &integrand_pk2,
-            par->power_spectrum.spline->x,
-            temp_spectrum_pk2,
-            par->power_spectrum.spline->size,
-            5
-        );
-
-        /* memory cleanup */
-        free(temp_spectrum_pk);
-        free(temp_spectrum_pk2);
 
         /* finding the largest separation */
         double *upper_limit =
@@ -427,104 +392,214 @@ int coffe_covariance_init(
         for (size_t i = 0; i<npixels_max; ++i)
             separations[i] = par->covariance_minimum_separation + i * par->covariance_step_size;
 
+        const size_t redshifts_to_allocate =
+            par->pk_type ? par->covariance_density_len : 1;
         /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
-        double **integral_pk =
-            (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
-        double **integral_pk2 =
-            (double **)coffe_malloc(sizeof(double *)*par->multipole_values_len*par->multipole_values_len);
-        for (size_t i = 0; i < par->multipole_values_len; ++i){
-            for (size_t j = 0; j<par->multipole_values_len; ++j){
-            integral_pk[i*par->multipole_values_len + j] =
-                (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
-            integral_pk2[i*par->multipole_values_len + j] =
-                (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
+        /* why triple pointers, you ask? First index is redshift, second is multipole, third are separations */
+        double ***integral_pk =
+            (double ***)coffe_malloc(sizeof(double **) * redshifts_to_allocate);
+        double ***integral_pk2 =
+            (double ***)coffe_malloc(sizeof(double **) * redshifts_to_allocate);
+        for (size_t index_redshift = 0; index_redshift < redshifts_to_allocate; ++index_redshift){
+            integral_pk[index_redshift] =
+                (double **)coffe_malloc(sizeof(double *) * par->multipole_values_len * par->multipole_values_len);
+            integral_pk2[index_redshift] =
+                (double **)coffe_malloc(sizeof(double *) * par->multipole_values_len * par->multipole_values_len);
+            for (size_t i = 0; i < par->multipole_values_len; ++i){
+                for (size_t j = 0; j<par->multipole_values_len; ++j){
+                integral_pk[index_redshift][i*par->multipole_values_len + j] =
+                    (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
+                integral_pk2[index_redshift][i*par->multipole_values_len + j] =
+                    (double *)coffe_malloc(sizeof(double)*npixels_max*npixels_max);
+                }
             }
         }
-        if (par->covariance_integration_method == 1){
-            /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
-            for (size_t i = 0; i<par->multipole_values_len; ++i){
-                for (size_t j = i; j<par->multipole_values_len; ++j){
-                    #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                    for (size_t m = 0; m<npixels_max; ++m){
-                        for (size_t n = 0; n<npixels_max; ++n){
-                            integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
-                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                               *covariance_integral(
-                                    &integrand_pk,
-                                    separations[m], separations[n],
-                                    par->multipole_values[i], par->multipole_values[j],
-                                    par->k_min, par->k_max
-                                )/M_PI;
+        for (size_t index_redshift = 0; index_redshift < redshifts_to_allocate; ++index_redshift){
+            size_t k_size;
+            double k_min, k_max;
+            double *k, *pk;
+#ifdef HAVE_CLASS
+            if (par->have_class && par->pk_type){
+                k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                /* alloc memory for k and pk */
+                k = (double *)coffe_malloc(sizeof(double) * k_size);
+                pk = (double *)coffe_malloc(sizeof(double) * k_size);
+                enum pk_outputs pk_type = pk_linear;
+                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+
+                /* get (non)linear power spectrum at redshift z (and store it in pk) */
+                nonlinear_pk_at_z(
+                    (struct background *)par->class_background,
+                    (struct nonlinear *)par->class_nonlinear,
+                    logarithmic,
+                    pk_type,
+                    par->pk_type ? par->covariance_z_mean[index_redshift] : 0,
+                    ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                    pk,
+                    NULL
+                );
+
+                /* need to rescale since CLASS internally works in units of 1/Mpc */
+                for (size_t j = 0; j < k_size; ++j){
+                    k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h;
+                    pk[j] = exp(pk[j]) * pow(par->h, 3);
+                }
+
+                k_min = k[0];
+                k_max = k[k_size - 1];
+            }
+            else{
+#endif
+                k_size = par->power_spectrum.spline->size;
+                k_min = par->k_min;
+                k_max = par->k_max;
+                k = (double *)coffe_malloc(sizeof(double) * par->power_spectrum.spline->size);
+                pk = (double *)coffe_malloc(sizeof(double) * par->power_spectrum.spline->size);
+                for (size_t j = 0; j < k_size; ++j){
+                    k[j] = par->power_spectrum.spline->x[j];
+                    pk[j] = par->power_spectrum.spline->y[j];
+                }
+#ifdef HAVE_CLASS
+            }
+#endif
+
+            /* setup the interpolation of the power spectrum */
+            struct coffe_interpolation pk_at_z;
+            coffe_init_spline(
+                &pk_at_z,
+                k,
+                pk,
+                k_size,
+                par->interp_method
+            );
+
+            double *temp_spectrum_pk =
+                (double *)coffe_malloc(sizeof(double) * k_size);
+            double *temp_spectrum_pk2 =
+                (double *)coffe_malloc(sizeof(double) * k_size);
+            struct coffe_interpolation integrand_pk, integrand_pk2;
+
+            /* setting the power spectra P(k) and P^2(k) */
+            for (size_t i = 0; i < k_size; ++i){
+                temp_spectrum_pk[i] =
+                    pk_at_z.spline->y[i];
+                temp_spectrum_pk2[i] =
+                    pow(pk_at_z.spline->y[i], 2);
+            }
+
+            /* interpolations of P(k) and P^2(k) */
+            coffe_init_spline(
+                &integrand_pk,
+                k,
+                temp_spectrum_pk,
+                k_size,
+                5
+            );
+
+            coffe_init_spline(
+                &integrand_pk2,
+                k,
+                temp_spectrum_pk2,
+                k_size,
+                5
+            );
+            /* memory cleanup */
+            free(temp_spectrum_pk);
+            free(temp_spectrum_pk2);
+            free(k);
+            free(pk);
+
+            if (par->covariance_integration_method == 1){
+                /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
+                for (size_t i = 0; i<par->multipole_values_len; ++i){
+                    for (size_t j = i; j<par->multipole_values_len; ++j){
+                        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
+                        for (size_t m = 0; m<npixels_max; ++m){
+                            for (size_t n = 0; n<npixels_max; ++n){
+                                integral_pk[index_redshift][i*par->multipole_values_len + j][npixels_max*n + m] =
+                                    (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                                   *covariance_integral(
+                                        &integrand_pk,
+                                        separations[m], separations[n],
+                                        par->multipole_values[i], par->multipole_values[j],
+                                        k_min, k_max
+                                    )/M_PI;
+                            }
                         }
-                    }
-                    #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                    for (size_t m = 0; m<npixels_max; ++m){
-                        for (size_t n = 0; n<npixels_max; ++n){
-                            integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
-                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                               *covariance_integral(
-                                    &integrand_pk2,
-                                    separations[m], separations[n],
-                                    par->multipole_values[i], par->multipole_values[j],
-                                    par->k_min, par->k_max
-                                )/2./M_PI;
+                        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
+                        for (size_t m = 0; m<npixels_max; ++m){
+                            for (size_t n = 0; n<npixels_max; ++n){
+                                integral_pk2[index_redshift][i*par->multipole_values_len + j][npixels_max*n + m] =
+                                    (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                                   *covariance_integral(
+                                        &integrand_pk2,
+                                        separations[m], separations[n],
+                                        par->multipole_values[i], par->multipole_values[j],
+                                        k_min, k_max
+                                    )/2./M_PI;
+                            }
                         }
                     }
                 }
             }
-        }
-        else if (par->covariance_integration_method == 2){
-            fprintf(stderr, "Using 2D FFTlog\n");
-            /* here we do the 2DFFTlog */
+            else if (par->covariance_integration_method == 2){
+                fprintf(stderr, "Using 2D FFTlog\n");
+                /* here we do the 2DFFTlog */
 
-            /* first point of order: logarithmically sample k and P(k) */
-            const size_t sampling_points = par->covariance_integration_bins;
+                /* first point of order: logarithmically sample k and P(k) */
+                const size_t sampling_points = par->covariance_integration_bins;
 
-            /* compute the whole thing (just the upper half to save time and space) */
-            for (size_t i = 0; i<par->multipole_values_len; ++i){
-                for (size_t j = i; j<par->multipole_values_len; ++j){
-                    covariance_integrate_fftlog(
-                        &par->power_spectrum_norm,
-                        1,
-                        par->multipole_values[i],
-                        par->multipole_values[j],
-                        sampling_points,
-                        separations,
-                        npixels_max,
-                        par->k_min_norm,
-                        par->k_max_norm,
-                        par->covariance_interpolation_method,
-                        integral_pk[i * par->multipole_values_len + j]
-                    );
+                /* compute the whole thing (just the upper half to save time and space) */
+                for (size_t i = 0; i<par->multipole_values_len; ++i){
+                    for (size_t j = i; j<par->multipole_values_len; ++j){
+                        covariance_integrate_fftlog(
+                            &par->power_spectrum_norm,
+                            1,
+                            par->multipole_values[i],
+                            par->multipole_values[j],
+                            sampling_points,
+                            separations,
+                            npixels_max,
+                            par->k_min_norm,
+                            par->k_max_norm,
+                            par->covariance_interpolation_method,
+                            integral_pk[index_redshift][i * par->multipole_values_len + j]
+                        );
 
-                    covariance_integrate_fftlog(
-                        &par->power_spectrum_norm,
-                        2,
-                        par->multipole_values[i],
-                        par->multipole_values[j],
-                        sampling_points,
-                        separations,
-                        npixels_max,
-                        par->k_min_norm,
-                        par->k_max_norm,
-                        par->covariance_interpolation_method,
-                        integral_pk2[i * par->multipole_values_len + j]
-                    );
+                        covariance_integrate_fftlog(
+                            &par->power_spectrum_norm,
+                            2,
+                            par->multipole_values[i],
+                            par->multipole_values[j],
+                            sampling_points,
+                            separations,
+                            npixels_max,
+                            par->k_min_norm,
+                            par->k_max_norm,
+                            par->covariance_interpolation_method,
+                            integral_pk2[index_redshift][i * par->multipole_values_len + j]
+                        );
 
-                    for (size_t m = 0; m < npixels_max; ++m){
-                        for (size_t n = 0; n < npixels_max; ++n){
-                            /* this one is dimensionless */
-                            integral_pk[i * par->multipole_values_len + j][npixels_max * n + m] *=
-                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                               * 2. / M_PI / M_PI;
-                            /* this one is not so we need to put a conversion factor */
-                            integral_pk2[i * par->multipole_values_len + j][npixels_max * n + m] *=
-                                (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
-                               / M_PI / M_PI / pow(COFFE_H0, 3);
+                        for (size_t m = 0; m < npixels_max; ++m){
+                            for (size_t n = 0; n < npixels_max; ++n){
+                                /* this one is dimensionless */
+                                integral_pk[index_redshift][i * par->multipole_values_len + j][npixels_max * n + m] *=
+                                    (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                                   * 2. / M_PI / M_PI;
+                                /* this one is not so we need to put a conversion factor */
+                                integral_pk2[index_redshift][i * par->multipole_values_len + j][npixels_max * n + m] *=
+                                    (2*par->multipole_values[i] + 1)*(2*par->multipole_values[j] + 1)
+                                   / M_PI / M_PI / pow(COFFE_H0, 3);
+                            }
                         }
                     }
                 }
             }
+
+            /* memory cleanup */
+            coffe_free_spline(&integrand_pk);
+            coffe_free_spline(&integrand_pk2);
+
         }
 
         /* allocating memory for the final result */
@@ -556,14 +631,16 @@ int coffe_covariance_init(
         }
 
         /* setting the transpose */
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
-            for (size_t j = 0; j<i; ++j){
-                for (size_t m = 0; m<npixels_max; ++m){
-                    for (size_t n = 0; n<npixels_max; ++n){
-                        integral_pk[i*par->multipole_values_len + j][npixels_max*n + m] =
-                            integral_pk[j*par->multipole_values_len + i][npixels_max*m + n];
-                        integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m] =
-                            integral_pk2[j*par->multipole_values_len + i][npixels_max*m + n];
+        for (size_t index_redshift = 0; index_redshift < redshifts_to_allocate; ++index_redshift){
+            for (size_t i = 0; i<par->multipole_values_len; ++i){
+                for (size_t j = 0; j<i; ++j){
+                    for (size_t m = 0; m<npixels_max; ++m){
+                        for (size_t n = 0; n<npixels_max; ++n){
+                            integral_pk[index_redshift][i*par->multipole_values_len + j][npixels_max*n + m] =
+                                integral_pk[index_redshift][j*par->multipole_values_len + i][npixels_max*m + n];
+                            integral_pk2[index_redshift][i*par->multipole_values_len + j][npixels_max*n + m] =
+                                integral_pk2[index_redshift][j*par->multipole_values_len + i][npixels_max*m + n];
+                        }
                     }
                 }
             }
@@ -676,14 +753,15 @@ int coffe_covariance_init(
                                     (2*par->multipole_values[i] + 1)*deltaij*deltal1l2
                                    / 2. / M_PI
                                    /par->covariance_density[k] / par->covariance_density[k]
-                                   /par->covariance_pixelsize
+                                   /par->covariance_pixelsize[k]
                                    /separations[n]
                                    /separations[m]
-                                   +D1z * D1z
-                                   *integral_pk[i*par->multipole_values_len + j][npixels_max*n + m]
+                                   +(par->pk_type ? 1 : D1z * D1z)
+                                   *(par->pk_type ? integral_pk[k][i*par->multipole_values_len + j][npixels_max*n + m] : integral_pk[0][i*par->multipole_values_len + j][npixels_max*n + m])
                                    *coeff_sum/par->covariance_density[k]
-                                   +D1z * D1z * D1z * D1z
-                                   *integral_pk2[i*par->multipole_values_len + j][npixels_max*n + m]
+                                   +(par->pk_type ? 1 : D1z * D1z * D1z * D1z)
+                                    /* TODO fix this abomination */
+                                   *(par->pk_type ? integral_pk2[k][i*par->multipole_values_len + j][npixels_max*n + m] : integral_pk2[0][i*par->multipole_values_len + j][npixels_max*n + m])
                                    *coeffbar_sum
                                 )
                                /volume[k];
@@ -705,15 +783,15 @@ int coffe_covariance_init(
         }
 
         /* memory cleanup */
-        for (size_t i = 0; i<par->multipole_values_len*par->multipole_values_len; ++i){
-            free(integral_pk[i]);
-            free(integral_pk2[i]);
+        for (size_t index_redshift = 0; index_redshift < redshifts_to_allocate; ++index_redshift){
+            for (size_t i = 0; i<par->multipole_values_len*par->multipole_values_len; ++i){
+                free(integral_pk[index_redshift][i]);
+                free(integral_pk2[index_redshift][i]);
+            }
         }
         free(separations);
         free(integral_pk);
         free(integral_pk2);
-        coffe_free_spline(&integrand_pk);
-        coffe_free_spline(&integrand_pk2);
 
         end = clock();
 

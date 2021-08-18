@@ -155,6 +155,10 @@ struct coffe_parameters_t
 
     double Omega0_cdm; /* omega parameter for cold dark matter */
 
+    double Omega0_m;
+
+    int b_derivative, f_derivative, b_tilde_derivative, f_tilde_derivative;
+
     double Omega0_baryon; /* omega parameter for baryons */
 
     double Omega0_gamma; /* omega parameter for photons */
@@ -256,7 +260,9 @@ struct coffe_parameters_t
 
     size_t covariance_density_len;
 
-    double covariance_pixelsize;
+    double *covariance_pixelsize;
+
+    size_t covariance_pixelsize_len;
 
     double covariance_step_size;
 
@@ -291,7 +297,7 @@ struct coffe_parameters_t
 
     double n_s; /* spectral index n_s */
 
-    double A_s; /* amplitude of primordial power spectrum A_s */
+    double sigma8; /* amplitude of primordial power spectrum sigma8 */
 
     double T_cmb, N_ur, m_ncdm;
 

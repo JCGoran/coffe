@@ -113,7 +113,10 @@ int main(void)
     par.covariance_fsky[0] = 0.2;
     par.covariance_fsky_len = 1;
 
-    par.covariance_pixelsize = 50.0;
+    par.covariance_pixelsize = malloc(sizeof(double));
+    par.covariance_pixelsize[0] = 50.0;
+    par.covariance_pixelsize_len = 1;
+
     par.covariance_step_size = 50.0;
     par.covariance_minimum_separation = 50.0;
 

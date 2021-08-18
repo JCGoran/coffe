@@ -105,6 +105,22 @@ double functions_nonintegrated(
             }
             else{
 #endif
+            if (par->b_derivative || par->b_tilde_derivative){
+            result += 2 * bz_mean1
+               *coffe_interp_spline(
+                    &coffe_find_integral(
+                        integral,
+                        0,
+                        0,
+                        COFFE_INTEGER,
+                        COFFE_INTEGER
+                    )->result,
+                    sep
+                );
+            }
+            else if (par->f_derivative || par->f_tilde_derivative)
+                result += 0;
+            else{
             result +=
                 bz_mean1
                *bz_mean2
@@ -118,6 +134,7 @@ double functions_nonintegrated(
                     )->result,
                     sep
                 );
+            }
 #ifdef HAVE_CLASS
             }
 #endif
@@ -186,6 +203,22 @@ double functions_nonintegrated(
             }
             else{
 #endif
+            if (par->b_derivative || par->b_tilde_derivative)
+                result += 0;
+            else if (par->f_derivative || par->f_tilde_derivative){
+            result +=
+                2 * fmean
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep) / 5.
+                -
+                8 * fmean
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep) / 7.
+               *gsl_sf_legendre_P2(mu)
+                +
+                16 * fmean
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 4, COFFE_INTEGER, COFFE_INTEGER)->result, sep) / 35.
+               *gsl_sf_legendre_Pl(4, mu);
+            }
+            else{
             result +=
                 fmean * fmean
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep) / 5.
@@ -197,6 +230,7 @@ double functions_nonintegrated(
                 8 * fmean * fmean
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 4, COFFE_INTEGER, COFFE_INTEGER)->result, sep) / 35.
                *gsl_sf_legendre_Pl(4, mu);
+            }
 #ifdef HAVE_CLASS
             }
 #endif
@@ -605,6 +639,25 @@ double functions_nonintegrated(
             }
             else{
 #endif
+            if (par->b_derivative || par->b_tilde_derivative){
+            result +=
+                (fmean/3. + fmean/3.)
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
+               -
+                (2*fmean/3. + 2*fmean/3.)
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
+               *gsl_sf_legendre_P2(mu);
+            }
+            else if (par->f_derivative || par->f_tilde_derivative){
+            result +=
+                (bz_mean1/3. + bz_mean2/3.)
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
+               -
+                (2*bz_mean1/3. + 2*bz_mean2/3.)
+               *coffe_interp_spline(&coffe_find_integral(integral, 0, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
+               *gsl_sf_legendre_P2(mu);
+            }
+            else{
             result +=
                 (bz_mean1*fmean/3. + bz_mean2*fmean/3.)
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
@@ -612,6 +665,7 @@ double functions_nonintegrated(
                 (2*bz_mean1*fmean/3. + 2*bz_mean2*fmean/3.)
                *coffe_interp_spline(&coffe_find_integral(integral, 0, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
                *gsl_sf_legendre_P2(mu);
+            }
 #ifdef HAVE_CLASS
             }
 #endif
@@ -1331,10 +1385,37 @@ double functions_nonintegrated(
             return result;
         else
 #endif
-            return
-                result
-               *coffe_interp_spline(&bg->D1, z1)
-               *coffe_interp_spline(&bg->D1, z2);
+            if (
+                par->b_derivative
+                ||
+                par->f_derivative
+            ){
+                return
+                    result
+                   *pow(coffe_interp_spline(&bg->D1, z_mean), 2);
+            }
+            else if (
+                par->b_tilde_derivative
+                ||
+                par->f_tilde_derivative
+            ){
+                return
+                    result
+                   *pow(coffe_interp_spline(&bg->D1, z_mean), 1);
+            }
+            else{
+                if (par->flatsky_local){
+                    return
+                        result
+                       *pow(coffe_interp_spline(&bg->D1, z_mean), 2);
+                }
+                else{
+                    return
+                        result
+                       *coffe_interp_spline(&bg->D1, z1)
+                       *coffe_interp_spline(&bg->D1, z2);
+                }
+            }
     }
     else{
         fprintf(stderr,
