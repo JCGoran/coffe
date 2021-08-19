@@ -274,6 +274,10 @@ struct coffe_parameters_t
 
     int covariance_interpolation_method;
 
+    int covariance_window;
+
+    int covariance_window_size;
+
     int have_window;
 
     double window_size;

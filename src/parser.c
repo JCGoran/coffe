@@ -636,6 +636,8 @@ int coffe_parse_default_parameters(
     par->covariance_zmax = NULL;
     par->covariance_zmax_len = 0;
     par->covariance_minimum_separation = 0.0;
+    par->covariance_window = 0;
+    par->covariance_window_size = 10.0;
 
     par->have_window = 0;
     par->window_size = 0;
@@ -1005,6 +1007,18 @@ int coffe_parser_init(
             conf,
             "covariance_minimum_separation",
             &par->covariance_minimum_separation,
+            COFFE_TRUE
+        );
+        parse_int(
+            conf,
+            "covariance_window",
+            &par->covariance_window,
+            COFFE_TRUE
+        );
+        parse_int(
+            conf,
+            "covariance_window_size",
+            &par->covariance_window_size,
             COFFE_TRUE
         );
     }
