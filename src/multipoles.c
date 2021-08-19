@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_errno.h>
 

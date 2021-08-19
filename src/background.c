@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <time.h>
-#include <gsl/gsl_integration.h>
+#include <math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_matrix.h>
@@ -156,54 +156,6 @@ static double integrand_x(
 }
 
 
-static double integral_w(
-    struct integration_params *par,
-    double z
-)
-{
-    double prec = 1E-5, result, error;
-    gsl_integration_workspace *space =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-    gsl_function integrand;
-    integrand.function = &integrand_w;
-    integrand.params = par;
-
-    gsl_integration_qag(
-        &integrand, 0., z, 0, prec,
-        COFFE_MAX_INTSPACE,
-        GSL_INTEG_GAUSS61, space,
-        &result, &error
-    );
-    gsl_integration_workspace_free(space);
-    return exp(3*result);
-}
-
-
-static double integral_x(
-    struct integration_params *par,
-    double z
-)
-{
-    double prec = 1E-5, result, error;
-    gsl_integration_workspace *space =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-    gsl_function integrand;
-    integrand.function = &integrand_x;
-    integrand.params = par;
-
-    gsl_integration_qag(
-        &integrand, 1/(1 + z), 1., 0, prec,
-        COFFE_MAX_INTSPACE,
-        GSL_INTEG_GAUSS61, space,
-        &result, &error
-    );
-    gsl_integration_workspace_free(space);
-    return result;
-}
-
-
 /**
     integrand of the comoving distance
 **/
@@ -276,7 +228,14 @@ int coffe_background_init(
         for (size_t i = 0; i <= bins; ++i){
             z = z_max*i/(double)bins;
             z_array[i] = z;
-            wint_array[i] = integral_w(&ipar, z);
+            wint_array[i] = exp(
+                3 * coffe_integrate_1d(
+                    &integrand_w,
+                    &ipar,
+                    0,
+                    z
+                )
+            );
         }
         coffe_init_spline(&ipar.wint, z_array, wint_array, bins + 1, 1);
         free(wint_array);
@@ -286,11 +245,23 @@ int coffe_background_init(
             z = z_max*i/(double)bins;
             if (i != 0){
                 z_array[i] = z;
-                xint_array[i] = (ipar.Omega0_cdm + ipar.Omega0_baryon)/(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))*exp(-3*integral_x(&ipar, z));
+                xint_array[i] =
+                    (ipar.Omega0_cdm + ipar.Omega0_baryon)
+                   /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))
+                   *exp(
+                        -3 * coffe_integrate_1d(
+                            &integrand_x,
+                            &ipar,
+                            1. / (1 + z),
+                            1.
+                        )
+                    );
             }
             else{
                 z_array[i] = 0;
-                xint_array[i] = (ipar.Omega0_cdm + ipar.Omega0_baryon)/(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon));
+                xint_array[i] =
+                    (ipar.Omega0_cdm + ipar.Omega0_baryon)
+                   /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon));
             }
         }
         coffe_init_spline(&ipar.xint, z_array, xint_array, bins + 1, 1);
@@ -299,9 +270,8 @@ int coffe_background_init(
         free(z_array);
     }
 
-    double h = 1E-6, prec = 1E-5;
+    double h = 1E-6;
 
-    double temp_comoving_result, temp_error;
     double a_initial, z, w, wint;
     gsl_odeiv2_system sys =
         {growth_rate_ode, growth_rate_jac, 2, &ipar};
@@ -316,17 +286,10 @@ int coffe_background_init(
     gsl_odeiv2_evolve *evolve =
         gsl_odeiv2_evolve_alloc(2);
 
-    gsl_integration_workspace *space =
-        gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-
-    gsl_function comoving_integral;
-    comoving_integral.function = &integrand_comoving;
-    comoving_integral.params = &ipar;
-
     /* initial values for the differential equation (D_1 and D_1') */
     double initial_values[2] = {0.05, 1.0};
 
-    for (int i = 0; i<par->background_bins; ++i){
+    for (int i = 0; i < par->background_bins; ++i){
         a_initial = 0.05;
         initial_values[0] = 0.05;
         initial_values[1] = 1.0;
@@ -344,8 +307,14 @@ int coffe_background_init(
             +par->Omega0_de*wint); // in units H0
         (temp_bg->conformal_Hz)[i] = (temp_bg->a)[i]*(temp_bg->Hz)[i]; // in units H0
         (temp_bg->conformal_Hz_prime)[i] = -(
-            pow(1 + z, 3)*(2*(1 + z)*par->Omega0_gamma + (par->Omega0_cdm + par->Omega0_baryon))
-           +(1 + 3*w)*par->Omega0_de*wint
+            pow(1 + z, 3)
+           *(
+                2 * (1 + z) * par->Omega0_gamma
+                +
+                (par->Omega0_cdm + par->Omega0_baryon)
+            )
+            +
+            (1 + 3 * w) * par->Omega0_de * wint
         )/pow(1 + z, 2)/2.; // in units H0^2
 
         while (a_initial < (temp_bg->a)[i]){
@@ -357,16 +326,15 @@ int coffe_background_init(
         }
 
         (temp_bg->D1)[i] = initial_values[0];
-        (temp_bg->f)[i] = initial_values[1]*(temp_bg->a)[i]/(temp_bg->D1)[i];
+        (temp_bg->f)[i] = initial_values[1] * (temp_bg->a)[i] / (temp_bg->D1)[i];
 
-        gsl_integration_qag(
-            &comoving_integral, 0., z, 0, prec,
-            COFFE_MAX_INTSPACE,
-            GSL_INTEG_GAUSS61, space,
-            &temp_comoving_result, &temp_error
-        );
+        (temp_bg->comoving_distance)[i] = coffe_integrate_1d(
+            &integrand_comoving,
+            &ipar,
+            0.,
+            z
+        ); // dimensionless
 
-        (temp_bg->comoving_distance)[i] = temp_comoving_result; // dimensionless
         if (z > 1E-10){
             (temp_bg->G1)[i] =
                 (temp_bg->conformal_Hz_prime)[i]
@@ -497,7 +465,6 @@ int coffe_background_init(
     gsl_odeiv2_step_free(step);
     gsl_odeiv2_control_free(control);
     gsl_odeiv2_evolve_free(evolve);
-    gsl_integration_workspace_free(space);
     gsl_spline_free(ipar.w.spline), gsl_interp_accel_free(ipar.w.accel);
     gsl_spline_free(ipar.wint.spline), gsl_interp_accel_free(ipar.wint.accel);
     gsl_spline_free(ipar.xint.spline), gsl_interp_accel_free(ipar.xint.accel);

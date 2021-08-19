@@ -17,7 +17,6 @@
 */
 
 #include <time.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_errno.h>
@@ -667,21 +666,15 @@ int coffe_covariance_init(
                 test.conformal_Hz = &bg->conformal_Hz;
                 test.comoving_distance = &bg->comoving_distance;
 
-                gsl_integration_workspace *space =
-                    gsl_integration_workspace_alloc(COFFE_MAX_INTSPACE);
-                gsl_function integrand;
-                integrand.function = &covariance_volume_integrand;
-                integrand.params = &test;
-                double prec = 1E-6;
-                double integral_result, integral_error;
-                gsl_integration_qag(
-                    &integrand, cov_ramp->zmin[k], cov_ramp->zmax[k], 0, prec,
-                    COFFE_MAX_INTSPACE,
-                    GSL_INTEG_GAUSS61, space,
-                    &integral_result, &integral_error
-                );
-                gsl_integration_workspace_free(space);
-                volume[k] = 4*M_PI*cov_ramp->fsky[k]/integral_result/pow(COFFE_H0, 3);
+                volume[k] = 4 * M_PI
+                   *cov_ramp->fsky[k]
+                   /coffe_integrate_1d(
+                        &covariance_volume_integrand,
+                        &test,
+                        cov_ramp->zmin[k],
+                        cov_ramp->zmax[k]
+                    )
+                   /pow(COFFE_H0, 3);
             }
 
             /* TODO implement covariance for two populations */

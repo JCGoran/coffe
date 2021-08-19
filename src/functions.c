@@ -18,7 +18,6 @@
 
 #include <math.h>
 #include <string.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 

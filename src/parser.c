@@ -22,7 +22,6 @@
 #include <math.h>
 #include <time.h>
 #include <ctype.h>
-#include <gsl/gsl_integration.h>
 
 #include "common.h"
 #include "parser.h"

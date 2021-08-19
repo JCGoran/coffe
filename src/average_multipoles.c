@@ -22,7 +22,6 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_integration.h>
 
 #include "common.h"
 #include "background.h"

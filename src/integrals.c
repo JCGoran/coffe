@@ -22,7 +22,6 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-#include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_errno.h>
