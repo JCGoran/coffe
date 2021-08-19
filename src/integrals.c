@@ -1463,6 +1463,7 @@ int coffe_integrals_free(
         }
         /* so we don't free it again */
         array->size = 0;
+        free(array->integral);
     }
     return EXIT_SUCCESS;
 }

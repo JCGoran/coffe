@@ -721,31 +721,55 @@ int coffe_parameters_free(
         free(par->type_bg);
 
         if (par->output_type == 1){
-            free(par->sep);
-            free(par->mu);
+            if (par->sep_len)
+                free(par->sep);
+            if (par->mu_len)
+                free(par->mu);
         }
         if (par->output_type == 2){
-            free(par->sep);
-            free(par->multipole_values);
+            if (par->sep_len)
+                free(par->sep);
+            if (par->multipole_values_len)
+                free(par->multipole_values);
         }
         if (par->output_type == 3){
-            free(par->sep);
-            free(par->multipole_values);
+            if (par->sep_len)
+                free(par->sep);
+            if (par->multipole_values_len)
+                free(par->multipole_values);
         }
         if (par->output_type == 4){
-            free(par->multipole_values);
+            if (par->sep_len)
+                free(par->sep);
+            if (par->multipole_values_len)
+                free(par->multipole_values);
             free(par->covariance_z_mean);
             free(par->covariance_deltaz);
             free(par->covariance_fsky);
             free(par->covariance_density);
+            free(par->covariance_pixelsize);
         }
         if (par->output_type == 5){
-            free(par->multipole_values);
+            if (par->sep_len)
+                free(par->sep);
+            if (par->multipole_values_len)
+                free(par->multipole_values);
             free(par->covariance_zmin);
             free(par->covariance_zmax);
             free(par->covariance_fsky);
             free(par->covariance_density);
+            free(par->covariance_pixelsize);
         }
+        par->sep_len = 0;
+        par->mu_len = 0;
+        par->multipole_values_len = 0;
+        par->covariance_z_mean_len = 0;
+        par->covariance_deltaz_len = 0;
+        par->covariance_fsky = 0;
+        par->covariance_density = 0;
+        par->covariance_zmin = 0;
+        par->covariance_zmax = 0;
+        par->covariance_pixelsize_len = 0;
 
         par->flag = 0;
     }
