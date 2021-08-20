@@ -99,6 +99,18 @@ static size_t covariance_find_maximum(const size_t array[], size_t len)
 
 
 /**
+    helper function for computing the volume element (without the 4 pi)
+**/
+static inline double covariance_volume_no_4pi(
+    const double r_min,
+    const double r_max
+)
+{
+    return (pow(r_max, 3) - pow(r_min, 3)) / 3.;
+}
+
+
+/**
     calculates i^(l1 - l2) when l1 - l2 is even
 **/
 static int covariance_complex(int l1, int l2)
@@ -136,42 +148,16 @@ static double covariance_windowed_bessel(
     if (test->s_delta == 0){
         return gsl_sf_bessel_jl(test->ell, s * test->k);
     }
-    return 3 / (
-        pow(test->s_mean + test->s_delta, 3)
-        -
-        pow(test->s_mean - test->s_delta, 3)
-       )
-       *coffe_integrate_1d(
-        &covariance_windowed_bessel_integrand,
-        test,
+    return 1. / covariance_volume_no_4pi(
         test->s_mean - test->s_delta / 2,
         test->s_mean + test->s_delta / 2
-    );
-}
-
-
-/**
-    integrand of only the part with the spherical Bessel functions
-**/
-static double covariance_integrand_bessel(
-    double k,
-    void *p
-)
-{
-    struct covariance_params *test = (struct covariance_params *) p;
-
-    test->windowed1.k = k;
-    test->windowed1.ell = test->l1;
-    test->windowed1.s_mean = test->chi1;
-
-    test->windowed2.k = k;
-    test->windowed2.ell = test->l2;
-    test->windowed2.s_mean = test->chi2;
-
-    return
-        k * k
-       *covariance_windowed_bessel(test->chi1, &test->windowed1)
-       *covariance_windowed_bessel(test->chi2, &test->windowed2);
+        )
+       *coffe_integrate_1d(
+            &covariance_windowed_bessel_integrand,
+            test,
+            test->s_mean - test->s_delta / 2,
+            test->s_mean + test->s_delta / 2
+        );
 }
 
 
@@ -194,8 +180,10 @@ static double covariance_integrand(
     test->windowed2.s_mean = test->chi2;
 
     return
-        coffe_interp_spline(test->power_spectrum, k)
-       *covariance_integrand_bessel(k, p);
+        k * k
+       *coffe_interp_spline(test->power_spectrum, k)
+       *covariance_windowed_bessel(test->chi1, &test->windowed1)
+       *covariance_windowed_bessel(test->chi2, &test->windowed2);
 }
 
 
@@ -485,37 +473,6 @@ int coffe_covariance_init(
             (double ***)coffe_malloc(sizeof(double **) * redshifts_to_allocate);
         double ***integral_pk2 =
             (double ***)coffe_malloc(sizeof(double **) * redshifts_to_allocate);
-        /* the optional integral for the windowed covariance */
-        double **integral_poisson_noise;
-        if (par->covariance_window){
-            integral_poisson_noise = (double **)coffe_malloc(sizeof(double *) * par->multipole_values_len * par->multipole_values_len);
-            for (size_t i = 0; i < par->multipole_values_len; ++i){
-                for (size_t j = 0; j < par->multipole_values_len; ++j){
-                    integral_poisson_noise[i * par->multipole_values_len + j] =
-                        (double *)coffe_malloc(sizeof(double) * npixels_max * npixels_max);
-                    #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-                    for (size_t m = 0; m < npixels_max; ++m){
-                        for (size_t n = 0; n < npixels_max; ++n){
-                            struct covariance_params test;
-                            test.chi1 = separations[m];
-                            test.chi2 = separations[n];
-                            test.l1 = par->multipole_values[i];
-                            test.l2 = par->multipole_values[j];
-                            test.windowed1.s_delta = par->covariance_window_size;
-                            test.windowed2.s_delta = par->covariance_window_size;
-
-                            integral_poisson_noise[i * par->multipole_values_len + j][npixels_max * n + m] =
-                                coffe_integrate_1d(
-                                    &covariance_integrand_bessel,
-                                    &test,
-                                    par->k_min,
-                                    par->k_max
-                                );
-                        }
-                    }
-                }
-            }
-        }
 
         for (size_t index_redshift = 0; index_redshift < redshifts_to_allocate; ++index_redshift){
             integral_pk[index_redshift] =
@@ -643,9 +600,9 @@ int coffe_covariance_init(
                                         separations[m],
                                         separations[n],
                                         /* trigraph */
-                                        (par->covariance_window ? par->covariance_step_size : 0),
+                                        (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
                                         /* trigraph */
-                                        (par->covariance_window ? par->covariance_step_size : 0),
+                                        (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
                                         par->multipole_values[i],
                                         par->multipole_values[j],
                                         k_min,
@@ -665,9 +622,9 @@ int coffe_covariance_init(
                                         separations[m],
                                         separations[n],
                                         /* trigraph */
-                                        (par->covariance_window ? par->covariance_window_size : 0),
+                                        (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
                                         /* trigraph */
-                                        (par->covariance_window ? par->covariance_window_size : 0),
+                                        (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
                                         par->multipole_values[i],
                                         par->multipole_values[j],
                                         k_min,
@@ -793,14 +750,19 @@ int coffe_covariance_init(
 
             if (par->output_type == 4){
                 z_mean = cov_mp->z_mean[k];
-                volume[k] = 4 * M_PI * cov_mp->fsky[k]
-                   *(
-                        pow(coffe_interp_spline(
-                            &bg->comoving_distance, cov_mp->z_mean[k] + cov_mp->deltaz[k]), 3)
-                       -pow(coffe_interp_spline(
-                            &bg->comoving_distance, cov_mp->z_mean[k] - cov_mp->deltaz[k]), 3)
+                volume[k] = 4 * M_PI
+                   *cov_mp->fsky[k]
+                   *covariance_volume_no_4pi(
+                        coffe_interp_spline(
+                            &bg->comoving_distance,
+                            cov_mp->z_mean[k] - cov_mp->deltaz[k]
+                        ),
+                        coffe_interp_spline(
+                            &bg->comoving_distance,
+                            cov_mp->z_mean[k] + cov_mp->deltaz[k]
+                        )
                     )
-                   /3. / pow(COFFE_H0, 3);
+                   /pow(COFFE_H0, 3);
             }
             else{
                 z_mean = (cov_ramp->zmin[k] + cov_ramp->zmax[k]) / 2.;
@@ -869,37 +831,40 @@ int coffe_covariance_init(
                            *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
                     }
 
-                    double deltal1l2;
-                    if (par->multipole_values[i] == par->multipole_values[j]) deltal1l2 = 1;
-                    else deltal1l2 = 0;
+                    double deltal1l2 =
+                        (par->multipole_values[i] == par->multipole_values[j]) ? 1 : 0;
 
                     for (size_t m = 0; m<npixels[k]; ++m){
                         for (size_t n = 0; n<npixels[k]; ++n){
-                            double deltaij;
-                            if (m == n) deltaij = 1;
-                            else deltaij = 0;
+                            double deltaij = (m == n) ? 1 : 0;
                             /* flat-sky covariance */
                             const double result_mp_or_ramp =
                                 covariance_complex(
                                     par->multipole_values[i],
                                     par->multipole_values[j]
-                            )
+                                )
                                *(
                                    (2 * par->multipole_values[i] + 1)
                                    *deltal1l2
+                                   *deltaij
+                                   / 2. / M_PI
                                     /* trigraph */
                                    *(
                                         par->covariance_window
                                         ?
-                                        integral_poisson_noise[i * par->multipole_values_len + j][npixels_max * n + m]
+                                        1.
+                                        / covariance_volume_no_4pi(
+                                            separations[m] - par->covariance_pixelsize[k] / 2.,
+                                            separations[m] + par->covariance_pixelsize[k] / 2.
+                                        )
                                         :
-                                        deltaij
-                                        / 2. / M_PI
+                                        1.
                                         / separations[n]
                                         / separations[m]
                                         / par->covariance_pixelsize[k]
                                     )
-                                    /par->covariance_density[k] / par->covariance_density[k]
+                                    /par->covariance_density[k]
+                                    /par->covariance_density[k]
                                     +
                                     /* trigraph */
                                     (par->pk_type ? 1 : D1z * D1z)
@@ -959,13 +924,6 @@ int coffe_covariance_init(
         free(volume);
         free(upper_limit);
         free(npixels);
-
-        if (par->covariance_window){
-            for (size_t i = 0; i<par->multipole_values_len * par->multipole_values_len; ++i){
-                free(integral_poisson_noise[i]);
-            }
-            free(integral_poisson_noise);
-        }
 
         end = clock();
 

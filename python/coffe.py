@@ -54,7 +54,6 @@ def get_default_parameters():
         'covariance_zmin' : [2.0, 2.2, 2.3],
         'covariance_zmax' : [2.5, 2.8, 2.5],
         'covariance_window' : 0,
-        'covariance_window_size' : 10.0,
         'output_path' : 'results/',
         'output_prefix' : '$TIME',
         'correlation_contributions' : ['den'],
