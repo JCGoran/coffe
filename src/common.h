@@ -526,6 +526,27 @@ void coffe_multiply_power_array(
 
 /**
     integrates any 1D function `func` with arbitrary parameters `parameters`
+    between `a` and `b`, with relative precision `prec`, and returns `result`
+**/
+
+double coffe_integrate_1d_prec(
+    double (*func)(
+        double,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        const void*
+#else
+        void*
+#endif
+    ),
+    const void *parameters,
+    const double a,
+    const double b,
+    const double prec
+);
+
+
+/**
+    integrates any 1D function `func` with arbitrary parameters `parameters`
     between `a` and `b` and returns `result`
 **/
 

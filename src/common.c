@@ -970,10 +970,10 @@ void coffe_multiply_power_array(
 
 /**
     integrates any 1D function `func` with arbitrary parameters `parameters`
-    between `a` and `b` and returns `result`
+    between `a` and `b`, with relative precision `prec`, and returns `result`
 **/
 
-double coffe_integrate_1d(
+double coffe_integrate_1d_prec(
     double (*func)(
         double,
 #ifdef HAVE_DOUBLE_EXPONENTIAL
@@ -984,7 +984,8 @@ double coffe_integrate_1d(
     ),
     const void *parameters,
     const double a,
-    const double b
+    const double b,
+    const double precision
 )
 {
     double result, error;
@@ -1001,7 +1002,6 @@ double coffe_integrate_1d(
     );
 #else
 
-    const double precision = 1E-5;
     gsl_function integrand;
     integrand.params = (void *)parameters;
     integrand.function = func;
@@ -1026,6 +1026,30 @@ double coffe_integrate_1d(
 #endif
 
     return result;
+}
+
+
+double coffe_integrate_1d(
+    double (*func)(
+        double,
+#ifdef HAVE_DOUBLE_EXPONENTIAL
+        const void*
+#else
+        void*
+#endif
+    ),
+    const void *parameters,
+    const double a,
+    const double b
+)
+{
+    return coffe_integrate_1d_prec(
+        func,
+        parameters,
+        a,
+        b,
+        1e-5
+    );
 }
 
 

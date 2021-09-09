@@ -20,6 +20,7 @@
 #include <time.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
+#include <gsl/gsl_sf_expint.h>
 #include <gsl/gsl_errno.h>
 #include "common.h"
 #include "background.h"
@@ -136,6 +137,59 @@ static double covariance_windowed_bessel_integrand(
 
 
 /**
+    analytic value of the integral of the above for k = 1.
+    Obtained with Wolfram Mathematica 11.1.1.0 on Linux x86_64
+    Generalizations described in arXiv:1703.06428
+**/
+static double integral_power_spherical_bessel1_unit(
+    const int n,
+    const int l,
+    const double x
+){
+    if (n != 2){
+        fprintf(stderr, "WARNING: n = %d not implemented\n", n);
+        return 0;
+    }
+    switch (l){
+        case 0:
+            return -x * cos(x) + sin(x);
+            break;
+        case 1:
+            return - 2. * cos(x) - x * sin(x);
+            break;
+        case 2:
+            return x * cos(x) - 4. * sin(x) + 3. * gsl_sf_Si(x);
+            break;
+        case 3:
+            return 7. * cos(x) + ((-15. + x * x) * sin(x)) / x;
+            break;
+        case 4:
+            return ((105. / x - 2. * x) * cos(x) + (22. - 105. / pow(x, 2)) * sin(x) + 15. * gsl_sf_Si(x)) / 2.;
+            break;
+        default:
+            fprintf(stderr, "WARNING: l = %d not implemented.\n", l);
+            break;
+    }
+    return 0;
+}
+
+
+/**
+    -||-, but with k != 1
+**/
+static double integral_power_spherical_bessel1(
+    const int n,
+    const int l,
+    const double k,
+    const double x
+)
+{
+    return
+        integral_power_spherical_bessel1_unit(n, l, k * x) / pow(k, n + 1);
+}
+
+
+/**
     windowed spherical Bessel function
 **/
 static double covariance_windowed_bessel(
@@ -152,11 +206,16 @@ static double covariance_windowed_bessel(
         test->s_mean - test->s_delta / 2,
         test->s_mean + test->s_delta / 2
         )
-       *coffe_integrate_1d(
-            &covariance_windowed_bessel_integrand,
-            test,
-            test->s_mean - test->s_delta / 2,
-            test->s_mean + test->s_delta / 2
+       *(
+            integral_power_spherical_bessel1(
+                2, test->ell, test->k,
+                test->s_mean + test->s_delta / 2.
+            )
+            -
+            integral_power_spherical_bessel1(
+                2, test->ell, test->k,
+                test->s_mean - test->s_delta / 2.
+            )
         );
 }
 
