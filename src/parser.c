@@ -528,7 +528,7 @@ int coffe_parse_default_parameters(
 
     par->file_sep[0] = 0;
     const double separations[] = {10., 20., 40., 100., 120., 150., 200., 250., 300., 350.};
-    par->sep = coffe_malloc(
+    par->sep = (double *)coffe_malloc(
         sizeof(double) * COFFE_ARRAY_SIZE(separations)
     );
     for (size_t i = 0; i < COFFE_ARRAY_SIZE(separations); ++i)
@@ -680,15 +680,19 @@ int coffe_parse_default_parameters(
     #endif
     par->integration_bins = 750000;
 
-    par->z_mean = 1.0;
-    par->deltaz = 0.2;
+    par->z_mean = (double *)coffe_malloc(sizeof(double));
+    par->deltaz = (double *)coffe_malloc(sizeof(double));
+    par->z_mean[0] = 1.0;
+    par->deltaz[0] = 0.2;
+    par->z_mean_len = 1;
+    par->deltaz_len = 1;
 
     par->z_min = 0.9;
     par->z_max = 1.1;
 
     const int multipoles[] = {0, 2, 4};
-    par->multipole_values = coffe_malloc(
-        sizeof(double) * COFFE_ARRAY_SIZE(multipoles)
+    par->multipole_values = (int *)coffe_malloc(
+        sizeof(int) * COFFE_ARRAY_SIZE(multipoles)
     );
     for (size_t i = 0; i < COFFE_ARRAY_SIZE(multipoles); ++i)
         par->multipole_values[i] = multipoles[i];
@@ -765,27 +769,31 @@ int coffe_parser_init(
         par->output_type == 2 ||
         par->output_type == 6
     ){
-        parse_double(conf, "z_mean", &par->z_mean, COFFE_TRUE);
-        if (par->z_mean <= 0){
-            print_error_verbose(PROG_VALUE_ERROR, "z_mean");
-            exit(EXIT_FAILURE);
+        parse_double_array(conf, "z_mean", &par->z_mean, &par->z_mean_len);
+        for (size_t i = 0; i < par->z_mean_len; ++i){
+            if (par->z_mean[i] <= 0){
+                print_error_verbose(PROG_VALUE_ERROR, "z_mean");
+                exit(EXIT_FAILURE);
+            }
         }
     }
 
     /* width of redshift bin */
     if (par->output_type == 1 || par->output_type == 2){
-        parse_double(conf, "deltaz", &par->deltaz, COFFE_TRUE);
-        if (par->deltaz <= 0){
-            print_error_verbose(PROG_VALUE_ERROR, "deltaz");
-            exit(EXIT_FAILURE);
-        }
-        /* safety check for the range of deltaz */
-        if (par->deltaz > par->z_mean){
-            fprintf(
-                stderr,
-                "ERROR: z_mean cannot be smaller than deltaz!\n"
-            );
-            exit(EXIT_FAILURE);
+        parse_double_array(conf, "deltaz", &par->deltaz, &par->deltaz_len);
+        for (size_t i = 0; i < par->deltaz_len; ++i){
+            if (par->deltaz[i] <= 0){
+                print_error_verbose(PROG_VALUE_ERROR, "deltaz");
+                exit(EXIT_FAILURE);
+            }
+            /* safety check for the range of deltaz */
+            if (par->deltaz[i] > par->z_mean[i]){
+                fprintf(
+                    stderr,
+                    "ERROR: z_mean cannot be smaller than deltaz!\n"
+                );
+                exit(EXIT_FAILURE);
+            }
         }
     }
 
@@ -1305,6 +1313,57 @@ int coffe_parser_init(
         par->k_max_norm = par->k_max/COFFE_H0;
         free(k_norm);
         free(pk_norm);
+    }
+
+    if (
+        par->output_type == 0 ||
+        par->output_type == 1
+    ){
+        par->corrfunc_output_coordinates.size =
+            par->z_mean_len * par->sep_len * par->mu_len;
+        par->corrfunc_output_coordinates.value =
+            (coffe_corrfunc_output_coordinates_t *)coffe_malloc(
+                sizeof(coffe_corrfunc_output_coordinates_t) *
+                par->corrfunc_output_coordinates.size
+            );
+
+        size_t counter = 0;
+        for (size_t i = 0; i < par->z_mean_len; ++i){
+            for (size_t j = 0; j < par->sep_len; ++j){
+                for (size_t k = 0; k < par->mu_len; ++k){
+                    par->corrfunc_output_coordinates.value[counter].z_mean = par->z_mean[i];
+                    par->corrfunc_output_coordinates.value[counter].deltaz = par->deltaz[i];
+                    par->corrfunc_output_coordinates.value[counter].separation = par->sep[j] * COFFE_H0;
+                    par->corrfunc_output_coordinates.value[counter].mu = par->mu[k];
+                    ++counter;
+                }
+            }
+        }
+    }
+
+    if (
+        par->output_type == 2
+    ){
+        par->multipoles_output_coordinates.size =
+            par->z_mean_len * par->sep_len * par->multipole_values_len;
+        par->multipoles_output_coordinates.value =
+            (coffe_multipoles_output_coordinates_t *)coffe_malloc(
+                sizeof(coffe_multipoles_output_coordinates_t) *
+                par->multipoles_output_coordinates.size
+            );
+
+        size_t counter = 0;
+        for (size_t i = 0; i < par->z_mean_len; ++i){
+            for (size_t j = 0; j < par->sep_len; ++j){
+                for (size_t k = 0; k < par->multipole_values_len; ++k){
+                    par->multipoles_output_coordinates.value[counter].z_mean = par->z_mean[i];
+                    par->multipoles_output_coordinates.value[counter].deltaz = par->deltaz[i];
+                    par->multipoles_output_coordinates.value[counter].separation = par->sep[j] * COFFE_H0;
+                    par->multipoles_output_coordinates.value[counter].l = par->multipole_values[k];
+                    ++counter;
+                }
+            }
+        }
     }
 
 

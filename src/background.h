@@ -20,38 +20,50 @@
 #define COFFE_BACKGROUND_H
 
 
-struct coffe_background_t
+typedef struct coffe_background_t
 {
-    struct coffe_interpolation z_as_chi; /* redshift as function of comoving distance */
+    coffe_interpolation z_as_chi; /* redshift as function of comoving distance */
 
-    struct coffe_interpolation a; /* scale factor (normalized so that now a=1) */
+    coffe_interpolation a; /* scale factor (normalized so that now a=1) */
 
-    struct coffe_interpolation Hz; /* hubble parameter H(z) */
+    coffe_interpolation Hz; /* hubble parameter H(z) */
 
-    struct coffe_interpolation conformal_Hz; /* conformal hubble parameter */
+    coffe_interpolation conformal_Hz; /* conformal hubble parameter */
 
-    struct coffe_interpolation conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time */
+    coffe_interpolation conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time */
 
-    struct coffe_interpolation D1; /* growth rate D_1(a) */
+    coffe_interpolation D1; /* growth rate D_1(a) */
 
-    struct coffe_interpolation f; /* growth function f=d(log D)/d(log a) */
+    coffe_interpolation f; /* growth function f=d(log D)/d(log a) */
 
-    struct coffe_interpolation G1, G2;
+    coffe_interpolation G1, G2;
 
-    struct coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
+    coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
 
     int flag;
 
-};
+} coffe_background_t;
 
 
 int coffe_background_init(
-    const struct coffe_parameters_t *par,
-    struct coffe_background_t *bg
+    const coffe_parameters_t *par,
+    coffe_background_t *bg
 );
 
 int coffe_background_free(
-    struct coffe_background_t *bg
+    coffe_background_t *bg
+);
+
+/**
+    checks whether `separation` fits inside a bin of half-with `deltaz`
+    centered around a mean redshift `z_mean`, using cosmology `bg`
+    Returns 1 if yes, 0 if no
+**/
+int coffe_check_range(
+    const double separation,
+    const double z_mean,
+    const double deltaz,
+    coffe_background_t *bg
 );
 
 #endif

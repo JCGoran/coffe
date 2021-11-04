@@ -436,7 +436,7 @@ int main(void)
     {
         free(par.mu);
         const double mu[] = {0.0, 0.2, 0.5, 0.8, 0.95};
-        par.mu = coffe_malloc(sizeof(double) * COFFE_ARRAY_SIZE(mu));
+        par.mu = (double *)coffe_malloc(sizeof(double) * COFFE_ARRAY_SIZE(mu));
         par.mu_len = COFFE_ARRAY_SIZE(mu);
         for (size_t i = 0; i < COFFE_ARRAY_SIZE(mu); ++i)
             par.mu[i] = mu[i];

@@ -11,6 +11,11 @@
 #include "integrals.h"
 #include "tools.h"
 
+/* comparing anything above this value (in Mpc/h) is not sensible */
+#ifndef MAX_SEPARATION
+#define MAX_SEPARATION 20000
+#endif
+
 static int coffe_test_integrals(
     const struct coffe_integral_array_t *integrals
 )
@@ -74,10 +79,13 @@ static int coffe_test_integrals(
                 "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
                 integral, terms[integral].n, terms[integral].l, x, y_expected, y_obtained
             );
-            weak_assert(
-                approx_equal_const_epsilon(y_expected, y_obtained),
-                &error_flag
-            );
+            /* only compare until MAX_SEPARATION, as above it doesn't matter */
+            if (x / COFFE_H0 > MAX_SEPARATION){
+                weak_assert(
+                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
         }
     }
 
@@ -118,10 +126,13 @@ static int coffe_test_integrals(
                 "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
                 (size_t)9, 1, -1, x, y_expected, y_obtained
             );
-            weak_assert(
-                approx_equal_const_epsilon(y_expected, y_obtained),
-                &error_flag
-            );
+            /* only compare until MAX_SEPARATION, as above it doesn't matter */
+            if (x / COFFE_H0 > MAX_SEPARATION){
+                weak_assert(
+                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    &error_flag
+                );
+            }
         }
         free(x_array);
         free(y_array);

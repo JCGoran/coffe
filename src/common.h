@@ -19,6 +19,10 @@
 #ifndef COFFE_COMMON_H
 #define COFFE_COMMON_H
 
+/*
+#include <vector>
+*/
+
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_spline2d.h>
 #include <libconfig.h>
@@ -80,23 +84,86 @@
 #define COFFE_ARRAY_SIZE(arr) ((size_t) (sizeof (arr) / sizeof (arr)[0]))
 #endif
 
+double coffe_max_array_double(
+    const double *array,
+    const size_t size
+);
+
+/*
+namespace Coffe
+{
+
+// how does the type get deduced tho?
+template <typename T> struct Parameter
+{
+    public:
+    T value;
+    std::string name;
+} Parameter;
+
+class Parameters
+{
+    private:
+    std::vector<Parameter> values;
+    public:
+    Parameter get(const std::string& name) const;
+    template <typename T> void set(const std::string& name, T value);
+};
+
+};
+*/
+
 /**
     simple wrapper with failsafe for malloc
 **/
 
+typedef struct coffe_corrfunc_output_coordinates_t
+{
+    double z_mean;
+    double deltaz;
+    double separation;
+    double mu;
+} coffe_corrfunc_output_coordinates_t;
+
+typedef struct coffe_multipoles_output_coordinates_t
+{
+    double z_mean;
+    double deltaz;
+    double separation;
+    int l;
+} coffe_multipoles_output_coordinates_t;
+
+
+
+typedef struct coffe_corrfunc_output_coordinates_array_t
+{
+    coffe_corrfunc_output_coordinates_t *value;
+    size_t size;
+} coffe_corrfunc_output_coordinates_array_t;
+
+
+typedef struct coffe_multipoles_output_coordinates_array_t
+{
+    coffe_multipoles_output_coordinates_t *value;
+    size_t size;
+} coffe_multipoles_output_coordinates_array_t;
+
+
+
+
 void *coffe_malloc(size_t len);
 
-struct coffe_interpolation
+typedef struct coffe_interpolation
 {
     gsl_spline *spline;
     gsl_interp_accel *accel;
-};
+} coffe_interpolation;
 
-struct coffe_interpolation2d
+typedef struct coffe_interpolation2d
 {
     gsl_spline2d *spline;
     gsl_interp_accel *xaccel, *yaccel;
-};
+} coffe_interpolation2d;
 
 enum coffe_integral_type
 {
@@ -114,20 +181,20 @@ enum coffe_output_type
     others are zero
 **/
 
-struct nl_terms
+typedef struct nl_terms
 {
     int n, l;
-};
+} nl_terms;
 
 
 /**
     structure with all of the correlation contributions
 **/
 
-struct coffe_correlation_contributions
+typedef struct coffe_correlation_contributions
 {
     int den, rsd, len, d1, d2, g1, g2, g3, g4, g5;
-};
+} coffe_correlation_contributions;
 
 
 /**
@@ -135,7 +202,7 @@ struct coffe_correlation_contributions
     out the computation
 **/
 
-struct coffe_parameters_t
+typedef struct coffe_parameters_t
 {
     int output_type; /* correlation function (angular or full sky), or multipoles, or redshift averaged multipoles */
 
@@ -169,9 +236,13 @@ struct coffe_parameters_t
 
     double Omega0_de; /* present omega parameter for dark energy-like component */
 
-    double z_mean; /* mean redshift */
+    double *z_mean; /* mean redshift */
 
-    double deltaz; /* width of redshift bin */
+    double *deltaz; /* width of redshift bin */
+
+    size_t z_mean_len;
+
+    size_t deltaz_len;
 
     char file_sep[COFFE_MAX_STRLEN]; /* string with name of file containing separations */
 
@@ -329,7 +400,11 @@ struct coffe_parameters_t
 
     int only_cross_correlations;
 
-};
+    coffe_corrfunc_output_coordinates_array_t corrfunc_output_coordinates;
+
+    coffe_multipoles_output_coordinates_array_t multipoles_output_coordinates;
+
+} coffe_parameters_t;
 
 char *coffe_get_time(void);
 
@@ -416,7 +491,7 @@ int copy_matrix_array(
 );
 
 int coffe_init_spline(
-    struct coffe_interpolation *interp,
+    coffe_interpolation *interp,
     const double *xi,
     const double *yi,
     const size_t bins,
@@ -424,7 +499,7 @@ int coffe_init_spline(
 );
 
 int coffe_init_spline2d(
-    struct coffe_interpolation2d *interp,
+    coffe_interpolation2d *interp,
     const double *xi,
     const double *yi,
     const double *zi,
@@ -434,22 +509,22 @@ int coffe_init_spline2d(
 );
 
 double coffe_interp_spline(
-    const struct coffe_interpolation *interp,
+    const coffe_interpolation *interp,
     double value
 );
 
 double coffe_interp_spline2d(
-    const struct coffe_interpolation2d *interp,
+    const coffe_interpolation2d *interp,
     const double value1,
     const double value2
 );
 
 int coffe_free_spline(
-    struct coffe_interpolation *interp
+    coffe_interpolation *interp
 );
 
 int coffe_free_spline2d(
-    struct coffe_interpolation2d *interp
+    coffe_interpolation2d *interp
 );
 
 int coffe_compare_ascending(
@@ -463,12 +538,12 @@ int coffe_compare_descending(
 );
 
 double coffe_dark_energy_eos(
-    const struct coffe_parameters_t *par,
+    const coffe_parameters_t *par,
     double z
 );
 
 int coffe_parameters_free(
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
 );
 
 double coffe_resolution_window(
@@ -587,4 +662,9 @@ double coffe_integrate_multidimensional(
     const int integration_bins
 );
 
+int write_single_line(
+    const char *filename,
+    const double *values,
+    ...
+);
 #endif

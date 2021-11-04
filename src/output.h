@@ -20,18 +20,16 @@
 #define COFFE_OUTPUT_H
 
 int coffe_output_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
 #ifdef HAVE_INTEGRALS
-    struct coffe_integral_array_t integral[],
+    coffe_integral_array_t integral[],
 #endif
-    struct coffe_corrfunc_ang_t *cf_ang,
-    struct coffe_corrfunc_t *cf,
-    struct coffe_multipoles_t *mp,
-    struct coffe_average_multipoles_t *ramp,
-    struct coffe_covariance_t *cov_mp,
-    struct coffe_covariance_t *cov_ramp,
-    struct coffe_corrfunc2d_t *cf2d
+    coffe_corrfunc_array_t *cf,
+    coffe_multipoles_array_t *mp,
+    coffe_average_multipoles_array_t *ramp,
+    coffe_covariance_array_t *cov_mp,
+    coffe_covariance_array_t *cov_ramp
 );
 
 #endif

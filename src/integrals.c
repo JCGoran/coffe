@@ -481,12 +481,12 @@ int coffe_integrals_renormalizable(
     *real_output_len = output_len + min_sep_len + 1;
 
     /* memory allocation of output_{x,y} */
-    *output_x = coffe_malloc(sizeof(double) * *real_output_len);
-    *output_y = coffe_malloc(sizeof(double) * *real_output_len);
+    *output_x = (double *)coffe_malloc(sizeof(double) * *real_output_len);
+    *output_y = (double *)coffe_malloc(sizeof(double) * *real_output_len);
 
     /* memory alloc of FFT */
-    double *fft_x = coffe_malloc(sizeof(double) * output_len);
-    double *fft_y = coffe_malloc(sizeof(double) * output_len);
+    double *fft_x = (double *)coffe_malloc(sizeof(double) * output_len);
+    double *fft_y = (double *)coffe_malloc(sizeof(double) * output_len);
 
     double local_n, local_l;
 
@@ -622,7 +622,7 @@ int coffe_integrals_init(
             {.n = 3, .l = 1}
         };
 
-        integral->integral = coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
+        integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
 
         /* those default renormalized integrals */
         for (size_t i = 0; i < sizeof(terms) / sizeof(*terms); ++i){
@@ -633,9 +633,9 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = realloc(
+                integral->integral = (struct coffe_integral_t *)realloc(
                     integral->integral,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
@@ -792,9 +792,9 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = realloc(
+                integral->integral = (struct coffe_integral_t *)realloc(
                     integral->integral,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
@@ -875,15 +875,19 @@ int coffe_integrals_init(
                 /* dimensionless */
                 chi_max = coffe_interp_spline(
                     &bg->comoving_distance,
-                    par->z_mean
+                    coffe_max_array_double(par->z_mean, par->z_mean_len)
                 );
             }
             else if (par->output_type == 1 || par->output_type == 2){
                 /* dimensionless */
+                double *temp = (double *)coffe_malloc(sizeof(double) * par->z_mean_len);
+                for (size_t i = 0; i < par->z_mean_len; ++i)
+                    temp[i] = par->z_mean[i] + par->deltaz[i];
                 chi_max = coffe_interp_spline(
                     &bg->comoving_distance,
-                    par->z_mean + par->deltaz
+                    coffe_max_array_double(temp, par->z_mean_len)
                 );
+                free(temp);
             }
             else if (par->output_type == 3){
                 /* dimensionless */
@@ -895,7 +899,7 @@ int coffe_integrals_init(
             else if (par->output_type == 6){
                 chi_max = coffe_interp_spline(
                     &bg->comoving_distance,
-                    par->z_mean
+                    coffe_max_array_double(par->z_mean, par->z_mean_len)
                 ) + 300. * COFFE_H0;
             }
             double *chi_array = (double *)coffe_malloc(
@@ -942,9 +946,9 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = realloc(
+                integral->integral = (struct coffe_integral_t *)realloc(
                     integral->integral,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
@@ -1115,9 +1119,9 @@ int coffe_integrals_init(
                 const size_t current_index = integral->size;
                 /* alloc the space */
                 if (current_index == 0)
-                    integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                    integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
                 else
-                    integral->integral = realloc(
+                    integral->integral = (struct coffe_integral_t *)realloc(
                         integral->integral,
                         sizeof(struct coffe_integral_t) * (current_index + 1)
                     );
@@ -1281,9 +1285,9 @@ int coffe_integrals_init(
                     const size_t current_index = integral->size;
                     /* alloc the space */
                     if (current_index == 0)
-                        integral->integral = coffe_malloc(sizeof(struct coffe_integral_t));
+                        integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
                     else
-                        integral->integral = realloc(
+                        integral->integral = (struct coffe_integral_t *)realloc(
                             integral->integral,
                             sizeof(struct coffe_integral_t) * (current_index + 1)
                         );

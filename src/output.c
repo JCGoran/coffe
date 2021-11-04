@@ -107,8 +107,8 @@ static int output_correlation_contributions_header(
 static int output_background(
     char *filename,
     const char *sep,
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg
+    coffe_parameters_t *par,
+    coffe_background_t *bg
 )
 {
     double *outputs[20] = {NULL}; // shouldn't be more than 20 anyway
@@ -218,18 +218,16 @@ static int output_background(
 }
 
 int coffe_output_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
 #ifdef HAVE_INTEGRALS
-    struct coffe_integral_array_t *integral,
+    coffe_integral_array_t *integral,
 #endif
-    struct coffe_corrfunc_ang_t *cf_ang,
-    struct coffe_corrfunc_t *cf,
-    struct coffe_multipoles_t *mp,
-    struct coffe_average_multipoles_t *ramp,
-    struct coffe_covariance_t *cov_mp,
-    struct coffe_covariance_t *cov_ramp,
-    struct coffe_corrfunc2d_t *cf2d
+    coffe_corrfunc_array_t *cf,
+    coffe_multipoles_array_t *mp,
+    coffe_average_multipoles_array_t *ramp,
+    coffe_covariance_array_t *cov_mp,
+    coffe_covariance_array_t *cov_ramp
 )
 {
     clock_t start, end;
@@ -259,60 +257,54 @@ int coffe_output_init(
     snprintf(filepath, COFFE_MAX_STRLEN, "%sbackground.dat", prefix);
     output_background(filepath, "\t", par, bg);
 
-    /* correlation function (angular) */
-    if (par->output_type == 0){
-        snprintf(header, COFFE_MAX_STRLEN, "# z_mean = %f\n# correlation contributions: ", par->z_mean);
-        output_correlation_contributions_header(par->correlation_contrib, header);
-        strncat(header, "\n", COFFE_MAX_STRLEN);
-        strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
-        snprintf(filepath, COFFE_MAX_STRLEN, "%sang_corrfunc.dat", prefix);
-        write_ncol_null(
-            filepath,
-            cf_ang->theta_len, header, " ",
-            cf_ang->theta, cf_ang->result, NULL
-        );
-    }
-
     /* correlation function (full) */
-    else if (par->output_type == 1){
-        for (int i = 0; i<par->mu_len; ++i){
+    if (par->output_type == 1){
+        snprintf(filepath, COFFE_MAX_STRLEN, "%scorrfunc.dat", prefix);
+        FILE *data = fopen(filepath, "a");
+        for (size_t i = 0; i < cf->size; ++i){
             snprintf(
                 header, COFFE_MAX_STRLEN,
-                "# mu = %f\n# z_mean = %f\n# correlation contributions: ",
-                par->mu[i], par->z_mean
+                "# correlation contributions: "
             );
             output_correlation_contributions_header(par->correlation_contrib, header);
             strncat(header, "\n", COFFE_MAX_STRLEN);
-            strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
-            snprintf(filepath, COFFE_MAX_STRLEN, "%scorrfunc%d.dat", prefix, i);
-            write_ncol_null(
-                filepath,
-                cf->sep_len, header, " ",
-                cf->sep, cf->result[i], NULL
+            fprintf(
+                data,
+                "%.10e %.10e %.10e %.10e\n",
+                cf->value[i].coordinates.value[0].value,
+                cf->value[i].coordinates.value[1].value,
+                cf->value[i].coordinates.value[2].value,
+                cf->value[i].value
             );
         }
+        fclose(data);
     }
 
     /* multipoles */
     else if (par->output_type == 2){
-        for (int i = 0; i<par->multipole_values_len; ++i){
-            snprintf(
-                header, COFFE_MAX_STRLEN,
-                "# l = %d\n# z_mean = %f\n# correlation contributions: ",
-                par->multipole_values[i], par->z_mean
-            );
-            output_correlation_contributions_header(par->correlation_contrib, header);
-            strncat(header, "\n", COFFE_MAX_STRLEN);
-            strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
-            snprintf(filepath, COFFE_MAX_STRLEN, "%smultipoles%d.dat", prefix, par->multipole_values[i]);
-            write_ncol_null(
-                filepath,
-                mp->sep_len, header, " ",
-                mp->sep, mp->result[i], NULL
+        snprintf(filepath, COFFE_MAX_STRLEN, "%smultipoles.dat", prefix);
+        FILE *data = fopen(filepath, "a");
+        snprintf(
+            header, COFFE_MAX_STRLEN,
+            "# correlation contributions: "
+        );
+        output_correlation_contributions_header(par->correlation_contrib, header);
+        strncat(header, "\n", COFFE_MAX_STRLEN);
+        fprintf(data, header);
+        for (size_t i = 0; i < mp->size; ++i){
+            fprintf(
+                data,
+                "%.10e %d %.10e %.10e\n",
+                mp->value[i].z_mean,
+                mp->value[i].l,
+                mp->value[i].separation / COFFE_H0,
+                mp->value[i].value
             );
         }
+        fclose(data);
     }
 
+#if 0
     /* redshift averaged multipoles */
     else if (par->output_type == 3){
         for (int i = 0; i<par->multipole_values_len; ++i){
@@ -386,30 +378,7 @@ int coffe_output_init(
             }
         }
     }
-
-    /* 2D correlation function */
-    else if (par->output_type == 6){
-        snprintf(
-            filepath, COFFE_MAX_STRLEN,
-            "%scorrfunc2d.dat", prefix
-        );
-        FILE *output = fopen(filepath, "w");
-        fprintf(output, "# z_mean = %f\n", par->z_mean);
-        fprintf(output, "# sep_par[Mpc/h]\tsep_perp[Mpc/h]\tresult\n");
-
-        for (size_t i = 0; i<cf2d->sep_len; ++i){
-            for (size_t j = 0; j<cf2d->sep_len; ++j){
-                fprintf(
-                    output, "%e %e %e\n",
-                    cf2d->sep_parallel[i], cf2d->sep_perpendicular[j],
-                    cf2d->result[i][j]
-                );
-            }
-        }
-        fclose(output);
-    }
-
-
+#endif
 #ifdef HAVE_INTEGRALS
     const struct nl_terms terms[] = {
         {.n = 0, .l = 0},

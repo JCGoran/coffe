@@ -45,7 +45,7 @@ static int average_multipoles_check_range(
     size_t *len,
     double zmin,
     double zmax,
-    struct coffe_background_t *bg
+    coffe_background_t *bg
 )
 {
     /* checking for min separation */
@@ -95,12 +95,14 @@ static int average_multipoles_check_range(
 
 
 int coffe_average_multipoles_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral,
-    struct coffe_average_multipoles_t *ramp
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    coffe_average_multipoles_array_t *ramp
 )
 {
+    return 0;
+/*
 #ifdef HAVE_CUBA
     {
         int n = 0, p = 10000;
@@ -202,4 +204,6 @@ int coffe_average_multipoles_free(
         ramp->flag = 0;
     }
     return EXIT_SUCCESS;
+}
+*/
 }

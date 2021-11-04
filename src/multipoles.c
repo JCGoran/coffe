@@ -47,71 +47,43 @@
 #include "signal.h"
 
 
-static int multipoles_check_range(
-    double **separations,
-    size_t *len,
-    double z_mean,
-    double deltaz,
-    struct coffe_background_t *bg
+static coffe_multipoles_t multipoles_compute(
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    const double z_mean,
+    const double separation,
+    const int l,
+    const enum coffe_integral_type integral_type,
+    const enum coffe_output_type output_type
 )
 {
-    qsort(*separations, *len, sizeof(double), coffe_compare_descending);
+    coffe_multipoles_t result;
 
-    double min_separation = (*separations)[*len - 1];
-    double lower_limit = 0.0; /* arbitrary limit */
+    result.z_mean = z_mean;
+    result.separation = separation;
+    result.l = l;
 
-    size_t counter_neg = 0;
-    for (size_t i = 0; i<*len; ++i){
-        if ((*separations)[i] >= lower_limit){
-            ++counter_neg;
-        }
-    }
-    *separations = (double *)realloc(*separations, sizeof(double)*counter_neg);
-    *len = counter_neg;
+    result.value = coffe_integrate(
+        par, bg, integral,
+        z_mean,
+        separation,
+        0,
+        l,
+        integral_type,
+        output_type
+    );
 
-    /* checking for max separation */
-    qsort(*separations, *len, sizeof(double), coffe_compare_ascending);
-
-    double max_separation = (*separations)[*len - 1];
-    double upper_limit =
-        2*(
-            coffe_interp_spline(&bg->comoving_distance, z_mean + deltaz)
-           -coffe_interp_spline(&bg->comoving_distance, z_mean)
-        )/COFFE_H0;
-
-    size_t counter = 0;
-    for (size_t i = 0; i<*len; ++i){
-        if ((*separations)[i] <= upper_limit){
-            ++counter;
-        }
-    }
-    *separations = (double *)realloc(*separations, sizeof(double)*counter);
-    *len = counter;
-    if (min_separation < lower_limit){
-        fprintf(
-            stderr,
-            "WARNING: minimum separation too low; "
-            "cutting off list at the value %.2f "
-            "Mpc/h\n", (*separations)[0]
-        );
-    }
-    if (max_separation > upper_limit){
-        fprintf(
-            stderr,
-            "WARNING: maximum separation too high; "
-            "cutting off list at the value %.2f "
-            "Mpc/h\n", (*separations)[*len - 1]
-        );
-    }
-    return EXIT_SUCCESS;
+    return result;
 }
 
 
+
 int coffe_multipoles_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral,
-    struct coffe_multipoles_t *mp
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    coffe_multipoles_array_t *mp
 )
 {
 #ifdef HAVE_CUBA
@@ -120,7 +92,6 @@ int coffe_multipoles_init(
         cubacores(&n, &p);
     }
 #endif
-    mp->flag = 0;
     if (par->output_type == 2){
 
         clock_t start, end;
@@ -132,71 +103,86 @@ int coffe_multipoles_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        alloc_double_matrix(
-            &mp->result,
-            par->multipole_values_len,
-            par->sep_len
-        );
-        mp->l = (int *)coffe_malloc(sizeof(int)*par->multipole_values_len);
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
-            mp->l[i] = (int)par->multipole_values[i];
-        }
-        mp->l_len = (size_t)par->multipole_values_len;
+        mp->size = par->multipoles_output_coordinates.size;
+        mp->value =
+            (coffe_multipoles_t *)coffe_malloc(sizeof(coffe_multipoles_t) * mp->size);
 
-        mp->sep = (double *)coffe_malloc(sizeof(double)*par->sep_len);
-        for (size_t i = 0; i<par->sep_len; ++i){
-            mp->sep[i] = (double)par->sep[i];
-        }
-        mp->sep_len = (size_t)par->sep_len;
-        multipoles_check_range(
-            &mp->sep,
-            &mp->sep_len,
-            par->z_mean,
-            par->deltaz,
-            bg
-        );
-
-        for (size_t i = 0; i<mp->l_len; ++i){
-            for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] = 0.0;
+        {
+        size_t counter = 0;
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < mp->size; ++i){
+            if (
+                coffe_check_range(
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].deltaz,
+                    bg
+                )
+            ){
+                mp->value[counter] = multipoles_compute(
+                    par, bg, integral,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].l,
+                    NONINTEGRATED, MULTIPOLES
+                );
+                ++counter;
             }
         }
-
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<mp->l_len; ++i){
-            for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] +=
-                    coffe_integrate(
-                        par, bg, integral,
-                        mp->sep[j]*COFFE_H0, 0, mp->l[i],
-                        NONINTEGRATED, MULTIPOLES
-                    );
+        }
+#if 0
+        {
+        size_t counter = 0;
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < mp->size; ++i){
+            if (
+                coffe_check_range(
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].deltaz,
+                    bg
+                )
+            ){
+                mp->value[counter].value += multipoles_compute(
+                    par, bg, integral,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].l,
+                    SINGLE_INTEGRATED, MULTIPOLES
+                ).value;
+                ++counter;
             }
         }
-
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<mp->l_len; ++i){
-            for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] +=
-                    coffe_integrate(
-                        par, bg, integral,
-                        mp->sep[j]*COFFE_H0, 0, mp->l[i],
-                        SINGLE_INTEGRATED, MULTIPOLES
-                    );
-            }
         }
 
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<mp->l_len; ++i){
-            for (size_t j = 0; j<mp->sep_len; ++j){
-                mp->result[i][j] +=
-                    coffe_integrate(
-                        par, bg, integral,
-                        mp->sep[j]*COFFE_H0, 0, mp->l[i],
-                        DOUBLE_INTEGRATED, MULTIPOLES
-                    );
+        {
+        size_t counter = 0;
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < mp->size; ++i){
+            if (
+                coffe_check_range(
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].deltaz,
+                    bg
+                )
+            ){
+                mp->value[counter].value += multipoles_compute(
+                    par, bg, integral,
+                    par->multipoles_output_coordinates.value[i].z_mean,
+                    par->multipoles_output_coordinates.value[i].separation,
+                    par->multipoles_output_coordinates.value[i].l,
+                    DOUBLE_INTEGRATED, MULTIPOLES
+                ).value;
+                ++counter;
             }
         }
+        mp->size = counter;
+        }
+#endif
+
+        mp->value = (coffe_multipoles_t *)
+            realloc(mp->value, sizeof(coffe_multipoles_t) * mp->size);
 
         end = clock();
 
@@ -206,24 +192,18 @@ int coffe_multipoles_init(
 
         gsl_set_error_handler(default_handler);
 
-        mp->flag = 1;
     }
 
     return EXIT_SUCCESS;
 }
 
 int coffe_multipoles_free(
-    struct coffe_multipoles_t *mp
+    coffe_multipoles_array_t *mp
 )
 {
-    if (mp->flag){
-        for (size_t i = 0; i<mp->l_len; ++i){
-            free(mp->result[i]);
-        }
-        free(mp->result);
-        free(mp->l);
-        free(mp->sep);
-        mp->flag = 0;
+    if (mp->size){
+        free(mp->value);
+        mp->size = 0;
     }
     return EXIT_SUCCESS;
 }

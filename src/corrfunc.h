@@ -19,53 +19,60 @@
 #ifndef COFFE_CORRFUNC_H
 #define COFFE_CORRFUNC_H
 
-struct coffe_corrfunc_ang_t
+enum coffe_corrfunc_coordinates_enum
 {
-    double *result;
-    double *theta;
-    size_t theta_len;
-    int flag;
+    COFFE_COORDINATE_MEAN_REDSHIFT,
+    COFFE_COORDINATE_SEPARATION,
+    COFFE_COORDINATE_ANGLE_ALPHA,
+    COFFE_COORDINATE_ANGLE_BETA,
+    COFFE_COORDINATE_ANGLE_GAMMA,
+    COFFE_COORDINATE_ANGLE_MU,
+    COFFE_COORDINATE_SEPARATION_PARALLEL,
+    COFFE_COORDINATE_SEPARATION_PERP
 };
 
-struct coffe_corrfunc_t
+typedef struct coffe_corrfunc_coordinate_t
 {
-    double **result;
-    double *sep;
-    double *mu;
+    double value;
+    enum coffe_corrfunc_coordinates_enum name;
+} coffe_corrfunc_coordinate_t;
 
-    size_t sep_len;
-    size_t mu_len;
-    int flag;
-};
-
-struct coffe_corrfunc2d_t
+/* simple wrapper for the above */
+typedef struct coffe_corrfunc_coordinate_array_t
 {
-    double **result;
-    double *sep_parallel;
-    double *sep_perpendicular;
-    size_t sep_len;
-    int flag;
-};
+    coffe_corrfunc_coordinate_t value[3];
+} coffe_corrfunc_coordinate_array_t;
 
-int coffe_corrfunc_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral,
-    struct coffe_corrfunc_ang_t *cf_ang,
-    struct coffe_corrfunc_t *cf,
-    struct coffe_corrfunc2d_t *cf2d
+typedef struct coffe_corrfunc_t
+{
+    double value;
+    coffe_corrfunc_coordinate_array_t coordinates;
+} coffe_corrfunc_t;
+
+typedef struct coffe_corrfunc_array_t
+{
+    coffe_corrfunc_t *value;
+    size_t size;
+} coffe_corrfunc_array_t;
+
+/* for switching between coordinates */
+int coffe_corrfunc_coordinate_transform(
+    const coffe_corrfunc_coordinate_array_t input,
+    const enum coffe_corrfunc_coordinates_enum coord1,
+    const enum coffe_corrfunc_coordinates_enum coord2,
+    const enum coffe_corrfunc_coordinates_enum coord3,
+    coffe_corrfunc_coordinate_array_t *output
 );
 
-int coffe_corrfunc_ang_free(
-    struct coffe_corrfunc_ang_t *cf_ang
+int coffe_corrfunc_init(
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    coffe_corrfunc_array_t *cf
 );
 
 int coffe_corrfunc_free(
-    struct coffe_corrfunc_t *cf
-);
-
-int coffe_corrfunc2d_free(
-    struct coffe_corrfunc2d_t *cf2d
+    coffe_corrfunc_array_t *cf
 );
 
 #endif

@@ -97,23 +97,23 @@ int main(void)
     /* in the new code, we can choose to compute just the covariance of a given tracer */
     par.correlation_contrib.rsd = 1;
 
-    par.covariance_density = malloc(sizeof(double));
+    par.covariance_density = (double *)malloc(sizeof(double));
     par.covariance_density[0] = 1e-3;
     par.covariance_density_len = 1;
 
-    par.covariance_z_mean = malloc(sizeof(double));
+    par.covariance_z_mean = (double *)malloc(sizeof(double));
     par.covariance_z_mean[0] = 1.0;
     par.covariance_z_mean_len = 1;
 
-    par.covariance_deltaz = malloc(sizeof(double));
+    par.covariance_deltaz = (double *)malloc(sizeof(double));
     par.covariance_deltaz[0] = 0.1;
     par.covariance_deltaz_len = 1;
 
-    par.covariance_fsky = malloc(sizeof(double));
+    par.covariance_fsky = (double *)malloc(sizeof(double));
     par.covariance_fsky[0] = 0.2;
     par.covariance_fsky_len = 1;
 
-    par.covariance_pixelsize = malloc(sizeof(double));
+    par.covariance_pixelsize = (double *)malloc(sizeof(double));
     par.covariance_pixelsize[0] = 50.0;
     par.covariance_pixelsize_len = 1;
 

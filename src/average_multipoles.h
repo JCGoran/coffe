@@ -19,25 +19,29 @@
 #ifndef COFFE_AVERAGE_MULTIPOLES_H
 #define COFFE_AVERAGE_MULTIPOLES_H
 
-struct coffe_average_multipoles_t
+typedef struct coffe_average_multipoles_t
 {
-    double **result;
-    double *sep;
-    size_t sep_len;
-    int *l;
-    size_t l_len;
-    int flag;
-};
+    double value;
+    double l;
+    double z_min;
+    double z_max;
+} coffe_average_multipoles_t;
+
+typedef struct coffe_average_multipoles_array_t
+{
+    coffe_average_multipoles_t *value;
+    size_t size;
+} coffe_average_multipoles_array_t;
 
 int coffe_average_multipoles_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral,
-    struct coffe_average_multipoles_t *ramp
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    coffe_average_multipoles_array_t *ramp
 );
 
 int coffe_average_multipoles_free(
-    struct coffe_average_multipoles_t *ramp
+    coffe_average_multipoles_array_t *ramp
 );
 
 #endif

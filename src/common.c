@@ -41,6 +41,21 @@
 #include "common.h"
 #include "errors.h"
 
+double coffe_max_array_double(
+    const double *array,
+    const size_t size
+){
+    if (size > 0){
+        double current = array[0];
+        for (size_t i = 1; i < size; ++i){
+            if (current < array[i]){
+                current = array[i];
+            }
+        }
+        return current;
+    }
+    return NAN;
+}
 
 /**
     another malloc function, checks if malloc succeded
@@ -50,12 +65,10 @@ void *coffe_malloc(size_t len)
 {
     if (!len){
         print_error(PROG_ALLOC_ERROR);
-        exit(EXIT_FAILURE);
     }
     void *values = malloc(len);
     if (values == NULL){
         print_error(PROG_ALLOC_ERROR);
-        exit(EXIT_FAILURE);
     }
     return values;
 }
@@ -504,7 +517,7 @@ int copy_matrix_array(
 
 
 int coffe_init_spline(
-    struct coffe_interpolation *interp,
+    coffe_interpolation *interp,
     const double *xi,
     const double *yi,
     const size_t bins,
@@ -559,7 +572,7 @@ int coffe_init_spline(
 
 
 int coffe_init_spline2d(
-    struct coffe_interpolation2d *interp,
+    coffe_interpolation2d *interp,
     const double *xi,
     const double *yi,
     const double *zi,
@@ -597,7 +610,7 @@ int coffe_init_spline2d(
 
 
 int coffe_free_spline(
-    struct coffe_interpolation *interp
+    coffe_interpolation *interp
 )
 {
     if (interp->spline != NULL)
@@ -610,7 +623,7 @@ int coffe_free_spline(
 }
 
 int coffe_free_spline2d(
-    struct coffe_interpolation2d *interp
+    coffe_interpolation2d *interp
 )
 {
     if (interp->spline != NULL)
@@ -656,7 +669,7 @@ int coffe_compare_descending(
 **/
 
 double coffe_dark_energy_eos(
-    const struct coffe_parameters_t *par,
+    const coffe_parameters_t *par,
     double z
 )
 {
@@ -681,7 +694,7 @@ double coffe_galaxy_bias(
 }
 
 double coffe_interp_spline(
-    const struct coffe_interpolation *interp,
+    const coffe_interpolation *interp,
     double value
 )
 {
@@ -689,7 +702,7 @@ double coffe_interp_spline(
 }
 
 double coffe_interp_spline2d(
-    const struct coffe_interpolation2d *interp,
+    const coffe_interpolation2d *interp,
     const double value1,
     const double value2
 )
@@ -698,7 +711,7 @@ double coffe_interp_spline2d(
 }
 
 int coffe_parameters_free(
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
 )
 {
     if (par->flag){
@@ -1164,3 +1177,4 @@ double coffe_integrate_multidimensional(
     return result;
 #endif
 }
+

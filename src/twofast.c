@@ -18,22 +18,23 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __cplusplus
+#include <complex>
+typedef std::complex<double> complex_t;
+using namespace std::complex_literals;
+#define I 1i
+#include "compatibility.h"
+#else
 #include <complex.h>
+typedef double complex complex_t;
+#endif
+
 #include <math.h>
 #include <fftw3.h>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_math.h>
-
-#ifdef HAVE_ARB
-
-#include "arbcmath.h"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-#endif
 
 #include "twofast.h"
 
@@ -93,7 +94,7 @@ static double twofast_window(
     https://en.wikipedia.org/wiki/Lanczos_approximation
 **/
 // TODO check if this lgamma has the same accuracy as ac_lgamma
-static double complex twofast_lgamma(long double complex z)
+static complex_t twofast_lgamma(complex_t z)
 {
     static const long double gamma_coeff[] = {
         676.5203681218851,
@@ -107,18 +108,18 @@ static double complex twofast_lgamma(long double complex z)
     };
     static const size_t gamma_coeff_size =
         sizeof(gamma_coeff) / sizeof(gamma_coeff[0]);
-    long double complex result;
-    if (creall(z) < 0.5){
-        result = logl(M_PIl) - clogl(csinl(M_PIl * z)) - twofast_lgamma(1 - z);
+    complex_t result;
+    if (creal(z) < 0.5){
+        result = log(M_PI) - clog(csin(M_PI * z)) - twofast_lgamma(1. - z);
     }
     else{
-        long double complex x = 0.99999999999980993;
+        complex_t x = 0.99999999999980993;
         z -= 1;
         for (size_t i = 0; i < gamma_coeff_size; ++i)
-            x += (long double complex)gamma_coeff[i] / (z + i + 1);
-        long double complex t = z + gamma_coeff_size - 0.5;
-        result = logl(2 * M_PIl) / 2. + (z + 0.5) * clogl(t) - t + clogl(x);
-        if (!gsl_finite(result)){
+            x += (complex_t)gamma_coeff[i] / (z + (double)i + 1.);
+        complex_t t = z + (double)gamma_coeff_size - 0.5;
+        result = log(2 * M_PI) / 2. + (z + 0.5) * clog(t) - t + clog(x);
+        if (!(gsl_finite(creal(result)) && gsl_finite(cimag(result)))){
             fprintf(
                 stderr,
                 "ERROR: file %s, function %s\n", __FILE__, __func__
@@ -130,10 +131,10 @@ static double complex twofast_lgamma(long double complex z)
                 "x = %.3Le + %.3LeI, "
                 "t = %.3Le + %.3LeI, "
                 "result = %.3Le + %.3LeI\n",
-                creall(z), cimagl(z),
-                creall(x), cimagl(x),
-                creall(t), cimagl(t),
-                creall(result), cimagl(result)
+                creal(z), cimag(z),
+                creal(x), cimag(x),
+                creal(t), cimag(t),
+                creal(result), cimag(result)
             );
             exit(EXIT_FAILURE);
         }
@@ -142,21 +143,71 @@ static double complex twofast_lgamma(long double complex z)
     return result;
 }
 
-static double complex twofast_mql(
+static complex_t twofast_gamma(complex_t z)
+{
+    static const long double gamma_coeff[] = {
+        676.5203681218851,
+        -1259.1392167224028,
+        771.32342877765313,
+        -176.61502916214059,
+        12.507343278686905,
+        -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7
+    };
+    static const size_t gamma_coeff_size =
+        sizeof(gamma_coeff) / sizeof(gamma_coeff[0]);
+    complex_t result;
+    if (creal(z) < 0.5){
+        result = M_PI / csin(M_PI * z) / twofast_gamma(1. - z);
+    }
+    else{
+        complex_t x = 0.99999999999980993;
+        z -= 1;
+        for (size_t i = 0; i < gamma_coeff_size; ++i)
+            x += (complex_t)gamma_coeff[i] / (z + (double)i + 1.);
+        complex_t t = z + (double)gamma_coeff_size - 0.5;
+        result = csqrt(2 * M_PI) * cpow(t, z + 0.5) / cexp(t) * x;
+        if (!(gsl_finite(creal(result)) && gsl_finite(cimag(result)))){
+            fprintf(
+                stderr,
+                "ERROR: file %s, function %s\n", __FILE__, __func__
+            );
+            fprintf(
+                stderr,
+                "Values: "
+                "z = %.3Le + %.3LeI, "
+                "x = %.3Le + %.3LeI, "
+                "t = %.3Le + %.3LeI, "
+                "result = %.3Le + %.3LeI\n",
+                creal(z), cimag(z),
+                creal(x), cimag(x),
+                creal(t), cimag(t),
+                creal(result), cimag(result)
+            );
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return result;
+}
+
+
+static complex_t twofast_mql(
     double t,
     double q,
     double l,
-double alpha
+    double alpha
 )
 {
-    const double complex n = q - 1 - t * I;
-    double complex unl =
-        cpow(2, n - 1)
+    const complex_t n = q - 1. - t * I;
+    complex_t unl =
+        cpow(2, n - 1.)
        *SQRT_PI
        *cexp(
-            twofast_lgamma((1 + l + n) / 2) - twofast_lgamma((2 + l - n) / 2)
+            twofast_lgamma((1. + (double)l + n) / 2.) - twofast_lgamma((2. + (double)l - n) / 2.)
         );
-    if (gsl_finite(unl)){
+    if (gsl_finite(creal(unl)) && gsl_finite(cimag(unl))){
         return cpow(alpha, t * I - q) * unl;
     }
     else{
@@ -245,6 +296,52 @@ static void twofast_fft_input(
     }
 
     for (size_t i = 0; i<N2; ++i){
+#ifdef __cplusplus
+        output_y[i][0] =
+            creal(
+                twofast_window(
+                    input_x_mod[N2 - 2 + i],
+                    kmin,
+                    k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
+                    exp(0.46)*kmin,
+                    exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
+                )
+            )
+           *input_y_fft[i][0]/L
+            +
+            cimag(
+                twofast_window(
+                    input_x_mod[N2 - 2 + i],
+                    kmin,
+                    k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
+                    exp(0.46)*kmin,
+                    exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
+                )
+            )
+           *input_y_fft[i][1]/L;
+        output_y[i][1] =
+            -creal(
+                twofast_window(
+                    input_x_mod[N2 - 2 + i],
+                    kmin,
+                    k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
+                    exp(0.46)*kmin,
+                    exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
+                )
+            )
+           *input_y_fft[i][1]/L
+            +
+            cimag(
+                twofast_window(
+                    input_x_mod[N2 - 2 + i],
+                    kmin,
+                    k0*pow(kmax/kmin, (double)(output_len - 1)/output_len),
+                    exp(0.46)*kmin,
+                    exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
+                )
+            )
+           *input_y_fft[i][0]/L;
+#else
         output_y[i] =
             twofast_window(
                 input_x_mod[N2 - 2 + i],
@@ -254,6 +351,7 @@ static void twofast_fft_input(
                 exp(-0.46)*k0*pow(kmax/kmin, (double)(output_len - 1)/output_len)
             )
            *conj(input_y_fft[i])/L;
+#endif
     }
 
     free(input_x_mod);
@@ -327,9 +425,24 @@ void twofast_1bessel(
 
     for (size_t i = 0; i<N2; ++i){
         // copying the input as it's destroyed by the planner
+#ifdef __cplusplus
+        temp_input[i][0] =
+            input_y_fft[i][0]
+           *creal(twofast_mql(2*M_PI*i/G, qnu, l, k0*r0))
+            -
+            input_y_fft[i][1]
+           *cimag(twofast_mql(2*M_PI*i/G, qnu, l, k0*r0));
+        temp_input[i][1] =
+            input_y_fft[i][0]
+           *cimag(twofast_mql(2*M_PI*i/G, qnu, l, k0*r0))
+            +
+            input_y_fft[i][1]
+           *creal(twofast_mql(2*M_PI*i/G, qnu, l, k0*r0));
+#else
         temp_input[i] =
             input_y_fft[i]
            *twofast_mql(2*M_PI*i/G, qnu, l, k0*r0);
+#endif
     }
 
     double *temp_output_y = (double *)fftw_malloc(sizeof(double)*output_len);
@@ -341,7 +454,12 @@ void twofast_1bessel(
     }
 
     for (size_t i = 0; i<N2; ++i){
+#ifdef __cplusplus
+        input_y_fft[i][0] = temp_input[i][0];
+        input_y_fft[i][1] = temp_input[i][1];
+#else
         input_y_fft[i] = temp_input[i]; // putting it back
+#endif
     }
 
     fftw_execute(p);
@@ -367,43 +485,53 @@ void twofast_1bessel(
 
 #ifdef HAVE_ARB
 
-static double complex twofast_mql1l2(double t, double r, double q, int l1, int l2, double alpha)
+
+static int minus_one(
+    const int exponent
+)
 {
-    const double complex n = q - 1. - t*I;
-    double complex ul1l2;
+    const int value = exponent % 2 ? 1 : -1;
+    return value;
+}
+
+// only 00 for now
+static complex_t power_bessel2(
+    const complex_t z,
+    const double a,
+    const double b,
+    const int l1,
+    const int l2
+)
+{
+    const complex_t mu = z - l1 - l2 - 1;
+    return 2 * minus_one(l1 + l2)
+        * twofast_gamma(mu)
+        * ccos(M_PI / 2. * mu)
+        * (1. / a / b * (1. / cpow(a + b, mu) - 1. / cpow(a - b, mu)));
+}
+
+static complex_t twofast_mql1l2(double t, double r, double q, int l1, int l2, double alpha)
+{
+    const complex_t n = q - 1. - t*I;
+    complex_t ul1l2;
     static const double limit = 1E-8;
     if (r < 1 - limit){
         ul1l2 =
-            cpow(alpha, t*I - q)
-           *cpow(2, n - 2)*M_PI*pow(r, l2)
-           *cexp(
-                ac_lgamma((1. + l1 + l2 + n)/2.)
-              - ac_lgamma((2. + l1 - l2 - n)/2.)
-              - ac_lgamma(3./2. + l2)
-            )
-           *ac_hyp2f1((l2 + n - l1)/2., (1. + l1 + l2 + n)/2., 3./2. + l2, r*r);
+            cpow(alpha, t*I - q) * power_bessel2(n, 1., r, l1, l2);
     }
     else if (r > 1 + limit){
-        ul1l2 =
-            cpow(alpha*r, t*I - q)
-           *cpow(2, n - 2)*M_PI/pow(r, l1)
-           *cexp(
-                ac_lgamma((1. + l2 + l1 + n)/2.)
-              - ac_lgamma((2. + l2 - l1 - n)/2.)
-              - ac_lgamma(3./2. + l1)
-            )
-           *ac_hyp2f1((l1 + n - l2)/2., (1. + l2 + l1 + n)/2., 3./2. + l1, 1./r/r);
+        // TODO
     }
     else{
         ul1l2 =
             cpow(alpha, t*I - q)
            *cpow(2, n - 2)*M_PI
            *cexp(
-                ac_lgamma((1. + l1 + l2 + n)/2.)
-              - ac_lgamma((2. + l1 - l2 - n)/2.)
-              + ac_lgamma(1. - n)
-              - ac_lgamma((3. + l2 + l1 - n)/2.)
-              - ac_lgamma((2. + l2 - l1 - n)/2.)
+                twofast_lgamma((1. + l1 + l2 + n)/2.)
+              - twofast_lgamma((2. + l1 - l2 - n)/2.)
+              + twofast_lgamma(1. - n)
+              - twofast_lgamma((3. + l2 + l1 - n)/2.)
+              - twofast_lgamma((2. + l2 - l1 - n)/2.)
             );
     }
     if (gsl_finite(ul1l2)) return ul1l2;

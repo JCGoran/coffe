@@ -309,13 +309,13 @@ static int covariance_integrate_fftlog(
     /* first point of order: logarithmically sample k and P(k) */
     double *k_sampled, **pk_sampled;
     /* memory alloc */
-    k_sampled = coffe_malloc(sizeof(double) * sampling_points);
-    pk_sampled = coffe_malloc(sizeof(double *) * sampling_points);
+    k_sampled = (double *)coffe_malloc(sizeof(double) * sampling_points);
+    pk_sampled = (double **)coffe_malloc(sizeof(double *) * sampling_points);
 
     for (size_t i = 0; i < sampling_points; ++i){
         /* k sampled in log space */
         k_sampled[i] = k_min_norm * pow(k_max_norm / k_min_norm, (double)i / sampling_points);
-        pk_sampled[i] = coffe_malloc(sizeof(double) * sampling_points);
+        pk_sampled[i] = (double *)coffe_malloc(sizeof(double) * sampling_points);
         /* off-diagonal elements are 0 */
         for (size_t j = 0; j < sampling_points; ++j)
             pk_sampled[i][j] = 0;
@@ -328,13 +328,13 @@ static int covariance_integrate_fftlog(
 
     /* separations */
     double *r1, *r2;
-    r1 = coffe_malloc(sampling_points * sizeof(double));
-    r2 = coffe_malloc(sampling_points * sizeof(double));
+    r1 = (double *)coffe_malloc(sampling_points * sizeof(double));
+    r2 = (double *)coffe_malloc(sampling_points * sizeof(double));
 
     /* the result as a 2D array */
-    double **result_pk = coffe_malloc(sampling_points * sizeof(double *));
+    double **result_pk = (double **)coffe_malloc(sampling_points * sizeof(double *));
     for(size_t i = 0; i < sampling_points; ++i)
-        result_pk[i] = coffe_malloc(sampling_points * sizeof(double));
+        result_pk[i] = (double *)coffe_malloc(sampling_points * sizeof(double));
 
     /* integral of P(k) */
     two_sph_bessel(
@@ -350,7 +350,7 @@ static int covariance_integrate_fftlog(
     free(pk_sampled);
 
     /* realigning 2D array into 1D for GSL interpolation */
-    double *result2d_pk = coffe_malloc(sizeof(double) * sampling_points * sampling_points);
+    double *result2d_pk = (double *)coffe_malloc(sizeof(double) * sampling_points * sampling_points);
 
     for (size_t m = 0; m < sampling_points; ++m){
         for (size_t n = 0; n < sampling_points; ++n){
@@ -997,27 +997,12 @@ int coffe_covariance_init(
 }
 
 int coffe_covariance_free(
-    struct coffe_covariance_t *cov
+    coffe_covariance_array_t *cov
 )
 {
-    if (cov->flag){
-        for (size_t k = 0; k<cov->list_len; ++k){
-            for (size_t i = 0; i<cov->l_len; ++i){
-                for (size_t j = 0; j<cov->l_len; ++j){
-                    free(cov->result[k][i*cov->l_len + j]);
-                }
-            }
-            free(cov->result[k]);
-        }
-        free(cov->result);
-
-        for (size_t i = 0; i<cov->list_len; ++i){
-            free(cov->sep[i]);
-        }
-        free(cov->sep);
-        free(cov->sep_len);
-        free(cov->l);
-        cov->flag = 0;
+    if (cov->size){
+        free(cov->value);
+        cov->size = 0;
     }
     return EXIT_SUCCESS;
 }

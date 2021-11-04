@@ -39,16 +39,14 @@
 
 int main(int argc, char *argv[])
 {
-    struct coffe_parameters_t par;
-    struct coffe_background_t bg;
-    struct coffe_integral_array_t integral;
-    struct coffe_corrfunc_ang_t cf_ang;
-    struct coffe_corrfunc_t cf;
-    struct coffe_multipoles_t mp;
-    struct coffe_average_multipoles_t ramp;
-    struct coffe_covariance_t cov_mp;
-    struct coffe_covariance_t cov_ramp;
-    struct coffe_corrfunc2d_t cf2d;
+    coffe_parameters_t par;
+    coffe_background_t bg;
+    coffe_integral_array_t integral;
+    coffe_corrfunc_array_t cf;
+    coffe_multipoles_array_t mp;
+    coffe_average_multipoles_array_t ramp;
+    coffe_covariance_array_t cov_mp;
+    coffe_covariance_array_t cov_ramp;
 
     char settings_file[COFFE_MAX_STRLEN];
 
@@ -129,23 +127,18 @@ int main(int argc, char *argv[])
 
     coffe_integrals_init(&par, &bg, &integral);
 
-    coffe_corrfunc_init(&par, &bg, &integral, &cf_ang, &cf, &cf2d);
+    coffe_corrfunc_init(&par, &bg, &integral, &cf);
 
     coffe_multipoles_init(&par, &bg, &integral, &mp);
-
-    coffe_average_multipoles_init(&par, &bg, &integral, &ramp);
-
-    coffe_covariance_init(&par, &bg, &cov_mp, &cov_ramp);
 
     coffe_output_init(
         &par, &bg,
 #ifdef HAVE_INTEGRALS
         &integral,
 #endif
-        &cf_ang, &cf,
+        &cf,
         &mp, &ramp,
-        &cov_mp, &cov_ramp,
-        &cf2d
+        &cov_mp, &cov_ramp
     );
 
     /* freeing the memory */
@@ -154,19 +147,9 @@ int main(int argc, char *argv[])
 
     coffe_integrals_free(&integral);
 
-    coffe_corrfunc_ang_free(&cf_ang);
-
     coffe_corrfunc_free(&cf);
 
-    coffe_corrfunc2d_free(&cf2d);
-
     coffe_multipoles_free(&mp);
-
-    coffe_average_multipoles_free(&ramp);
-
-    coffe_covariance_free(&cov_mp);
-
-    coffe_covariance_free(&cov_ramp);
 
     coffe_parameters_free(&par);
 

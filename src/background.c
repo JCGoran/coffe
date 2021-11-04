@@ -43,6 +43,23 @@ struct integration_params
     struct coffe_interpolation xint; /* result of Omega0_m/(1 - Omega0_m)*exp(-3*int(w(a)/a)) */
 };
 
+int coffe_check_range(
+    const double separation,
+    const double z_mean,
+    const double deltaz,
+    coffe_background_t *bg
+)
+{
+    const double upper_limit =
+        2*(
+            coffe_interp_spline(&bg->comoving_distance, z_mean + deltaz)
+           -coffe_interp_spline(&bg->comoving_distance, z_mean)
+        ) / COFFE_H0;
+
+    return separation < upper_limit;
+}
+
+
 
 /* only needed here */
 
@@ -180,7 +197,7 @@ static double integrand_comoving(
 
 int coffe_background_init(
     const struct coffe_parameters_t *par,
-    struct coffe_background_t *bg
+    coffe_background_t *bg
 )
 {
     clock_t start, end;
@@ -483,7 +500,7 @@ int coffe_background_init(
 }
 
 int coffe_background_free(
-    struct coffe_background_t *bg
+    coffe_background_t *bg
 )
 {
     if (bg->flag){

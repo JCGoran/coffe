@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <complex.h>
 #include <string.h>
-
 #include <time.h>
-
-#include <fftw3.h>
 
 #include "utils.h"
 #include "twobessel.h"
+
+#ifdef __cplusplus
+#include "compatibility.h"
+#endif
+
+#include <fftw3.h>
 
 void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, config *config, double *r1, double *r2, double **result) {
 	// printf("fk1k2[0][0]:%.15e\n", fk1k2[0][0]);
@@ -31,7 +33,7 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 	for(i=0; i<=halfN1; i++) {eta_m[i] = 2*M_PI / dlnk1 / N1 * i;}
 	for(j=0; j<=halfN2; j++) {eta_n[j] = 2*M_PI / dlnk2 / N2 * j;}
 
-	double complex g1[halfN1+1], g2[halfN2+1];
+	complex_t g1[halfN1+1], g2[halfN2+1];
 	g_l(config->l1, config->nu1, eta_m, g1, halfN1+1);
 	g_l(config->l2, config->nu2, eta_n, g2, halfN2+1);
 
@@ -45,7 +47,7 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 
 	// biased input func
 	double *Pb;
-	Pb = malloc(N1 * N2* sizeof(double));
+	Pb = (double *)malloc(N1 * N2* sizeof(double));
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
 			Pb[i*N2+j] = fk1k2[i][j] / pow(k1[i], config->nu1) / pow(k2[j], config->nu2) ;
@@ -67,20 +69,34 @@ void two_sph_bessel(double *k1, double *k2, double **fk1k2, long N1, long N2, co
 	for(i=0; i<=halfN1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i]);
+			out[ij][1] *= cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i]);
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i] ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	for(i=halfN1+1; i<N1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i]) * conj(g1[N1-i]));
+			out[ij][1] *= cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i]) * conj(g1[N1-i]));
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i]) * conj(g1[N1-i]) ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 	double *out_ifft;
-	out_ifft = malloc(sizeof(double) * N1*N2 );
+	out_ifft = (double *)malloc(sizeof(double) * N1*N2 );
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);
@@ -116,7 +132,7 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 	for(i=0; i<=halfN1; i++) {eta_m[i] = 2*M_PI / dlnk1 / N1 * i;}
 	for(j=0; j<=halfN2; j++) {eta_n[j] = 2*M_PI / dlnk2 / N2 * j;}
 
-	double complex g1[halfN1+1], g2[halfN2+1];
+	complex_t g1[halfN1+1], g2[halfN2+1];
 	g_l_smooth(config->l1, config->nu1, eta_m, g1, halfN1+1, smooth_dlnr, dimension);
 	g_l_smooth(config->l2, config->nu2, eta_n, g2, halfN2+1, smooth_dlnr, dimension);
 
@@ -131,7 +147,7 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 
 	// biased input func
 	double *Pb;
-	Pb = malloc(N1 * N2* sizeof(double));
+	Pb = (double *)malloc(N1 * N2* sizeof(double));
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
 			Pb[i*N2+j] = fk1k2[i][j] / pow(k1[i], config->nu1) / pow(k2[j], config->nu2) ;
@@ -153,20 +169,34 @@ void two_sph_bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long
 	for(i=0; i<=halfN1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i] );
+			out[ij][1] *= cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i] );
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i] ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	for(i=halfN1+1; i<N1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * creal(g1[N1-i]) + cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * cimag(g1[N1-i]);
+			out[ij][1] *= -creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * cimag(g1[N1-i]) + cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * creal(g1[N1-i]);
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i]) * conj(g1[N1-i]) ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 	double *out_ifft;
-	out_ifft = malloc(sizeof(double) * N1*N2 );
+	out_ifft = (double *)malloc(sizeof(double) * N1*N2 );
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);
@@ -202,7 +232,7 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 	for(i=0; i<=halfN1; i++) {eta_m[i] = 2*M_PI / dlnk1 / N1 * i;}
 	for(j=0; j<=halfN2; j++) {eta_n[j] = 2*M_PI / dlnk2 / N2 * j;}
 
-	double complex g1[halfN1+1], g2[halfN2+1];
+	complex_t g1[halfN1+1], g2[halfN2+1];
 	g_l_smooth(config->l1 -0.5, config->nu1, eta_m, g1, halfN1+1, smooth_dlnr, dimension+0.5);
 	g_l_smooth(config->l2 -0.5, config->nu2, eta_n, g2, halfN2+1, smooth_dlnr, dimension+0.5);
 
@@ -217,7 +247,7 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 
 	// biased input func
 	double *Pb;
-	Pb = malloc(N1 * N2* sizeof(double));
+	Pb = (double *)malloc(N1 * N2* sizeof(double));
 	for(i=0; i<N1; i++) {
 		for(j=0; j<N2; j++) {
 			Pb[i*N2+j] = fk1k2[i][j] / pow(k1[i], config->nu1 -0.5) / pow(k2[j], config->nu2 -0.5) ;
@@ -239,20 +269,34 @@ void two_Bessel_binave(double *k1, double *k2, double **fk1k2, long N1, long N2,
 	for(i=0; i<=halfN1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i]);
+			out[ij][1] *= cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i]);
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, -I*eta_m[i]) * g1[i] ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	for(i=halfN1+1; i<N1; i++) {
 		for(j=0; j<=halfN2; j++) {
 			ij = i*(halfN2+1) + j;
+#ifdef __cplusplus
+			out[ij][0] *= creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * creal(g1[N1-i]) + cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * cimag(g1[N1-i]);
+			out[ij][1] *= -creal(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * cimag(g1[N1-i]) + cimag(cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i])) * creal(g1[N1-i]);
+			out[ij][0] = out[ij][0];
+			out[ij][1] = -out[ij][1];
+#else
 			out[ij] *= cpow(k20*r20, -I*eta_n[j]) * g2[j] * cpow(k10*r10, I*eta_m[N1-i]) * conj(g1[N1-i]) ;
 			out[ij] = conj(out[ij]);
+#endif
 		}
 	}
 	// printf("out[1]:%.15e+i*(%.15e)\n", creal(out[1]), cimag(out[1]));
 	double *out_ifft;
-	out_ifft = malloc(sizeof(double) * N1*N2 );
+	out_ifft = (double *)malloc(sizeof(double) * N1*N2 );
 	plan_backward = fftw_plan_dft_c2r_2d(N1, N2, out, out_ifft, FFTW_ESTIMATE);
 
 	fftw_execute(plan_backward);

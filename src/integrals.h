@@ -22,7 +22,7 @@
 /* for detection of half integers (spherical (int) vs. ordinary Bessel (half-int) functions) */
 enum coffe_integer_state {COFFE_INTEGER, COFFE_HALF_INTEGER};
 
-struct coffe_integral_t
+typedef struct coffe_integral_t
 {
     /* result I^n_l, or r^(n - l) I^n_l if n > l */
     struct coffe_interpolation result;
@@ -36,21 +36,21 @@ struct coffe_integral_t
     int n, l;
     /* if state = COFFE_integer_state, the passed value of n or l should be the NUMERATOR */
     enum coffe_integer_state state_n, state_l;
-};
+} coffe_integral_t;
 
 
 /* only has a pointer to multiple structures */
-struct coffe_integral_array_t
+typedef struct coffe_integral_array_t
 {
     struct coffe_integral_t *integral;
     /* how many integrals are currently allocated */
     size_t size;
-};
+} coffe_integral_array_t;
 
 
 /* returns a pointer to the suitable array, or NULL if nothing is found */
 struct coffe_integral_t *coffe_find_integral(
-    const struct coffe_integral_array_t *array,
+    const coffe_integral_array_t *array,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
@@ -63,7 +63,7 @@ int coffe_integrals_renormalizable(
     double **output_y,
     const size_t output_len,
     size_t *real_output_len,
-    const struct coffe_interpolation *spectrum,
+    const coffe_interpolation *spectrum,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
@@ -78,13 +78,13 @@ int coffe_integrals_renormalizable(
 **/
 
 int coffe_integrals_init(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    coffe_integral_array_t *integral
 );
 
 int coffe_integrals_free(
-    struct coffe_integral_array_t *integral
+    coffe_integral_array_t *integral
 );
 
 #endif

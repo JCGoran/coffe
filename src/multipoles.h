@@ -19,24 +19,29 @@
 #ifndef COFFE_MULTIPOLES_H
 #define COFFE_MULTIPOLES_H
 
-struct coffe_multipoles_t
+typedef struct coffe_multipoles_t
 {
-    double **result; /* first index = l, second index = separation */
-    int *l;
-    double *sep;
-    size_t l_len, sep_len;
-    int flag;
-};
+    double value;
+    int l;
+    double separation;
+    double z_mean;
+} coffe_multipoles_t;
+
+typedef struct coffe_multipoles_array_t
+{
+    coffe_multipoles_t *value;
+    size_t size;
+} coffe_multipoles_array_t;
 
 int coffe_multipoles_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral,
-    struct coffe_multipoles_t *mp
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    coffe_multipoles_array_t *mp
 );
 
 int coffe_multipoles_free(
-    struct coffe_multipoles_t *mp
+    coffe_multipoles_array_t *mp
 );
 
 #endif
