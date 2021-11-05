@@ -37,4 +37,9 @@ static complex_t clog(complex_t value)
     return std::log(value);
 }
 
+static complex_t csqrt(complex_t value)
+{
+    return std::sqrt(value);
+}
+
 #endif

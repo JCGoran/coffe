@@ -47,7 +47,7 @@
 #include "signal.h"
 
 
-static coffe_multipoles_t multipoles_compute(
+static double multipoles_compute(
     coffe_parameters_t *par,
     coffe_background_t *bg,
     coffe_integral_array_t *integral,
@@ -58,13 +58,7 @@ static coffe_multipoles_t multipoles_compute(
     const enum coffe_output_type output_type
 )
 {
-    coffe_multipoles_t result;
-
-    result.z_mean = z_mean;
-    result.separation = separation;
-    result.l = l;
-
-    result.value = coffe_integrate(
+    return coffe_integrate(
         par, bg, integral,
         z_mean,
         separation,
@@ -73,10 +67,7 @@ static coffe_multipoles_t multipoles_compute(
         integral_type,
         output_type
     );
-
-    return result;
 }
-
 
 
 int coffe_multipoles_init(
@@ -92,6 +83,7 @@ int coffe_multipoles_init(
         cubacores(&n, &p);
     }
 #endif
+    coffe_multipoles_free(mp);
     if (par->output_type == 2){
 
         clock_t start, end;
@@ -103,86 +95,49 @@ int coffe_multipoles_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        mp->size = par->multipoles_output_coordinates.size;
-        mp->value =
-            (coffe_multipoles_t *)coffe_malloc(sizeof(coffe_multipoles_t) * mp->size);
+        mp->size = par->multipoles_coords.size;
+        mp->array = (coffe_multipoles_t *)coffe_malloc(
+            sizeof(coffe_multipoles_t) * mp->size
+        );
 
-        {
-        size_t counter = 0;
-        #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < mp->size; ++i){
-            if (
-                coffe_check_range(
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                mp->value[counter] = multipoles_compute(
-                    par, bg, integral,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].l,
-                    NONINTEGRATED, MULTIPOLES
-                );
-                ++counter;
-            }
-        }
-        }
-#if 0
-        {
-        size_t counter = 0;
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < mp->size; ++i){
-            if (
-                coffe_check_range(
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                mp->value[counter].value += multipoles_compute(
-                    par, bg, integral,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].l,
-                    SINGLE_INTEGRATED, MULTIPOLES
-                ).value;
-                ++counter;
-            }
-        }
+            mp->array[i].coords.z_mean = par->multipoles_coords.array[i].z_mean;
+            mp->array[i].coords.separation = par->multipoles_coords.array[i].separation;
+            mp->array[i].coords.l = par->multipoles_coords.array[i].l;
         }
 
-        {
-        size_t counter = 0;
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < mp->size; ++i){
-            if (
-                coffe_check_range(
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                mp->value[counter].value += multipoles_compute(
-                    par, bg, integral,
-                    par->multipoles_output_coordinates.value[i].z_mean,
-                    par->multipoles_output_coordinates.value[i].separation,
-                    par->multipoles_output_coordinates.value[i].l,
-                    DOUBLE_INTEGRATED, MULTIPOLES
-                ).value;
-                ++counter;
-            }
+            mp->array[i].value = multipoles_compute(
+                par, bg, integral,
+                par->multipoles_coords.array[i].z_mean,
+                par->multipoles_coords.array[i].separation,
+                par->multipoles_coords.array[i].l,
+                NONINTEGRATED, MULTIPOLES
+            );
         }
-        mp->size = counter;
-        }
-#endif
 
-        mp->value = (coffe_multipoles_t *)
-            realloc(mp->value, sizeof(coffe_multipoles_t) * mp->size);
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < mp->size; ++i){
+            mp->array[i].value += multipoles_compute(
+                par, bg, integral,
+                par->multipoles_coords.array[i].z_mean,
+                par->multipoles_coords.array[i].separation,
+                par->multipoles_coords.array[i].l,
+                SINGLE_INTEGRATED, MULTIPOLES
+            );
+        }
+
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < mp->size; ++i){
+            mp->array[i].value += multipoles_compute(
+                par, bg, integral,
+                par->multipoles_coords.array[i].z_mean,
+                par->multipoles_coords.array[i].separation,
+                par->multipoles_coords.array[i].l,
+                DOUBLE_INTEGRATED, MULTIPOLES
+            );
+        }
 
         end = clock();
 
@@ -201,9 +156,9 @@ int coffe_multipoles_free(
     coffe_multipoles_array_t *mp
 )
 {
-    if (mp->size){
-        free(mp->value);
-        mp->size = 0;
-    }
+    if (mp->size)
+        free(mp->array);
+    mp->array = NULL;
+    mp->size = 0;
     return EXIT_SUCCESS;
 }

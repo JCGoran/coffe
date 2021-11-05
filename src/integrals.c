@@ -140,23 +140,23 @@ static const size_t min_sep_len = sizeof(min_sep) / sizeof(min_sep[0]);
 **/
 
 struct coffe_integral_t *coffe_find_integral(
-    const struct coffe_integral_array_t *array,
+    const struct coffe_integral_array_t *integral,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
     const enum coffe_integer_state state_l
 )
 {
-    if (array != NULL){
-        if (array->size != 0){
-            for (size_t i = 0; i < array->size; ++i){
+    if (integral != NULL){
+        if (integral->size != 0){
+            for (size_t i = 0; i < integral->size; ++i){
                 if (
-                    array->integral[i].n == n &&
-                    array->integral[i].l == l &&
-                    array->integral[i].state_n == state_n &&
-                    array->integral[i].state_l == state_l
+                    integral->array[i].n == n &&
+                    integral->array[i].l == l &&
+                    integral->array[i].state_n == state_n &&
+                    integral->array[i].state_l == state_l
                 )
-                    return &array->integral[i];
+                    return &integral->array[i];
             }
             /* hasn't found anything, return NULL */
             return NULL;
@@ -600,7 +600,7 @@ int coffe_integrals_init(
         gsl_set_error_handler_off();
 
     /* default size is zero, and points to nothing */
-    integral->integral = NULL;
+    integral->array = NULL;
     integral->size = 0;
 
     if (
@@ -622,7 +622,7 @@ int coffe_integrals_init(
             {.n = 3, .l = 1}
         };
 
-        integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
+        integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
 
         /* those default renormalized integrals */
         for (size_t i = 0; i < sizeof(terms) / sizeof(*terms); ++i){
@@ -633,19 +633,19 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = (struct coffe_integral_t *)realloc(
-                    integral->integral,
+                integral->array = (struct coffe_integral_t *)realloc(
+                    integral->array,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
-            integral->integral[current_index].n = n;
-            integral->integral[current_index].l = l;
-            integral->integral[current_index].state_n = COFFE_INTEGER;
-            integral->integral[current_index].state_l = COFFE_INTEGER;
-            integral->integral[current_index].renormalization.spline = NULL;
-            integral->integral[current_index].renormalization.xaccel = NULL;
-            integral->integral[current_index].renormalization.yaccel = NULL;
+            integral->array[current_index].n = n;
+            integral->array[current_index].l = l;
+            integral->array[current_index].state_n = COFFE_INTEGER;
+            integral->array[current_index].state_l = COFFE_INTEGER;
+            integral->array[current_index].renormalization.spline = NULL;
+            integral->array[current_index].renormalization.xaccel = NULL;
+            integral->array[current_index].renormalization.yaccel = NULL;
 
             /* if integral is not divergent, use implementation of 2FAST */
             const size_t npoints = par->bessel_bins;
@@ -659,16 +659,16 @@ int coffe_integrals_init(
                 npoints,
                 &output_real_len,
                 &par->power_spectrum_norm,
-                integral->integral[current_index].n,
-                integral->integral[current_index].l,
-                integral->integral[current_index].state_n,
-                integral->integral[current_index].state_l,
+                integral->array[current_index].n,
+                integral->array[current_index].l,
+                integral->array[current_index].state_n,
+                integral->array[current_index].state_l,
                 par->k_min_norm,
                 par->k_max_norm
             );
 
             coffe_init_spline(
-                &integral->integral[current_index].result,
+                &integral->array[current_index].result,
                 final_sep,
                 final_result,
                 output_real_len,
@@ -748,10 +748,10 @@ int coffe_integrals_init(
                         npoints,
                         &output_real_len,
                         &pk_at_z,
-                        integral->integral[current_index].n,
-                        integral->integral[current_index].l,
-                        integral->integral[current_index].state_n,
-                        integral->integral[current_index].state_l,
+                        integral->array[current_index].n,
+                        integral->array[current_index].l,
+                        integral->array[current_index].state_n,
+                        integral->array[current_index].state_l,
                         par->k_min_norm,
                         par->k_max_norm
                     );
@@ -769,7 +769,7 @@ int coffe_integrals_init(
 
                 /* now setup the 2D interpolation */
                 coffe_init_spline2d(
-                    &integral->integral[current_index].result2d,
+                    &integral->array[current_index].result2d,
                     z,
                     final_sep,
                     pk_at_z2d,
@@ -792,16 +792,16 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = (struct coffe_integral_t *)realloc(
-                    integral->integral,
+                integral->array = (struct coffe_integral_t *)realloc(
+                    integral->array,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
-            integral->integral[current_index].n = 4;
-            integral->integral[current_index].l = 0;
-            integral->integral[current_index].state_n = COFFE_INTEGER;
-            integral->integral[current_index].state_l = COFFE_INTEGER;
+            integral->array[current_index].n = 4;
+            integral->array[current_index].l = 0;
+            integral->array[current_index].state_n = COFFE_INTEGER;
+            integral->array[current_index].state_l = COFFE_INTEGER;
 
             double *result =
                 (double *)coffe_malloc(sizeof(double) * coffe_sep_len);
@@ -843,7 +843,7 @@ int coffe_integrals_init(
             }
 
             coffe_init_spline(
-                &integral->integral[current_index].result,
+                &integral->array[current_index].result,
                 separations,
                 result,
                 coffe_sep_len,
@@ -854,7 +854,7 @@ int coffe_integrals_init(
             result0[0] = 0.0;
 
             coffe_init_spline(
-                &integral->integral[current_index].renormalization_zero_separation,
+                &integral->array[current_index].renormalization_zero_separation,
                 separations,
                 result0,
                 coffe_sep_len,
@@ -923,7 +923,7 @@ int coffe_integrals_init(
             }
 
             coffe_init_spline2d(
-                &integral->integral[current_index].renormalization,
+                &integral->array[current_index].renormalization,
                 chi_array,
                 chi_array,
                 result2d,
@@ -946,19 +946,19 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
             else
-                integral->integral = (struct coffe_integral_t *)realloc(
-                    integral->integral,
+                integral->array = (struct coffe_integral_t *)realloc(
+                    integral->array,
                     sizeof(struct coffe_integral_t) * (current_index + 1)
                 );
-            integral->integral[current_index].n = 1;
-            integral->integral[current_index].l = -1;
-            integral->integral[current_index].state_n = COFFE_HALF_INTEGER;
-            integral->integral[current_index].state_l = COFFE_HALF_INTEGER;
-            integral->integral[current_index].renormalization.spline = NULL;
-            integral->integral[current_index].renormalization.xaccel = NULL;
-            integral->integral[current_index].renormalization.yaccel = NULL;
+            integral->array[current_index].n = 1;
+            integral->array[current_index].l = -1;
+            integral->array[current_index].state_n = COFFE_HALF_INTEGER;
+            integral->array[current_index].state_l = COFFE_HALF_INTEGER;
+            integral->array[current_index].renormalization.spline = NULL;
+            integral->array[current_index].renormalization.xaccel = NULL;
+            integral->array[current_index].renormalization.yaccel = NULL;
 
             /* if integral is not divergent, use implementation of 2FAST */
             const size_t npoints = par->bessel_bins;
@@ -972,10 +972,10 @@ int coffe_integrals_init(
                 npoints,
                 &output_real_len,
                 &par->power_spectrum_norm,
-                integral->integral[current_index].n,
-                integral->integral[current_index].l,
-                integral->integral[current_index].state_n,
-                integral->integral[current_index].state_l,
+                integral->array[current_index].n,
+                integral->array[current_index].l,
+                integral->array[current_index].state_n,
+                integral->array[current_index].state_l,
                 par->k_min_norm,
                 par->k_max_norm
             );
@@ -989,7 +989,7 @@ int coffe_integrals_init(
             );
 
             coffe_init_spline(
-                &integral->integral[current_index].result,
+                &integral->array[current_index].result,
                 final_sep,
                 final_result,
                 output_real_len,
@@ -1069,10 +1069,10 @@ int coffe_integrals_init(
                         npoints,
                         &output_real_len,
                         &pk_at_z,
-                        integral->integral[current_index].n,
-                        integral->integral[current_index].l,
-                        integral->integral[current_index].state_n,
-                        integral->integral[current_index].state_l,
+                        integral->array[current_index].n,
+                        integral->array[current_index].l,
+                        integral->array[current_index].state_n,
+                        integral->array[current_index].state_l,
                         par->k_min_norm,
                         par->k_max_norm
                     );
@@ -1090,7 +1090,7 @@ int coffe_integrals_init(
 
                 /* now setup the 2D interpolation */
                 coffe_init_spline2d(
-                    &integral->integral[current_index].result2d,
+                    &integral->array[current_index].result2d,
                     z,
                     final_sep,
                     pk_at_z2d,
@@ -1119,19 +1119,19 @@ int coffe_integrals_init(
                 const size_t current_index = integral->size;
                 /* alloc the space */
                 if (current_index == 0)
-                    integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                    integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
                 else
-                    integral->integral = (struct coffe_integral_t *)realloc(
-                        integral->integral,
+                    integral->array = (struct coffe_integral_t *)realloc(
+                        integral->array,
                         sizeof(struct coffe_integral_t) * (current_index + 1)
                     );
-                integral->integral[current_index].n = 1;
-                integral->integral[current_index].l = l;
-                integral->integral[current_index].state_n = COFFE_INTEGER;
-                integral->integral[current_index].state_l = COFFE_INTEGER;
-                integral->integral[current_index].renormalization.spline = NULL;
-                integral->integral[current_index].renormalization.xaccel = NULL;
-                integral->integral[current_index].renormalization.yaccel = NULL;
+                integral->array[current_index].n = 1;
+                integral->array[current_index].l = l;
+                integral->array[current_index].state_n = COFFE_INTEGER;
+                integral->array[current_index].state_l = COFFE_INTEGER;
+                integral->array[current_index].renormalization.spline = NULL;
+                integral->array[current_index].renormalization.xaccel = NULL;
+                integral->array[current_index].renormalization.yaccel = NULL;
 
                 /* if integral is not divergent, use implementation of 2FAST */
                 const size_t npoints = par->bessel_bins;
@@ -1145,16 +1145,16 @@ int coffe_integrals_init(
                     npoints,
                     &output_real_len,
                     &par->power_spectrum_norm,
-                    integral->integral[current_index].n,
-                    integral->integral[current_index].l,
-                    integral->integral[current_index].state_n,
-                    integral->integral[current_index].state_l,
+                    integral->array[current_index].n,
+                    integral->array[current_index].l,
+                    integral->array[current_index].state_n,
+                    integral->array[current_index].state_l,
                     par->k_min_norm,
                     par->k_max_norm
                 );
 
                 coffe_init_spline(
-                    &integral->integral[current_index].result,
+                    &integral->array[current_index].result,
                     final_sep,
                     final_result,
                     output_real_len,
@@ -1234,10 +1234,10 @@ int coffe_integrals_init(
                         npoints,
                         &output_real_len,
                         &pk_at_z,
-                        integral->integral[current_index].n,
-                        integral->integral[current_index].l,
-                        integral->integral[current_index].state_n,
-                        integral->integral[current_index].state_l,
+                        integral->array[current_index].n,
+                        integral->array[current_index].l,
+                        integral->array[current_index].state_n,
+                        integral->array[current_index].state_l,
                         par->k_min_norm,
                         par->k_max_norm
                     );
@@ -1255,7 +1255,7 @@ int coffe_integrals_init(
 
                 /* now setup the 2D interpolation */
                 coffe_init_spline2d(
-                    &integral->integral[current_index].result2d,
+                    &integral->array[current_index].result2d,
                     z,
                     final_sep,
                     pk_at_z2d,
@@ -1285,19 +1285,19 @@ int coffe_integrals_init(
                     const size_t current_index = integral->size;
                     /* alloc the space */
                     if (current_index == 0)
-                        integral->integral = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                        integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
                     else
-                        integral->integral = (struct coffe_integral_t *)realloc(
-                            integral->integral,
+                        integral->array = (struct coffe_integral_t *)realloc(
+                            integral->array,
                             sizeof(struct coffe_integral_t) * (current_index + 1)
                         );
-                    integral->integral[current_index].n = l - 2 * k + 3;
-                    integral->integral[current_index].l = l - 2 * k + 1;
-                    integral->integral[current_index].state_n = COFFE_HALF_INTEGER;
-                    integral->integral[current_index].state_l = COFFE_HALF_INTEGER;
-                    integral->integral[current_index].renormalization.spline = NULL;
-                    integral->integral[current_index].renormalization.xaccel = NULL;
-                    integral->integral[current_index].renormalization.yaccel = NULL;
+                    integral->array[current_index].n = l - 2 * k + 3;
+                    integral->array[current_index].l = l - 2 * k + 1;
+                    integral->array[current_index].state_n = COFFE_HALF_INTEGER;
+                    integral->array[current_index].state_l = COFFE_HALF_INTEGER;
+                    integral->array[current_index].renormalization.spline = NULL;
+                    integral->array[current_index].renormalization.xaccel = NULL;
+                    integral->array[current_index].renormalization.yaccel = NULL;
 
                     /* if integral is not divergent, use implementation of 2FAST */
                     const size_t npoints = par->bessel_bins;
@@ -1311,16 +1311,16 @@ int coffe_integrals_init(
                         npoints,
                         &output_real_len,
                         &par->power_spectrum_norm,
-                        integral->integral[current_index].n,
-                        integral->integral[current_index].l,
-                        integral->integral[current_index].state_n,
-                        integral->integral[current_index].state_l,
+                        integral->array[current_index].n,
+                        integral->array[current_index].l,
+                        integral->array[current_index].state_n,
+                        integral->array[current_index].state_l,
                         par->k_min_norm,
                         par->k_max_norm
                     );
 
                     coffe_init_spline(
-                        &integral->integral[current_index].result,
+                        &integral->array[current_index].result,
                         final_sep,
                         final_result,
                         output_real_len,
@@ -1400,10 +1400,10 @@ int coffe_integrals_init(
                         npoints,
                         &output_real_len,
                         &pk_at_z,
-                        integral->integral[current_index].n,
-                        integral->integral[current_index].l,
-                        integral->integral[current_index].state_n,
-                        integral->integral[current_index].state_l,
+                        integral->array[current_index].n,
+                        integral->array[current_index].l,
+                        integral->array[current_index].state_n,
+                        integral->array[current_index].state_l,
                         par->k_min_norm,
                         par->k_max_norm
                     );
@@ -1421,7 +1421,7 @@ int coffe_integrals_init(
 
                 /* now setup the 2D interpolation */
                 coffe_init_spline2d(
-                    &integral->integral[current_index].result2d,
+                    &integral->array[current_index].result2d,
                     z,
                     final_sep,
                     pk_at_z2d,
@@ -1454,20 +1454,19 @@ int coffe_integrals_init(
 
 
 int coffe_integrals_free(
-    struct coffe_integral_array_t *array
+    struct coffe_integral_array_t *integral
 )
 {
     return EXIT_SUCCESS;
-    if (array->size > 0){
-        const size_t size = array->size;
-        for (size_t i = 0; i < size; ++i){
-            coffe_free_spline(&array->integral[i].result);
-            coffe_free_spline(&array->integral[i].renormalization_zero_separation);
-            coffe_free_spline2d(&array->integral[i].renormalization);
+    if (integral->size > 0){
+        for (size_t i = 0; i < integral->size; ++i){
+            coffe_free_spline(&integral->array[i].result);
+            coffe_free_spline(&integral->array[i].renormalization_zero_separation);
+            coffe_free_spline2d(&integral->array[i].renormalization);
         }
         /* so we don't free it again */
-        array->size = 0;
-        free(array->integral);
+        integral->size = 0;
+        free(integral->array);
     }
     return EXIT_SUCCESS;
 }

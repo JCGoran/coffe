@@ -19,50 +19,19 @@
 #ifndef COFFE_CORRFUNC_H
 #define COFFE_CORRFUNC_H
 
-enum coffe_corrfunc_coordinates_enum
-{
-    COFFE_COORDINATE_MEAN_REDSHIFT,
-    COFFE_COORDINATE_SEPARATION,
-    COFFE_COORDINATE_ANGLE_ALPHA,
-    COFFE_COORDINATE_ANGLE_BETA,
-    COFFE_COORDINATE_ANGLE_GAMMA,
-    COFFE_COORDINATE_ANGLE_MU,
-    COFFE_COORDINATE_SEPARATION_PARALLEL,
-    COFFE_COORDINATE_SEPARATION_PERP
-};
-
-typedef struct coffe_corrfunc_coordinate_t
-{
-    double value;
-    enum coffe_corrfunc_coordinates_enum name;
-} coffe_corrfunc_coordinate_t;
-
-/* simple wrapper for the above */
-typedef struct coffe_corrfunc_coordinate_array_t
-{
-    coffe_corrfunc_coordinate_t value[3];
-} coffe_corrfunc_coordinate_array_t;
+#include "common.h"
 
 typedef struct coffe_corrfunc_t
 {
+    coffe_corrfunc_coords_t coords;
     double value;
-    coffe_corrfunc_coordinate_array_t coordinates;
 } coffe_corrfunc_t;
 
 typedef struct coffe_corrfunc_array_t
 {
-    coffe_corrfunc_t *value;
+    coffe_corrfunc_t *array;
     size_t size;
 } coffe_corrfunc_array_t;
-
-/* for switching between coordinates */
-int coffe_corrfunc_coordinate_transform(
-    const coffe_corrfunc_coordinate_array_t input,
-    const enum coffe_corrfunc_coordinates_enum coord1,
-    const enum coffe_corrfunc_coordinates_enum coord2,
-    const enum coffe_corrfunc_coordinates_enum coord3,
-    coffe_corrfunc_coordinate_array_t *output
-);
 
 int coffe_corrfunc_init(
     coffe_parameters_t *par,

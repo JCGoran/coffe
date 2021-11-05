@@ -29,7 +29,7 @@ typedef struct coffe_average_multipoles_t
 
 typedef struct coffe_average_multipoles_array_t
 {
-    coffe_average_multipoles_t *value;
+    coffe_average_multipoles_t *array;
     size_t size;
 } coffe_average_multipoles_array_t;
 

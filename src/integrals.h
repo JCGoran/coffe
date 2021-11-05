@@ -42,7 +42,7 @@ typedef struct coffe_integral_t
 /* only has a pointer to multiple structures */
 typedef struct coffe_integral_array_t
 {
-    struct coffe_integral_t *integral;
+    struct coffe_integral_t *array;
     /* how many integrals are currently allocated */
     size_t size;
 } coffe_integral_array_t;

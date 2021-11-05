@@ -19,20 +19,31 @@
 #ifndef COFFE_MULTIPOLES_H
 #define COFFE_MULTIPOLES_H
 
+#include "common.h"
+
+/**
+    contains the value of the multipole for one point, i.e. at (l, r, z)
+**/
 typedef struct coffe_multipoles_t
 {
+    coffe_multipoles_coords_t coords;
     double value;
-    int l;
-    double separation;
-    double z_mean;
 } coffe_multipoles_t;
 
+
+/**
+    container for the above structure with a size
+**/
 typedef struct coffe_multipoles_array_t
 {
-    coffe_multipoles_t *value;
+    coffe_multipoles_t *array;
     size_t size;
 } coffe_multipoles_array_t;
 
+
+/**
+    main function for computing the multipoles
+**/
 int coffe_multipoles_init(
     coffe_parameters_t *par,
     coffe_background_t *bg,

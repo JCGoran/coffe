@@ -758,7 +758,7 @@ int coffe_parameters_free(
                 free(par->multipole_values);
             free(par->covariance_z_mean);
             free(par->covariance_deltaz);
-            free(par->covariance_fsky);
+            free(par->fsky);
             free(par->covariance_density);
             free(par->covariance_pixelsize);
         }
@@ -769,7 +769,7 @@ int coffe_parameters_free(
                 free(par->multipole_values);
             free(par->covariance_zmin);
             free(par->covariance_zmax);
-            free(par->covariance_fsky);
+            free(par->fsky);
             free(par->covariance_density);
             free(par->covariance_pixelsize);
         }
@@ -778,7 +778,7 @@ int coffe_parameters_free(
         par->multipole_values_len = 0;
         par->covariance_z_mean_len = 0;
         par->covariance_deltaz_len = 0;
-        par->covariance_fsky = 0;
+        par->fsky = 0;
         par->covariance_density = 0;
         par->covariance_zmin = 0;
         par->covariance_zmax = 0;
@@ -1178,3 +1178,26 @@ double coffe_integrate_multidimensional(
 #endif
 }
 
+double *coffe_generate_range(
+    const double xmin,
+    const double xmax,
+    const size_t steps
+)
+{
+    /**
+        Works the same as Python's range.
+        User is responsible for memory cleanup.
+    **/
+    if (xmin >= xmax){
+        fprintf(
+            stderr, "ERROR: xmin (%e) larger than xmax (%e)\n",
+            xmin, xmax
+        );
+        exit(EXIT_FAILURE);
+    }
+    double *result = (double *)coffe_malloc(sizeof(double) * steps);
+    for (size_t i = 0; i < steps; ++i){
+        result[i] = xmin + (xmax - xmin) * i / steps;
+    }
+    return result;
+}

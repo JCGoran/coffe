@@ -89,69 +89,73 @@ double coffe_max_array_double(
     const size_t size
 );
 
-/*
-namespace Coffe
-{
-
-// how does the type get deduced tho?
-template <typename T> struct Parameter
-{
-    public:
-    T value;
-    std::string name;
-} Parameter;
-
-class Parameters
-{
-    private:
-    std::vector<Parameter> values;
-    public:
-    Parameter get(const std::string& name) const;
-    template <typename T> void set(const std::string& name, T value);
-};
-
-};
-*/
 
 /**
     simple wrapper with failsafe for malloc
 **/
 
-typedef struct coffe_corrfunc_output_coordinates_t
+
+/**
+    contains the coordinates for the correlation function at (z, r, mu)
+**/
+typedef struct coffe_corrfunc_coords_t
 {
     double z_mean;
-    double deltaz;
     double separation;
     double mu;
-} coffe_corrfunc_output_coordinates_t;
+} coffe_corrfunc_coords_t;
 
-typedef struct coffe_multipoles_output_coordinates_t
+
+/**
+    container for the above
+**/
+typedef struct coffe_corrfunc_coords_array_t
+{
+    coffe_corrfunc_coords_t *array;
+    size_t size;
+} coffe_corrfunc_coords_array_t;
+
+
+
+/**
+    same as above for multipoles
+**/
+typedef struct coffe_multipoles_coords_t
 {
     double z_mean;
-    double deltaz;
     double separation;
     int l;
-} coffe_multipoles_output_coordinates_t;
+} coffe_multipoles_coords_t;
 
 
 
-typedef struct coffe_corrfunc_output_coordinates_array_t
+typedef struct coffe_multipoles_coords_array_t
 {
-    coffe_corrfunc_output_coordinates_t *value;
+    coffe_multipoles_coords_t *array;
     size_t size;
-} coffe_corrfunc_output_coordinates_array_t;
+} coffe_multipoles_coords_array_t;
 
 
-typedef struct coffe_multipoles_output_coordinates_array_t
+/**
+    -||- for RAMPs
+**/
+
+typedef struct coffe_average_multipoles_coords_t
 {
-    coffe_multipoles_output_coordinates_t *value;
+    double z_mean;
+    double separation;
+    int l;
+} coffe_average_multipoles_coords_t;
+
+typedef struct coffe_average_multipoles_coords_array_t
+{
+    coffe_average_multipoles_coords_t *array;
     size_t size;
-} coffe_multipoles_output_coordinates_array_t;
+} coffe_average_multipoles_coords_array_t;
 
 
 
-
-void *coffe_malloc(size_t len);
+void *coffe_malloc(size_t size);
 
 typedef struct coffe_interpolation
 {
@@ -210,7 +214,7 @@ typedef struct coffe_parameters_t
 
     size_t mu_len; /* number of angles */
 
-    struct coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
+    coffe_correlation_contributions correlation_contrib; /* all of the correlation contributions (internally) */
 
     char **type_bg; /* background values to output */
 
@@ -238,13 +242,11 @@ typedef struct coffe_parameters_t
 
     double *z_mean; /* mean redshift */
 
-    double *deltaz; /* width of redshift bin */
-
     size_t z_mean_len;
 
-    size_t deltaz_len;
+    double *deltaz;
 
-    char file_sep[COFFE_MAX_STRLEN]; /* string with name of file containing separations */
+    size_t deltaz_len;
 
     double *sep; /* all the separations */
 
@@ -258,9 +260,9 @@ typedef struct coffe_parameters_t
 
     char file_power_spectrum[COFFE_MAX_STRLEN]; /* file containing the PS */
 
-    struct coffe_interpolation power_spectrum;
+    coffe_interpolation power_spectrum;
 
-    struct coffe_interpolation power_spectrum_norm;
+    coffe_interpolation power_spectrum_norm;
 
     double k_min; /* min value to be taken from PS file */
 
@@ -275,7 +277,7 @@ typedef struct coffe_parameters_t
 
     char file_galaxy_bias1[COFFE_MAX_STRLEN], file_galaxy_bias2[COFFE_MAX_STRLEN];
 
-    struct coffe_interpolation galaxy_bias1, galaxy_bias2;
+    coffe_interpolation galaxy_bias1, galaxy_bias2;
 
     int read_magnification_bias1, read_magnification_bias2;
 
@@ -283,13 +285,13 @@ typedef struct coffe_parameters_t
 
     char file_magnification_bias1[COFFE_MAX_STRLEN], file_magnification_bias2[COFFE_MAX_STRLEN];
 
-    struct coffe_interpolation magnification_bias1, magnification_bias2;
+    coffe_interpolation magnification_bias1, magnification_bias2;
 
     int read_evolution_bias1, read_evolution_bias2;
 
     char file_evolution_bias1[COFFE_MAX_STRLEN], file_evolution_bias2[COFFE_MAX_STRLEN];
 
-    struct coffe_interpolation evolution_bias1, evolution_bias2;
+    coffe_interpolation evolution_bias1, evolution_bias2;
 
     int divergent; /* flag for divergent integrals */
 
@@ -323,9 +325,9 @@ typedef struct coffe_parameters_t
 
     size_t covariance_zmax_len;
 
-    double *covariance_fsky;
+    double *fsky;
 
-    size_t covariance_fsky_len;
+    size_t fsky_len;
 
     double *covariance_density;
 
@@ -400,9 +402,11 @@ typedef struct coffe_parameters_t
 
     int only_cross_correlations;
 
-    coffe_corrfunc_output_coordinates_array_t corrfunc_output_coordinates;
+    coffe_corrfunc_coords_array_t corrfunc_coords;
 
-    coffe_multipoles_output_coordinates_array_t multipoles_output_coordinates;
+    coffe_multipoles_coords_array_t multipoles_coords;
+
+    coffe_average_multipoles_coords_array_t average_multipoles_coords;
 
 } coffe_parameters_t;
 
@@ -666,5 +670,11 @@ int write_single_line(
     const char *filename,
     const double *values,
     ...
+);
+
+double *coffe_generate_range(
+    const double xmin,
+    const double xmax,
+    const size_t steps
 );
 #endif

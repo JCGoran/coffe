@@ -25,6 +25,10 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "common.h"
 #include "errors.h"
 #include "parser.h"
@@ -41,12 +45,12 @@ int main(int argc, char *argv[])
 {
     coffe_parameters_t par;
     coffe_background_t bg;
-    coffe_integral_array_t integral;
-    coffe_corrfunc_array_t cf;
-    coffe_multipoles_array_t mp;
-    coffe_average_multipoles_array_t ramp;
-    coffe_covariance_array_t cov_mp;
-    coffe_covariance_array_t cov_ramp;
+    coffe_integral_array_t integral = {.array = NULL, .size = 0};
+    coffe_corrfunc_array_t cf = {.array = NULL, .size = 0};
+    coffe_multipoles_array_t mp = {.array = NULL, .size = 0};
+    coffe_average_multipoles_array_t ramp = {.array = NULL, .size = 0};
+    coffe_covariance_array_t cov_mp = {.array = NULL, .size = 0};
+    coffe_covariance_array_t cov_ramp = {.array = NULL, .size = 0};
 
     char settings_file[COFFE_MAX_STRLEN];
 
@@ -105,7 +109,11 @@ int main(int argc, char *argv[])
         n = atoi(nthreads_opt);
     }
     else{
+        #ifdef _OPENMP
+        n = omp_get_max_threads();
+        #else
         n = 1;
+        #endif
     }
 
     if (n <= 0){

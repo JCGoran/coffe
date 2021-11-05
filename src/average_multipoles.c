@@ -40,57 +40,27 @@
 
 #include "signal.h"
 
-static int average_multipoles_check_range(
-    double **separations,
-    size_t *len,
-    double zmin,
-    double zmax,
-    coffe_background_t *bg
+static double average_multipoles_compute(
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral,
+    const double z_min,
+    const double z_max,
+    const double separation,
+    const int l,
+    const enum coffe_integral_type integral_type,
+    const enum coffe_output_type output_type
 )
 {
-    /* checking for min separation */
-    qsort(*separations, *len, sizeof(double), coffe_compare_descending);
-
-    double lower_limit = 0.0; /* arbitrary limit */
-
-    size_t counter_neg = 0;
-    for (size_t i = 0; i<*len; ++i){
-        if ((*separations)[i] >= lower_limit){
-            ++counter_neg;
-        }
-    }
-    *separations = (double *)realloc(*separations, sizeof(double)*counter_neg);
-    *len = counter_neg;
-
-    qsort(*separations, *len, sizeof(double), coffe_compare_ascending);
-
-    size_t counter = 0;
-    double z1, z2;
-    for (size_t i = 0; i<*len; ++i){
-        double temp_sep = (*separations)[i]*COFFE_H0;
-        z1 = coffe_interp_spline(
-            &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, zmin) + temp_sep/2.
-        );
-        z2 = coffe_interp_spline(
-            &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, zmax) - temp_sep/2.
-        );
-        if (z1 < z2 && z1 > zmin && z2 < zmax && gsl_finite(z1) && gsl_finite(z2)){
-            ++counter;
-        }
-    }
-    *separations = (double *)realloc(*separations, sizeof(double)*counter);
-    if (counter < *len){
-        fprintf(
-            stderr,
-            "WARNING: separations too large for redshift averaged multipoles; "
-            "cutting of list at the value %.2f "
-            "Mpc/h\n", (*separations)[counter - 1]
-        );
-    }
-    *len = counter;
-    return EXIT_SUCCESS;
+    return coffe_integrate(
+        par, bg, integral,
+        (z_min + z_max) / 2.,
+        separation,
+        0,
+        l,
+        integral_type,
+        output_type
+    );
 }
 
 
@@ -101,15 +71,14 @@ int coffe_average_multipoles_init(
     coffe_average_multipoles_array_t *ramp
 )
 {
-    return 0;
-/*
 #ifdef HAVE_CUBA
     {
         int n = 0, p = 10000;
         cubacores(&n, &p);
     }
 #endif
-    ramp->flag = 0;
+    coffe_average_multipoles_free(ramp);
+/*
     if (par->output_type == 3){
 
         clock_t start, end;
@@ -121,59 +90,55 @@ int coffe_average_multipoles_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        alloc_double_matrix(
-            &ramp->result,
-            par->multipole_values_len,
-            par->sep_len
-        );
-        ramp->l = (int *)coffe_malloc(sizeof(int)*par->multipole_values_len);
-        for (size_t i = 0; i<par->multipole_values_len; ++i){
-            ramp->l[i] = (int)par->multipole_values[i];
-        }
-        ramp->l_len = (size_t)par->multipole_values_len;
-
-        ramp->sep = (double *)coffe_malloc(sizeof(double)*par->sep_len);
-        for (size_t i = 0; i<par->sep_len; ++i){
-            ramp->sep[i] = (double)par->sep[i];
-        }
-        ramp->sep_len = (size_t)par->sep_len;
-        average_multipoles_check_range(
-            &ramp->sep, &ramp->sep_len,
-            par->z_min, par->z_max, bg
+        ramp->size = par->average_multipoles_coords.size;
+        ramp->array = (coffe_average_multipoles_t *)coffe_malloc(
+            sizeof(coffe_average_multipoles_t) * ramp->size
         );
 
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<ramp->l_len; ++i){
-            for (size_t j = 0; j<ramp->sep_len; ++j){
-                ramp->result[i][j] =
-                    coffe_integrate(
-                        par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, 0, ramp->l[i],
-                        NONINTEGRATED, AVERAGE_MULTIPOLES
-                    );
-            }
+        for (size_t i = 0; i < mp->size; ++i){
+            ramp->array[i].coords.z_min = par->average_multipoles_coords.array[i].z_min;
+            ramp->array[i].coords.z_max = par->average_multipoles_coords.array[i].z_max;
+            ramp->array[i].coords.separation = par->average_multipoles_coords.array[i].separation;
+            ramp->array[i].coords.l = par->multipoles_coords.array[i].l;
         }
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<ramp->l_len; ++i){
-            for (size_t j = 0; j<ramp->sep_len; ++j){
-                ramp->result[i][j] +=
-                    coffe_integrate(
-                        par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, 0, ramp->l[i],
-                        SINGLE_INTEGRATED, AVERAGE_MULTIPOLES
-                    );
-            }
+
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < ramp->size; ++i){
+            ramp->array[i].value =
+                average_multipoles_compute(
+                    par, bg, integral,
+                    ramp->array[i].coords.z_min,
+                    ramp->array[i].coords.z_max,
+                    ramp->array[i].coords.separation,
+                    ramp->array[i].coords.l,
+                    NONINTEGRATED, AVERAGE_MULTIPOLES
+                );
         }
-        #pragma omp parallel for num_threads(par->nthreads) collapse(2)
-        for (size_t i = 0; i<ramp->l_len; ++i){
-            for (size_t j = 0; j<ramp->sep_len; ++j){
-                ramp->result[i][j] +=
-                    coffe_integrate(
-                        par, bg, integral,
-                        ramp->sep[j]*COFFE_H0, 0, ramp->l[i],
-                        DOUBLE_INTEGRATED, AVERAGE_MULTIPOLES
-                    );
-            }
+
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < ramp->size; ++i){
+            ramp->array[i].value +=
+                average_multipoles_compute(
+                    par, bg, integral,
+                    ramp->array[i].coords.z_min,
+                    ramp->array[i].coords.z_max,
+                    ramp->array[i].coords.separation,
+                    ramp->array[i].coords.l,
+                    SINGLE_INTEGRATED, AVERAGE_MULTIPOLES
+                );
+        }
+
+        #pragma omp parallel for num_threads(par->nthreads)
+        for (size_t i = 0; i < ramp->size; ++i){
+            ramp->array[i].value +=
+                average_multipoles_compute(
+                    par, bg, integral,
+                    ramp->array[i].coords.z_min,
+                    ramp->array[i].coords.z_max,
+                    ramp->array[i].coords.separation,
+                    ramp->array[i].coords.l,
+                    DOUBLE_INTEGRATED, AVERAGE_MULTIPOLES
+                );
         }
 
         end = clock();
@@ -184,26 +149,20 @@ int coffe_average_multipoles_init(
 
         gsl_set_error_handler(default_handler);
 
-        ramp->flag = 1;
     }
 
+*/
     return EXIT_SUCCESS;
 }
+
 
 int coffe_average_multipoles_free(
-    struct coffe_average_multipoles_t *ramp
+    struct coffe_average_multipoles_array_t *ramp
 )
 {
-    if (ramp->flag){
-        for (size_t i = 0; i<ramp->l_len; ++i){
-            free(ramp->result[i]);
-        }
-        free(ramp->result);
-        free(ramp->l);
-        free(ramp->sep);
-        ramp->flag = 0;
-    }
+    if (ramp->size)
+        free(ramp->array);
+    ramp->array = NULL;
+    ramp->size = 0;
     return EXIT_SUCCESS;
-}
-*/
 }

@@ -48,32 +48,8 @@
 #include "corrfunc.h"
 #include "signal.h"
 
-int coffe_corrfunc_coordinate_transform(
-    const coffe_corrfunc_coordinate_array_t input,
-    const enum coffe_corrfunc_coordinates_enum coord1,
-    const enum coffe_corrfunc_coordinates_enum coord2,
-    const enum coffe_corrfunc_coordinates_enum coord3,
-    coffe_corrfunc_coordinate_array_t *output
-)
-{
-    /* make sure they're all different */
-    if (
-        coord1 == coord2 ||
-        coord2 == coord3 ||
-        coord3 == coord1
-    ){
-        fprintf(
-            stderr,
-            "Duplicate coordinates encountered\n"
-        );
-        exit(EXIT_FAILURE);
-    }
 
-    /* placeholder: this is more complicated than I expected */
-    return 0;
-}
-
-static coffe_corrfunc_t corrfunc_compute(
+static double corrfunc_compute(
     coffe_parameters_t *par,
     coffe_background_t *bg,
     coffe_integral_array_t *integral,
@@ -84,18 +60,7 @@ static coffe_corrfunc_t corrfunc_compute(
     const enum coffe_output_type output_type
 )
 {
-    coffe_corrfunc_t result;
-
-    result.coordinates.value[0].value = z_mean;
-    result.coordinates.value[0].name = COFFE_COORDINATE_MEAN_REDSHIFT;
-
-    result.coordinates.value[1].value = separation;
-    result.coordinates.value[1].name = COFFE_COORDINATE_SEPARATION;
-
-    result.coordinates.value[2].value = mu;
-    result.coordinates.value[1].name = COFFE_COORDINATE_ANGLE_MU;
-
-    result.value = coffe_integrate(
+    return coffe_integrate(
         par, bg, integral,
         z_mean,
         separation,
@@ -104,18 +69,7 @@ static coffe_corrfunc_t corrfunc_compute(
         integral_type,
         output_type
     );
-
-    return result;
 }
-
-
-const double r_parallel[] = {
-0.1,0.2,0.4,0.8,1.,1.5,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.,27.,28.,29.,30.,32.,34.,36.,38.,40.,42.,44.,46.,48.,50.,52.,54.,56.,58.,60.,62.,64.,66.,68.,70.,72.,74.,76.,78.,80.,81.,82.,83.,84.,85.,86.,87.,88.,89.,90.,91.,92.,93.,94.,95.,95.5,96.,96.5,97.,97.5,98.,98.5,99.,99.5,100.,100.5,101.,101.5,102.,102.5,103.,103.5,104.,104.5,105.,106.,107.,108.,109.,110.,112.,114.,116.,118.,120.,124.,128.,132.,136.,140.,144.,148.,152.,156.,160.,164.,168.,172.,176.,180.,185.,190.,195.,200.,205.,210.,215.,220.,225.,230.,235.,240.,250.,260.,270.,280.,290.,300.};
-
-const double r_perpendicular[] = {
-0.1,0.2,0.4,0.8,1.,1.5,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.,27.,28.,29.,30.,32.,34.,36.,38.,40.,42.,44.,46.,48.,50.,52.,54.,56.,58.,60.,62.,64.,66.,68.,70.,72.,74.,76.,78.,80.,81.,82.,83.,84.,85.,86.,87.,88.,89.,90.,91.,92.,93.,94.,95.,95.5,96.,96.5,97.,97.5,98.,98.5,99.,99.5,100.,100.5,101.,101.5,102.,102.5,103.,103.5,104.,104.5,105.,106.,107.,108.,109.,110.,112.,114.,116.,118.,120.,124.,128.,132.,136.,140.,144.,148.,152.,156.,160.,164.,168.,172.,176.,180.,185.,190.,195.,200.,205.,210.,215.,220.,225.,230.,235.,240.,250.,260.,270.,280.,290.,300.};
-
-const size_t r_p_len = sizeof(r_parallel)/sizeof(r_parallel[0]);
 
 /**
     computes and stores the values of the correlation
@@ -135,6 +89,7 @@ int coffe_corrfunc_init(
         cubacores(&n, &p);
     }
 #endif
+    coffe_corrfunc_free(corrfunc);
     if (par->output_type == 1){
 
         clock_t start, end;
@@ -146,89 +101,58 @@ int coffe_corrfunc_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        corrfunc->size = par->corrfunc_output_coordinates.size;
-        corrfunc->value =
-            (coffe_corrfunc_t *)coffe_malloc(sizeof(coffe_corrfunc_t) * corrfunc->size);
+        corrfunc->size = par->corrfunc_coords.size;
+        corrfunc->array = (coffe_corrfunc_t *)coffe_malloc(
+            sizeof(coffe_corrfunc_t) * corrfunc->size
+        );
 
-        {
-        size_t counter = 0;
+        for (size_t i = 0; i < corrfunc->size; ++i){
+            corrfunc->array[i].coords.z_mean = par->corrfunc_coords.array[i].z_mean;
+            corrfunc->array[i].coords.separation = par->corrfunc_coords.array[i].separation;
+            corrfunc->array[i].coords.mu = par->corrfunc_coords.array[i].mu;
+        }
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            if (
-                coffe_check_range(
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                corrfunc->value[counter] = corrfunc_compute(
-                    par, bg, integral,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].mu,
-                    NONINTEGRATED, CORRFUNC
-                );
-            }
-        }
+            corrfunc->array[i].value = corrfunc_compute(
+                par, bg, integral,
+                par->corrfunc_coords.array[i].z_mean,
+                par->corrfunc_coords.array[i].separation,
+                par->corrfunc_coords.array[i].mu,
+                NONINTEGRATED, CORRFUNC
+            );
         }
 
-        {
-        size_t counter = 0;
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            if (
-                coffe_check_range(
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                corrfunc->value[counter].value += corrfunc_compute(
-                    par, bg, integral,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].mu,
-                    SINGLE_INTEGRATED, CORRFUNC
-                ).value;
-                ++counter;
-            }
-        }
+            corrfunc->array[i].value += corrfunc_compute(
+                par, bg, integral,
+                par->corrfunc_coords.array[i].z_mean,
+                par->corrfunc_coords.array[i].separation,
+                par->corrfunc_coords.array[i].mu,
+                SINGLE_INTEGRATED, CORRFUNC
+            );
         }
 
-        {
-        size_t counter = 0;
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            if (
-                coffe_check_range(
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].deltaz,
-                    bg
-                )
-            ){
-                corrfunc->value[counter].value += corrfunc_compute(
-                    par, bg, integral,
-                    par->corrfunc_output_coordinates.value[i].z_mean,
-                    par->corrfunc_output_coordinates.value[i].separation,
-                    par->corrfunc_output_coordinates.value[i].mu,
-                    DOUBLE_INTEGRATED, CORRFUNC
-                ).value;
-                ++counter;
-            }
+            corrfunc->array[i].value += corrfunc_compute(
+                par, bg, integral,
+                par->corrfunc_coords.array[i].z_mean,
+                par->corrfunc_coords.array[i].separation,
+                par->corrfunc_coords.array[i].mu,
+                DOUBLE_INTEGRATED, CORRFUNC
+            );
         }
-        }
-
-        gsl_set_error_handler(default_handler);
 
         end = clock();
 
         if (par->verbose)
             printf("Correlation function calculated in %.2f s\n",
                 (double)(end - start) / CLOCKS_PER_SEC);
+
+        gsl_set_error_handler(default_handler);
+
     }
 
     return EXIT_SUCCESS;
@@ -238,10 +162,10 @@ int coffe_corrfunc_free(
     coffe_corrfunc_array_t *cf
 )
 {
-    if (cf->size){
-        free(cf->value);
-        cf->size = 0;
-    }
+    if (cf->size)
+        free(cf->array);
+    cf->array = NULL;
+    cf->size = 0;
     return EXIT_SUCCESS;
 }
 

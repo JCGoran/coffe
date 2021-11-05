@@ -19,30 +19,25 @@
 #ifndef COFFE_COVARIANCE
 #define COFFE_COVARIANCE
 
+#include "common.h"
+
 typedef struct coffe_covariance_t
 {
-    double *z_mean, *deltaz, *density, *fsky;
-    double *zmin, *zmax; /* placeholder for RAMPs */
-    size_t list_len; /* length of z_mean, density and fsky */
-    double *pixelsize;
-    double **sep;
-    int *l;
-    size_t *sep_len, l_len; /* sep_len is actually number of pixels */
-    double ***result; /* result[i][j*l_len + k][l*sep_len[i] + m] gives the covariance at z_mean[i], with f_sky[i], density[i], of multipoles l[j] and l[k], at separations sep[i][l] and sep[i][m] */
-    int flag;
+    coffe_multipoles_coords_t coords1, coords2;
+    double value;
 } coffe_covariance_t;
 
 typedef struct coffe_covariance_array_t
 {
-    coffe_covariance_t *value;
+    coffe_covariance_t *array;
     size_t size;
 } coffe_covariance_array_t;
 
 int coffe_covariance_init(
     coffe_parameters_t *par,
     coffe_background_t *bg,
-    coffe_covariance_t *cov_mp,
-    coffe_covariance_t *cov_ramp
+    coffe_covariance_array_t *cov_mp,
+    coffe_covariance_array_t *cov_ramp
 );
 
 int coffe_covariance_free(
