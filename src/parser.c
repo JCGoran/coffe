@@ -267,6 +267,35 @@ static int parse_bias(
 }
 
 
+int coffe_parse_covariance_from_array(
+    const double *z,
+    const size_t z_len,
+    const int *l,
+    const double l_len,
+    const double *r,
+    const double r_len,
+    coffe_covariance_coords_array_t *coords
+)
+{
+
+    size_t counter = 0;
+    for (size_t zi = 0; zi < z_len; ++zi){
+    for (size_t l1 = 0; l1 < l_len; ++l1){
+    for (size_t l2 = 0; l2 < l_len; ++l2){
+    for (size_t r1 = 0; r1 < r_len; ++r1){
+    for (size_t r2 = 0; r2 < r_len; ++r2){
+        coords->array[counter].z_mean = z[zi];
+        coords->array[counter].l1 = l[l1];
+        coords->array[counter].l2 = l[l2];
+        coords->array[counter].separation1 = r[r1];
+        coords->array[counter].separation2 = r[r2];
+        ++counter;
+    }}}}}
+
+    return EXIT_SUCCESS;
+}
+
+
 /**
     parsing the power spectrum from an external source (only CLASS for now)
 **/
@@ -622,8 +651,8 @@ int coffe_parse_default_parameters(
     par->covariance_z_mean_len = 0;
     par->covariance_deltaz = NULL;
     par->covariance_deltaz_len = 0;
-    par->fsky = NULL;
-    par->fsky_len = 0;
+    par->covariance_fsky = NULL;
+    par->covariance_fsky_len = 0;
     par->covariance_pixelsize = NULL;
     par->covariance_pixelsize_len = 0;
     par->covariance_step_size = 10.0;
@@ -799,7 +828,7 @@ int coffe_parser_init(
     }
 
     /* the custom separations for the ang/full correlation function or multipoles */
-    if (par->output_type == 1 || par->output_type == 2 || par->output_type == 3){
+    if (par->output_type == 1 || par->output_type == 2 || par->output_type == 3 || par->output_type == 4){
         double xmin, xmax;
         parse_double(conf, "separations_min", &xmin, COFFE_TRUE);
         parse_double(conf, "separations_max", &xmax, COFFE_TRUE);
@@ -981,8 +1010,8 @@ int coffe_parser_init(
         parse_double_array(
             conf,
             "fsky",
-            &par->fsky,
-            &par->fsky_len
+            &par->covariance_fsky,
+            &par->covariance_fsky_len
         );
         parse_double_array(
             conf,
@@ -1023,8 +1052,15 @@ int coffe_parser_init(
             &par->covariance_deltaz,
             &par->covariance_deltaz_len
         );
+        parse_double_array(
+            conf,
+            "covariance_fsky",
+            &par->covariance_fsky,
+            &par->covariance_fsky_len
+        );
+
         if (
-            par->covariance_density_len != par->fsky_len ||
+            par->covariance_density_len != par->covariance_fsky_len ||
             par->covariance_density_len != par->covariance_z_mean_len ||
             par->covariance_density_len != par->covariance_deltaz_len ||
             par->covariance_density_len != par->covariance_pixelsize_len
@@ -1051,7 +1087,7 @@ int coffe_parser_init(
             &par->covariance_zmax_len
         );
         if (
-            par->covariance_density_len != par->fsky_len ||
+            par->covariance_density_len != par->covariance_fsky_len ||
             par->covariance_density_len != par->covariance_zmin_len ||
             par->covariance_density_len != par->covariance_zmax_len
         ){
@@ -1302,49 +1338,69 @@ int coffe_parser_init(
     }
 
 
-    if (
-        par->output_type == 0 ||
-        par->output_type == 1
-    ){
+    if (par->output_type == 0 || par->output_type == 1){
+
         par->corrfunc_coords.size =
             par->z_mean_len * par->sep_len * par->mu_len;
+
         par->corrfunc_coords.array = (coffe_corrfunc_coords_t *)coffe_malloc(
             sizeof(coffe_corrfunc_coords_t) * par->corrfunc_coords.size
         );
 
         size_t counter = 0;
         for (size_t i = 0; i < par->z_mean_len; ++i){
-            for (size_t j = 0; j < par->sep_len; ++j){
-                for (size_t k = 0; k < par->mu_len; ++k){
-                    par->corrfunc_coords.array[counter].z_mean = par->z_mean[i];
-                    par->corrfunc_coords.array[counter].separation = par->sep[j] * COFFE_H0;
-                    par->corrfunc_coords.array[counter].mu = par->mu[k];
-                    ++counter;
-                }
-            }
-        }
+        for (size_t j = 0; j < par->sep_len; ++j){
+        for (size_t k = 0; k < par->mu_len; ++k){
+            par->corrfunc_coords.array[counter].z_mean = par->z_mean[i];
+            par->corrfunc_coords.array[counter].separation = par->sep[j] * COFFE_H0;
+            par->corrfunc_coords.array[counter].mu = par->mu[k];
+            ++counter;
+        }}}
     }
 
-    if (
-        par->output_type == 2
-    ){
+    if (par->output_type == 2){
+
         par->multipoles_coords.size =
             par->z_mean_len * par->sep_len * par->multipole_values_len;
+
         par->multipoles_coords.array = (coffe_multipoles_coords_t *)coffe_malloc(
             sizeof(coffe_multipoles_coords_t) * par->multipoles_coords.size
         );
 
         size_t counter = 0;
         for (size_t i = 0; i < par->z_mean_len; ++i){
-            for (size_t j = 0; j < par->sep_len; ++j){
-                for (size_t k = 0; k < par->multipole_values_len; ++k){
-                    par->multipoles_coords.array[counter].z_mean = par->z_mean[i];
-                    par->multipoles_coords.array[counter].separation = par->sep[j] * COFFE_H0;
-                    par->multipoles_coords.array[counter].l = par->multipole_values[k];
-                    ++counter;
-                }
-            }
-        }
+        for (size_t j = 0; j < par->sep_len; ++j){
+        for (size_t k = 0; k < par->multipole_values_len; ++k){
+            par->multipoles_coords.array[counter].z_mean = par->z_mean[i];
+            par->multipoles_coords.array[counter].separation = par->sep[j] * COFFE_H0;
+            par->multipoles_coords.array[counter].l = par->multipole_values[k];
+            ++counter;
+        }}}
+    }
+
+    if (par->output_type == 4){
+
+        par->covariance_coords.size =
+              par->covariance_z_mean_len
+            * par->sep_len
+            * par->sep_len
+            * par->multipole_values_len
+            * par->multipole_values_len;
+
+        par->covariance_coords.array = (coffe_covariance_coords_t *)coffe_malloc(
+            sizeof(coffe_covariance_coords_t) * par->covariance_coords.size
+        );
+
+        coffe_parse_covariance_from_array(
+            par->covariance_z_mean,
+            par->covariance_z_mean_len,
+            par->multipole_values,
+            par->multipole_values_len,
+            par->sep,
+            par->sep_len,
+            &par->covariance_coords
+        );
+
     }
 
     /* saving the timestamp */

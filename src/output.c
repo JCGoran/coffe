@@ -80,7 +80,7 @@ static int output_make_path(char *path)
 }
 
 static int output_correlation_contributions_header(
-    struct coffe_correlation_contributions cc,
+    const struct coffe_correlation_contributions cc,
     char *header
 )
 {
@@ -99,6 +99,105 @@ static int output_correlation_contributions_header(
 
     return EXIT_SUCCESS;
 }
+
+
+static int output_corrfunc(
+    const char *filepath,
+    const struct coffe_correlation_contributions cc,
+    const coffe_corrfunc_array_t *cf
+)
+{
+    char header[COFFE_MAX_STRLEN];
+    FILE *data = fopen(filepath, "a");
+    for (size_t i = 0; i < cf->size; ++i){
+        snprintf(
+            header, COFFE_MAX_STRLEN,
+            "# correlation contributions: "
+        );
+        output_correlation_contributions_header(cc, header);
+        strncat(header, "\n", COFFE_MAX_STRLEN);
+        strncat(header, "# z_mean, sep, mu, value\n", COFFE_MAX_STRLEN);
+        fprintf(data, header);
+        fprintf(
+            data,
+            "%.10e %.10e %.10e %.10e\n",
+            cf->array[i].coords.z_mean,
+            cf->array[i].coords.separation / COFFE_H0,
+            cf->array[i].coords.mu,
+            cf->array[i].value
+        );
+    }
+    fclose(data);
+    return EXIT_SUCCESS;
+}
+
+
+static int output_multipoles(
+    const char *filepath,
+    const struct coffe_correlation_contributions cc,
+    const coffe_multipoles_array_t *mp
+)
+{
+    char header[COFFE_MAX_STRLEN];
+    FILE *data = fopen(filepath, "a");
+    snprintf(
+        header, COFFE_MAX_STRLEN,
+        "# correlation contributions: "
+    );
+    output_correlation_contributions_header(cc, header);
+    strncat(header, "\n", COFFE_MAX_STRLEN);
+    strncat(header, "# z_mean, l, sep, value\n", COFFE_MAX_STRLEN);
+    fprintf(data, header);
+    for (size_t i = 0; i < mp->size; ++i){
+        fprintf(
+            data,
+            "%.10e %d %.10e %.10e\n",
+            mp->array[i].coords.z_mean,
+            mp->array[i].coords.l,
+            mp->array[i].coords.separation / COFFE_H0,
+            mp->array[i].value
+        );
+    }
+    fclose(data);
+
+    return EXIT_SUCCESS;
+}
+
+
+static int output_covariance(
+    const char *filepath,
+    const struct coffe_correlation_contributions cc,
+    const coffe_covariance_array_t *cov
+)
+{
+    char header[COFFE_MAX_STRLEN];
+    FILE *output = fopen(filepath, "a");
+    snprintf(
+        header, COFFE_MAX_STRLEN,
+        "# correlation contributions: "
+    );
+    output_correlation_contributions_header(cc, header);
+    strncat(header, "\n", COFFE_MAX_STRLEN);
+    strncat(header, "# z_mean, l1, l2, sep1, sep2, value\n", COFFE_MAX_STRLEN);
+    fprintf(output, header);
+
+    for (size_t i = 0; i < cov->size; ++i){
+        fprintf(
+            output,
+            "%.10e %d %d %.10e %.10e %.10e\n",
+            cov->array[i].coords.z_mean,
+            cov->array[i].coords.l1,
+            cov->array[i].coords.l2,
+            cov->array[i].coords.separation1,
+            cov->array[i].coords.separation2,
+            cov->array[i].value
+        );
+    }
+    fclose(output);
+
+    return EXIT_SUCCESS;
+}
+
 
 /**
     specially to output the background functions
@@ -260,125 +359,45 @@ int coffe_output_init(
     /* correlation function (full) */
     if (par->output_type == 1){
         snprintf(filepath, COFFE_MAX_STRLEN, "%scorrfunc.dat", prefix);
-        FILE *data = fopen(filepath, "a");
-        for (size_t i = 0; i < cf->size; ++i){
-            snprintf(
-                header, COFFE_MAX_STRLEN,
-                "# correlation contributions: "
-            );
-            output_correlation_contributions_header(par->correlation_contrib, header);
-            strncat(header, "\n", COFFE_MAX_STRLEN);
-            fprintf(
-                data,
-                "%.10e %.10e %.10e %.10e\n",
-                cf->array[i].coords.z_mean,
-                cf->array[i].coords.separation / COFFE_H0,
-                cf->array[i].coords.mu,
-                cf->array[i].value
-            );
-        }
-        fclose(data);
+        output_corrfunc(filepath, par->correlation_contrib, cf);
     }
 
     /* multipoles */
     else if (par->output_type == 2){
         snprintf(filepath, COFFE_MAX_STRLEN, "%smultipoles.dat", prefix);
-        FILE *data = fopen(filepath, "a");
-        snprintf(
-            header, COFFE_MAX_STRLEN,
-            "# correlation contributions: "
-        );
-        output_correlation_contributions_header(par->correlation_contrib, header);
-        strncat(header, "\n", COFFE_MAX_STRLEN);
-        fprintf(data, header);
-        for (size_t i = 0; i < mp->size; ++i){
-            fprintf(
-                data,
-                "%.10e %d %.10e %.10e\n",
-                mp->array[i].coords.z_mean,
-                mp->array[i].coords.l,
-                mp->array[i].coords.separation / COFFE_H0,
-                mp->array[i].value
-            );
-        }
-        fclose(data);
-    }
-
-#if 0
-    /* redshift averaged multipoles */
-    else if (par->output_type == 3){
-        for (int i = 0; i<par->multipole_values_len; ++i){
-            snprintf(
-                header, COFFE_MAX_STRLEN,
-                "# l = %d\n# z_min = %f, z_max = %f\n# correlation contributions: ",
-                par->multipole_values[i], par->z_min, par->z_max
-            );
-            output_correlation_contributions_header(par->correlation_contrib, header);
-            strncat(header, "\n", COFFE_MAX_STRLEN);
-            strncat(header, "# sep[Mpc/h]\tresult\n", COFFE_MAX_STRLEN);
-            snprintf(filepath, COFFE_MAX_STRLEN,"%savg_multipoles%d.dat", prefix, par->multipole_values[i]);
-            write_ncol_null(
-                filepath,
-                ramp->sep_len, header, " ",
-                ramp->sep, ramp->result[i], NULL
-            );
-        }
+        output_multipoles(filepath, par->correlation_contrib, mp);
     }
 
     /* covariance of multipoles */
     else if (par->output_type == 4){
-        for (size_t k = 0; k<cov_mp->list_len; ++k){
-            for (size_t i = 0; i<cov_mp->l_len; ++i){
-                for (size_t j = 0; j<cov_mp->l_len; ++j){
-                    snprintf(filepath, COFFE_MAX_STRLEN,
-                        "%smultipoles_covariance_redshift%zu_%d%d.dat",
-                        prefix, k, cov_mp->l[i], cov_mp->l[j]
-                    );
-                    FILE *output = fopen(filepath, "w");
-                    fprintf(output, "# z_mean = %f\n", cov_mp->z_mean[k]);
-                    fprintf(output, "# sep[Mpc/h]\tsep[Mpc/h]\tresult\n");
-                    for (size_t m = 0; m<cov_mp->sep_len[k]; ++m){
-                        for (size_t n = 0; n<cov_mp->sep_len[k]; ++n){
-                            fprintf(
-                                output, "%e %e %e\n",
-                                cov_mp->sep[k][m], cov_mp->sep[k][n],
-                                cov_mp->result[k][cov_mp->l_len*i + j][cov_mp->sep_len[k]*n + m]
-                            );
-                        }
-                    }
-                    fclose(output);
-                }
-            }
-        }
+        snprintf(filepath, COFFE_MAX_STRLEN, "%scovariance_multipoles.dat", prefix);
+        output_covariance(filepath, par->correlation_contrib, cov_mp);
     }
 
-    /* covariance of RAMPs */
     else if (par->output_type == 5){
-        for (size_t k = 0; k<cov_ramp->list_len; ++k){
-            for (size_t i = 0; i<cov_ramp->l_len; ++i){
-                for (size_t j = 0; j<cov_ramp->l_len; ++j){
-                    snprintf(filepath, COFFE_MAX_STRLEN,
-                        "%savg_multipoles_covariance_redshift%zu_%d%d.dat",
-                        prefix, k, cov_ramp->l[i], cov_ramp->l[j]
-                    );
-                    FILE *output = fopen(filepath, "w");
-                    fprintf(output, "# zmin = %f, zmax = %f\n", cov_ramp->zmin[k], cov_ramp->zmax[k]);
-                    fprintf(output, "# sep[Mpc/h]\tsep[Mpc/h]\tresult\n");
-                    for (size_t m = 0; m<cov_ramp->sep_len[k]; ++m){
-                        for (size_t n = 0; n<cov_ramp->sep_len[k]; ++n){
-                            fprintf(
-                                output, "%e %e %e\n",
-                                cov_ramp->sep[k][m], cov_ramp->sep[k][n],
-                                cov_ramp->result[k][cov_ramp->l_len*i + j][cov_ramp->sep_len[k]*n + m]
-                            );
-                        }
-                    }
-                    fclose(output);
-                }
-            }
+        snprintf(
+            filepath, COFFE_MAX_STRLEN,
+            "%scovariance_average_multipoles.dat", prefix
+        );
+
+        FILE *output = fopen(filepath, "w");
+        fprintf(output, "# sep[Mpc/h]\tsep[Mpc/h]\tresult\n");
+
+        for (size_t i = 0; i < cov_ramp->size; ++i){
+            fprintf(
+                output,
+                "%.10e %.10e %d %d %.10e %.10e\n",
+                cov_ramp->array[i].coords.separation1,
+                cov_ramp->array[i].coords.separation2,
+                cov_ramp->array[i].coords.l1,
+                cov_ramp->array[i].coords.l2,
+                cov_ramp->array[i].coords.z_mean,
+                cov_ramp->array[i].value
+            );
         }
+        fclose(output);
     }
-#endif
+
 #ifdef HAVE_INTEGRALS
     const struct nl_terms terms[] = {
         {.n = 0, .l = 0},

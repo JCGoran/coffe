@@ -139,6 +139,8 @@ int main(int argc, char *argv[])
 
     coffe_multipoles_init(&par, &bg, &integral, &mp);
 
+    coffe_covariance_init(&par, &bg, &cov_mp, &cov_ramp);
+
     coffe_output_init(
         &par, &bg,
 #ifdef HAVE_INTEGRALS

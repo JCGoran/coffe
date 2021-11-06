@@ -739,37 +739,37 @@ int coffe_parameters_free(
             if (par->mu_len)
                 free(par->mu);
         }
-        if (par->output_type == 2){
+        else if (par->output_type == 2){
             if (par->sep_len)
                 free(par->sep);
             if (par->multipole_values_len)
                 free(par->multipole_values);
         }
-        if (par->output_type == 3){
+        else if (par->output_type == 3){
             if (par->sep_len)
                 free(par->sep);
             if (par->multipole_values_len)
                 free(par->multipole_values);
         }
-        if (par->output_type == 4){
+        else if (par->output_type == 4){
             if (par->sep_len)
                 free(par->sep);
             if (par->multipole_values_len)
                 free(par->multipole_values);
             free(par->covariance_z_mean);
             free(par->covariance_deltaz);
-            free(par->fsky);
+            free(par->covariance_fsky);
             free(par->covariance_density);
             free(par->covariance_pixelsize);
         }
-        if (par->output_type == 5){
+        else if (par->output_type == 5){
             if (par->sep_len)
                 free(par->sep);
             if (par->multipole_values_len)
                 free(par->multipole_values);
             free(par->covariance_zmin);
             free(par->covariance_zmax);
-            free(par->fsky);
+            free(par->covariance_fsky);
             free(par->covariance_density);
             free(par->covariance_pixelsize);
         }
@@ -778,7 +778,7 @@ int coffe_parameters_free(
         par->multipole_values_len = 0;
         par->covariance_z_mean_len = 0;
         par->covariance_deltaz_len = 0;
-        par->fsky = 0;
+        par->covariance_fsky = 0;
         par->covariance_density = 0;
         par->covariance_zmin = 0;
         par->covariance_zmax = 0;
@@ -1201,3 +1201,20 @@ double *coffe_generate_range(
     }
     return result;
 }
+
+/* 1 if equal, else 0 */
+int coffe_approx_equal(
+    const double a,
+    const double b,
+    const double rel_epsilon,
+    const double abs_epsilon
+)
+{
+    if (a != 0 && b != 0){
+        return (fabs(a - b) / fabs(a) < rel_epsilon) ? 1 : 0;
+    }
+    else{
+        return (fabs(a - b) < abs_epsilon) ? 1 : 0;
+    }
+}
+

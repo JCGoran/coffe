@@ -23,7 +23,7 @@
 
 typedef struct coffe_covariance_t
 {
-    coffe_multipoles_coords_t coords1, coords2;
+    coffe_covariance_coords_t coords;
     double value;
 } coffe_covariance_t;
 
@@ -44,4 +44,12 @@ int coffe_covariance_free(
     coffe_covariance_array_t *cov
 );
 
+coffe_covariance_t coffe_covariance_find(
+    const coffe_covariance_array_t *cov,
+    const double z_mean,
+    const int l1,
+    const int l2,
+    const double sep1,
+    const double sep2
+);
 #endif

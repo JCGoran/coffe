@@ -153,6 +153,22 @@ typedef struct coffe_average_multipoles_coords_array_t
     size_t size;
 } coffe_average_multipoles_coords_array_t;
 
+/**
+    -||- for covariance of multipoles
+**/
+typedef struct coffe_covariance_coords_t
+{
+    int l1, l2;
+    double separation1, separation2;
+    double z_mean;
+} coffe_covariance_coords_t;
+
+
+typedef struct coffe_covariance_coords_array_t
+{
+    coffe_covariance_coords_t *array;
+    size_t size;
+} coffe_covariance_coords_array_t;
 
 
 void *coffe_malloc(size_t size);
@@ -325,9 +341,9 @@ typedef struct coffe_parameters_t
 
     size_t covariance_zmax_len;
 
-    double *fsky;
+    double *covariance_fsky;
 
-    size_t fsky_len;
+    size_t covariance_fsky_len;
 
     double *covariance_density;
 
@@ -407,6 +423,8 @@ typedef struct coffe_parameters_t
     coffe_multipoles_coords_array_t multipoles_coords;
 
     coffe_average_multipoles_coords_array_t average_multipoles_coords;
+
+    coffe_covariance_coords_array_t covariance_coords;
 
 } coffe_parameters_t;
 
@@ -677,4 +695,12 @@ double *coffe_generate_range(
     const double xmax,
     const size_t steps
 );
+
+int coffe_approx_equal(
+    const double a,
+    const double b,
+    const double rel_epsilon,
+    const double abs_epsilon
+);
+
 #endif

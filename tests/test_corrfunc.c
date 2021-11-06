@@ -144,19 +144,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -205,19 +205,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -266,19 +266,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -327,19 +327,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -387,19 +387,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, m, 0,
+                            1.0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 

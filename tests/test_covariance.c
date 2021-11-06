@@ -21,7 +21,7 @@
 **/
 
 static int coffe_test_covariance(
-    const struct coffe_covariance_t *covariance
+    const coffe_covariance_array_t *cov
 )
 {
     /* no errors initially */
@@ -33,52 +33,59 @@ static int coffe_test_covariance(
     double *r1, *r2, *result;
     size_t size;
 
-    for (size_t mp1 = 0; mp1 < covariance->l_len; ++mp1){
-        for (size_t mp2 = 0; mp2 < covariance->l_len; ++mp2){
-            char name[256];
-            snprintf(
-                name,
-                sizeof(name) / sizeof(*name),
-                DATADIR "/tests/benchmarks/benchmark_multipoles_covariance_%d%d.dat",
-                covariance->l[mp1],
-                covariance->l[mp2]
-            );
-            coffe_read_ncol(
-                name, 3, &size, &r1, &r2, &result
-            );
+    /* TODO un-hardcode this */
+    const int multipoles[] = {0, 2, 4};
+    const size_t multipoles_size = COFFE_ARRAY_SIZE(multipoles);
 
-            /* before we do anything, make sure lengths correspond */
-            assert(
-                covariance->sep_len[0] * covariance->sep_len[0] == size
+    for (size_t mp1 = 0; mp1 < multipoles_size; ++mp1){
+    for (size_t mp2 = 0; mp2 < multipoles_size; ++mp2){
+        char name[256];
+        snprintf(
+            name,
+            sizeof(name) / sizeof(*name),
+            DATADIR "/tests/benchmarks/benchmark_multipoles_covariance_%d%d.dat",
+            multipoles[mp1],
+            multipoles[mp2]
+        );
+        coffe_read_ncol(
+            name, 3, &size, &r1, &r2, &result
+        );
+
+        const size_t sep_size = (size_t)sqrt(size);
+
+        for (size_t i = 0; i < sep_size; ++i){
+        for (size_t j = 0; j < sep_size; ++j){
+            fprintf(
+                stderr,
+                "l1 = %d, l2 = %d, "
+                "r1 = %f, r2 = %f, "
+                "expected = %.3e, obtained = %.3e\n",
+                multipoles[mp1], multipoles[mp2],
+                r1[i * sep_size + j], r2[i * sep_size + j],
+                result[i * sep_size + j],
+                coffe_covariance_find(
+                    cov, 1.0, multipoles[mp1], multipoles[mp2],
+                    r1[i * sep_size + j], r2[i * sep_size + j]
+                ).value
             );
-
-            const size_t obtained_size = covariance->sep_len[0];
-
-            for (size_t i = 0; i < obtained_size; ++i){
-                for (size_t j = 0; j < obtained_size; ++j){
-                    fprintf(
-                        stderr,
-                        "l1 = %d, l2 = %d\n"
-                        "r1 = %.3e, r2 = %.3e, expected = %.3e, obtained = %.3e\n",
-                        covariance->l[mp1], covariance->l[mp2],
-                        r1[i * obtained_size + j], r2[i * obtained_size + j],
-                        result[i * obtained_size + j],
-                        covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
-                    );
-                    weak_assert(
-                        approx_equal_const_epsilon(
-                            result[i * obtained_size + j],
-                            covariance->result[0][covariance->l_len * mp1 + mp2][obtained_size * j + i]
-                        ),
-                        &error_flag
-                    );
-                }
-            }
-            /* memory cleanup */
-            free(r1);
-            free(r2);
-            free(result);
+            weak_assert(
+                approx_equal_const_epsilon(
+                    result[i * sep_size + j],
+                    coffe_covariance_find(
+                        cov, 1.0, multipoles[mp1], multipoles[mp2],
+                        r1[i * sep_size + j], r2[i * sep_size + j]
+                    ).value
+                ),
+                &error_flag
+            );
         }
+        }
+
+        /* memory cleanup */
+        free(r1);
+        free(r2);
+        free(result);
+    }
     }
 
     if (!error_flag)
@@ -89,7 +96,7 @@ static int coffe_test_covariance(
 
 int main(void)
 {
-    struct coffe_parameters_t par;
+    coffe_parameters_t par;
     coffe_parse_default_parameters(&par);
 
     /* need to set parameters manually */
@@ -120,24 +127,51 @@ int main(void)
     par.covariance_step_size = 50.0;
     par.covariance_minimum_separation = 50.0;
 
+    par.sep_len = 6;
+    free(par.sep);
+    par.sep = coffe_generate_range(50, 350, par.sep_len);
+
+    par.covariance_coords.size =
+          par.covariance_z_mean_len
+        * par.sep_len
+        * par.sep_len
+        * par.multipole_values_len
+        * par.multipole_values_len;
+
+    par.covariance_coords.array = (coffe_covariance_coords_t *)coffe_malloc(
+        sizeof(coffe_covariance_coords_t) * par.covariance_coords.size
+    );
+
+    coffe_parse_covariance_from_array(
+        par.covariance_z_mean,
+        par.covariance_z_mean_len,
+        par.multipole_values,
+        par.multipole_values_len,
+        par.sep,
+        par.sep_len,
+        &par.covariance_coords
+    );
+
     #ifdef _OPENMP
     par.nthreads = omp_get_num_procs();
     #endif
 
-    struct coffe_background_t bg;
+    coffe_background_t bg;
     coffe_background_init(&par, &bg);
 
-    struct coffe_integral_array_t integrals[10];
-    coffe_integrals_init(&par, &bg, integrals);
+    coffe_integral_array_t integral = {.array = NULL, .size = 0};
+    coffe_integrals_init(&par, &bg, &integral);
 
     /* can't really integrate just one...*/
-    struct coffe_covariance_t covariance, dummy;
+    coffe_covariance_array_t covariance = {.array = NULL, .size = 0};
+    coffe_covariance_array_t dummy = {.array = NULL, .size = 0};
     coffe_covariance_init(&par, &bg, &covariance, &dummy);
 
     const int error_flag = coffe_test_covariance(&covariance);
 
     coffe_parameters_free(&par);
     coffe_background_free(&bg);
+    coffe_integrals_free(&integral);
     coffe_covariance_free(&covariance);
 
     return error_flag;

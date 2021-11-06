@@ -144,19 +144,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -237,19 +237,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -298,19 +298,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -359,19 +359,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -419,19 +419,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -481,7 +481,7 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            x, 0, l,
+                            1.0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -525,19 +525,19 @@ static int coffe_test_multipoles(
                 const double y_expected = 0;
                 const double y_obtained = coffe_integrate(
                     par, bg, integral,
-                    x, 0, l,
+                    1.0, x, 0, l,
                     NONINTEGRATED, MULTIPOLES
                 )
                 +
                 coffe_integrate(
                     par, bg, integral,
-                    x, 0, l,
+                    1.0, x, 0, l,
                     SINGLE_INTEGRATED, MULTIPOLES
                 )
                 +
                 coffe_integrate(
                     par, bg, integral,
-                    x, 0, l,
+                    1.0, x, 0, l,
                     DOUBLE_INTEGRATED, MULTIPOLES
                 );
 
