@@ -1343,7 +1343,9 @@ int coffe_parser_init(
     if (par->output_type == 0 || par->output_type == 1){
 
         par->corrfunc_coords.size =
-            par->z_mean_len * par->sep_len * par->mu_len;
+            par->z_mean_len
+          * par->sep_len
+          * par->mu_len;
 
         par->corrfunc_coords.array = (coffe_corrfunc_coords_t *)coffe_malloc(
             sizeof(coffe_corrfunc_coords_t) * par->corrfunc_coords.size
@@ -1363,7 +1365,9 @@ int coffe_parser_init(
     if (par->output_type == 2){
 
         par->multipoles_coords.size =
-            par->z_mean_len * par->sep_len * par->multipole_values_len;
+            par->z_mean_len
+          * par->sep_len
+          * par->multipole_values_len;
 
         par->multipoles_coords.array = (coffe_multipoles_coords_t *)coffe_malloc(
             sizeof(coffe_multipoles_coords_t) * par->multipoles_coords.size
