@@ -447,28 +447,3 @@ cdef extern from "covariance.h":
 #        int *l
 #        size_t l_len
 #        int flag
-#
-#cdef from extern "covariance.h":
-#
-#    cdef struct coffe_covariance_t:
-#        double *z_mean, *deltaz, *density, *fsky
-#        double *zmin, *zmax
-#        size_t list_len
-#        double pixelsize
-#        double **sep
-#        int *l
-#        size_t *sep_len, l_len
-#        double ***result
-#        int flag
-#
-#    int coffe_covariance_init(
-#        struct coffe_parameters_t *,
-#        struct coffe_background_t *,
-#        struct coffe_covariance_t *,
-#        struct coffe_covariance_t *
-#    )
-#
-#    int coffe_covariance_free(
-#        struct coffe_covariance_t *
-#    )
-#
