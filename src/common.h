@@ -106,16 +106,6 @@ typedef struct coffe_corrfunc_coords_t
 } coffe_corrfunc_coords_t;
 
 
-/**
-    container for the above
-**/
-typedef struct coffe_corrfunc_coords_array_t
-{
-    coffe_corrfunc_coords_t *array;
-    size_t size;
-} coffe_corrfunc_coords_array_t;
-
-
 
 /**
     same as above for multipoles
@@ -129,13 +119,6 @@ typedef struct coffe_multipoles_coords_t
 
 
 
-typedef struct coffe_multipoles_coords_array_t
-{
-    coffe_multipoles_coords_t *array;
-    size_t size;
-} coffe_multipoles_coords_array_t;
-
-
 /**
     -||- for RAMPs
 **/
@@ -147,12 +130,6 @@ typedef struct coffe_average_multipoles_coords_t
     int l;
 } coffe_average_multipoles_coords_t;
 
-typedef struct coffe_average_multipoles_coords_array_t
-{
-    coffe_average_multipoles_coords_t *array;
-    size_t size;
-} coffe_average_multipoles_coords_array_t;
-
 /**
     -||- for covariance of multipoles
 **/
@@ -162,13 +139,6 @@ typedef struct coffe_covariance_coords_t
     double separation1, separation2;
     double z_mean;
 } coffe_covariance_coords_t;
-
-
-typedef struct coffe_covariance_coords_array_t
-{
-    coffe_covariance_coords_t *array;
-    size_t size;
-} coffe_covariance_coords_array_t;
 
 
 void *coffe_malloc(size_t size);
@@ -417,14 +387,6 @@ typedef struct coffe_parameters_t
     int midpoint_approximation;
 
     int only_cross_correlations;
-
-    coffe_corrfunc_coords_array_t corrfunc_coords;
-
-    coffe_multipoles_coords_array_t multipoles_coords;
-
-    coffe_average_multipoles_coords_array_t average_multipoles_coords;
-
-    coffe_covariance_coords_array_t covariance_coords;
 
 } coffe_parameters_t;
 

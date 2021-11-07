@@ -23,16 +23,6 @@ int coffe_parse_default_parameters(
     struct coffe_parameters_t *par
 );
 
-int coffe_parse_covariance_from_array(
-    const double *z,
-    const size_t z_len,
-    const int *l,
-    const double l_len,
-    const double *r,
-    const double r_len,
-    coffe_covariance_coords_array_t *coords
-);
-
 int coffe_parser_init(
     char *filename,
     struct coffe_parameters_t *par

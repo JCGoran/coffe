@@ -872,13 +872,20 @@ int coffe_covariance_init(
             }
             }
         }
-
-        for (size_t i = 0; i < par->covariance_coords.size; ++i){
-            cov_mp->array[i].coords.z_mean = par->covariance_coords.array[i].z_mean;
-            cov_mp->array[i].coords.separation1 = par->covariance_coords.array[i].separation1;
-            cov_mp->array[i].coords.separation2 = par->covariance_coords.array[i].separation2;
-            cov_mp->array[i].coords.l1 = par->covariance_coords.array[i].l1;
-            cov_mp->array[i].coords.l2 = par->covariance_coords.array[i].l2;
+        {
+        size_t counter = 0;
+        for (size_t zi = 0; zi < par->z_mean_len; ++zi){
+        for (size_t l1 = 0; l1 < par->multipole_values_len; ++l1){
+        for (size_t l2 = 0; l2 < par->multipole_values_len; ++l2){
+        for (size_t r1 = 0; r1 < par->sep_len; ++r1){
+        for (size_t r2 = 0; r2 < par->sep_len; ++r2){
+            cov_mp->array[counter].coords.z_mean = par->z_mean[zi];
+            cov_mp->array[counter].coords.l1 = par->multipole_values[l1];
+            cov_mp->array[counter].coords.l2 = par->multipole_values[l2];
+            cov_mp->array[counter].coords.separation1 = par->sep[r1];
+            cov_mp->array[counter].coords.separation2 = par->sep[r2];
+            ++counter;
+        }}}}}
         }
 
         /* memory cleanup */

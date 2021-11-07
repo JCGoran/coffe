@@ -79,24 +79,33 @@ int coffe_corrfunc_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        corrfunc->size = par->corrfunc_coords.size;
+        corrfunc->size = par->mu_len
+            * par->z_mean_len
+            * par->sep_len;
+
         corrfunc->array = (coffe_corrfunc_t *)coffe_malloc(
             sizeof(coffe_corrfunc_t) * corrfunc->size
         );
 
-        for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].coords.z_mean = par->corrfunc_coords.array[i].z_mean;
-            corrfunc->array[i].coords.separation = par->corrfunc_coords.array[i].separation;
-            corrfunc->array[i].coords.mu = par->corrfunc_coords.array[i].mu;
+        {
+        size_t counter = 0;
+        for (size_t i = 0; i < par->z_mean_len; ++i){
+        for (size_t j = 0; j < par->mu_len; ++j){
+        for (size_t k = 0; k < par->sep_len; ++k){
+            corrfunc->array[counter].coords.z_mean = par->z_mean[i];
+            corrfunc->array[counter].coords.mu = par->mu[j];
+            corrfunc->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+            ++counter;
+        }}}
         }
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
             corrfunc->array[i].value = coffe_integrate(
                 par, bg, integral,
-                par->corrfunc_coords.array[i].z_mean,
-                par->corrfunc_coords.array[i].separation,
-                par->corrfunc_coords.array[i].mu,
+                corrfunc->array[i].coords.z_mean,
+                corrfunc->array[i].coords.separation,
+                corrfunc->array[i].coords.mu,
                 0,
                 NONINTEGRATED, CORRFUNC
             );
@@ -106,9 +115,9 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i < corrfunc->size; ++i){
             corrfunc->array[i].value += coffe_integrate(
                 par, bg, integral,
-                par->corrfunc_coords.array[i].z_mean,
-                par->corrfunc_coords.array[i].separation,
-                par->corrfunc_coords.array[i].mu,
+                corrfunc->array[i].coords.z_mean,
+                corrfunc->array[i].coords.separation,
+                corrfunc->array[i].coords.mu,
                 0,
                 SINGLE_INTEGRATED, CORRFUNC
             );
@@ -118,9 +127,9 @@ int coffe_corrfunc_init(
         for (size_t i = 0; i < corrfunc->size; ++i){
             corrfunc->array[i].value += coffe_integrate(
                 par, bg, integral,
-                par->corrfunc_coords.array[i].z_mean,
-                par->corrfunc_coords.array[i].separation,
-                par->corrfunc_coords.array[i].mu,
+                corrfunc->array[i].coords.z_mean,
+                corrfunc->array[i].coords.separation,
+                corrfunc->array[i].coords.mu,
                 0,
                 DOUBLE_INTEGRATED, CORRFUNC
             );

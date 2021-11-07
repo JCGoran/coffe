@@ -72,60 +72,69 @@ int coffe_multipoles_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        mp->size = par->multipoles_coords.size;
+        mp->size = par->multipole_values_len
+            * par->z_mean_len
+            * par->sep_len;
+
         mp->array = (coffe_multipoles_t *)coffe_malloc(
             sizeof(coffe_multipoles_t) * mp->size
         );
 
-        for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].coords.z_mean = par->multipoles_coords.array[i].z_mean;
-            mp->array[i].coords.separation = par->multipoles_coords.array[i].separation;
-            mp->array[i].coords.l = par->multipoles_coords.array[i].l;
+        {
+        size_t counter = 0;
+        for (size_t i = 0; i < par->z_mean_len; ++i){
+        for (size_t j = 0; j < par->multipole_values_len; ++j){
+        for (size_t k = 0; k < par->sep_len; ++k){
+            mp->array[counter].coords.z_mean = par->z_mean[i];
+            mp->array[counter].coords.l = par->multipole_values[j];
+            mp->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+            ++counter;
+        }}}
         }
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value = coffe_integrate(
-                par, bg, integral,
-                par->multipoles_coords.array[i].z_mean,
-                par->multipoles_coords.array[i].separation,
-                0,
-                par->multipoles_coords.array[i].l,
-                NONINTEGRATED, MULTIPOLES
-            );
-        }
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < mp->size; ++i){
+        mp->array[i].value = coffe_integrate(
+            par, bg, integral,
+            mp->array[i].coords.z_mean,
+            mp->array[i].coords.separation,
+            0,
+            mp->array[i].coords.l,
+            NONINTEGRATED, MULTIPOLES
+        );
+    }
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value += coffe_integrate(
-                par, bg, integral,
-                par->multipoles_coords.array[i].z_mean,
-                par->multipoles_coords.array[i].separation,
-                0,
-                par->multipoles_coords.array[i].l,
-                SINGLE_INTEGRATED, MULTIPOLES
-            );
-        }
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < mp->size; ++i){
+        mp->array[i].value += coffe_integrate(
+            par, bg, integral,
+            mp->array[i].coords.z_mean,
+            mp->array[i].coords.separation,
+            0,
+            mp->array[i].coords.l,
+            SINGLE_INTEGRATED, MULTIPOLES
+        );
+    }
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value += coffe_integrate(
-                par, bg, integral,
-                par->multipoles_coords.array[i].z_mean,
-                par->multipoles_coords.array[i].separation,
-                0,
-                par->multipoles_coords.array[i].l,
-                DOUBLE_INTEGRATED, MULTIPOLES
-            );
-        }
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < mp->size; ++i){
+        mp->array[i].value += coffe_integrate(
+            par, bg, integral,
+            mp->array[i].coords.z_mean,
+            mp->array[i].coords.separation,
+            0,
+            mp->array[i].coords.l,
+            DOUBLE_INTEGRATED, MULTIPOLES
+        );
+    }
 
-        end = clock();
+    end = clock();
 
-        if (par->verbose)
-            printf("Multipoles calculated in %.2f s\n",
+    if (par->verbose)
+        printf("Multipoles calculated in %.2f s\n",
                 (double)(end - start) / CLOCKS_PER_SEC);
 
-        gsl_set_error_handler(default_handler);
+    gsl_set_error_handler(default_handler);
 
     }
 

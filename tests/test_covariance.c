@@ -130,28 +130,6 @@ int main(void)
     par.sep_len = 6;
     free(par.sep);
     par.sep = coffe_generate_range(50, 350, par.sep_len);
-
-    par.covariance_coords.size =
-          par.covariance_z_mean_len
-        * par.sep_len
-        * par.sep_len
-        * par.multipole_values_len
-        * par.multipole_values_len;
-
-    par.covariance_coords.array = (coffe_covariance_coords_t *)coffe_malloc(
-        sizeof(coffe_covariance_coords_t) * par.covariance_coords.size
-    );
-
-    coffe_parse_covariance_from_array(
-        par.covariance_z_mean,
-        par.covariance_z_mean_len,
-        par.multipole_values,
-        par.multipole_values_len,
-        par.sep,
-        par.sep_len,
-        &par.covariance_coords
-    );
-
     #ifdef _OPENMP
     par.nthreads = omp_get_num_procs();
     #endif

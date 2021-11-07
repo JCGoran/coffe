@@ -773,10 +773,6 @@ int coffe_parameters_free(
             free(par->covariance_pixelsize);
         par->covariance_pixelsize_len = 0;
 
-        if (par->covariance_coords.size)
-            free(par->covariance_coords.array);
-        par->covariance_coords.size = 0;
-
         if (par->covariance_zmin_len)
             free(par->covariance_zmin);
 
