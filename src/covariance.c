@@ -461,7 +461,9 @@ int coffe_covariance_init(
             );
         }
 
-        double *separations = par->sep;
+        double *separations = (double *)coffe_malloc(sizeof(double) * par->sep_len);
+        for (size_t i = 0; i < par->sep_len; ++i)
+            separations[i] = par->sep[i];
         const size_t redshifts_to_allocate =
             /* trigraph */
             par->pk_type ? par->covariance_z_mean_len : 1;

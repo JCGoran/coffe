@@ -733,56 +733,56 @@ int coffe_parameters_free(
         }
         free(par->type_bg);
 
-        if (par->output_type == 1){
-            if (par->sep_len)
-                free(par->sep);
-            if (par->mu_len)
-                free(par->mu);
-        }
-        else if (par->output_type == 2){
-            if (par->sep_len)
-                free(par->sep);
-            if (par->multipole_values_len)
-                free(par->multipole_values);
-        }
-        else if (par->output_type == 3){
-            if (par->sep_len)
-                free(par->sep);
-            if (par->multipole_values_len)
-                free(par->multipole_values);
-        }
-        else if (par->output_type == 4){
-            if (par->sep_len)
-                free(par->sep);
-            if (par->multipole_values_len)
-                free(par->multipole_values);
-            free(par->covariance_z_mean);
-            free(par->covariance_deltaz);
-            free(par->covariance_fsky);
-            free(par->covariance_density);
-            free(par->covariance_pixelsize);
-        }
-        else if (par->output_type == 5){
-            if (par->sep_len)
-                free(par->sep);
-            if (par->multipole_values_len)
-                free(par->multipole_values);
-            free(par->covariance_zmin);
-            free(par->covariance_zmax);
-            free(par->covariance_fsky);
-            free(par->covariance_density);
-            free(par->covariance_pixelsize);
-        }
+        if (par->sep_len)
+            free(par->sep);
         par->sep_len = 0;
+
+        if (par->mu_len)
+            free(par->mu);
         par->mu_len = 0;
+
+        if (par->multipole_values_len)
+            free(par->multipole_values);
         par->multipole_values_len = 0;
+
+        if (par->z_mean_len)
+            free(par->z_mean);
+        par->z_mean_len = 0;
+
+        if (par->deltaz_len)
+            free(par->deltaz);
+        par->deltaz_len = 0;
+
+        if (par->covariance_z_mean_len)
+            free(par->covariance_z_mean);
         par->covariance_z_mean_len = 0;
+
+        if (par->covariance_deltaz_len)
+            free(par->covariance_deltaz);
         par->covariance_deltaz_len = 0;
-        par->covariance_fsky = 0;
-        par->covariance_density = 0;
-        par->covariance_zmin = 0;
-        par->covariance_zmax = 0;
+
+        if (par->covariance_fsky_len)
+            free(par->covariance_fsky);
+        par->covariance_fsky_len = 0;
+
+        if (par->covariance_density_len)
+            free(par->covariance_density);
+        par->covariance_density_len = 0;
+
+        if (par->covariance_pixelsize_len)
+            free(par->covariance_pixelsize);
         par->covariance_pixelsize_len = 0;
+
+        if (par->covariance_coords.size)
+            free(par->covariance_coords.array);
+        par->covariance_coords.size = 0;
+
+        if (par->covariance_zmin_len)
+            free(par->covariance_zmin);
+
+        if (par->covariance_zmax_len)
+            free(par->covariance_zmax);
+        par->covariance_zmax_len = 0;
 
         par->flag = 0;
     }

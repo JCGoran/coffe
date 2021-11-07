@@ -660,6 +660,8 @@ int coffe_parse_default_parameters(
     par->covariance_zmin_len = 0;
     par->covariance_zmax = NULL;
     par->covariance_zmax_len = 0;
+    par->covariance_coords.size = 0;
+    par->covariance_coords.array = NULL;
     par->covariance_minimum_separation = 0.0;
     par->covariance_window = 0;
 
