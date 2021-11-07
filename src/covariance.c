@@ -426,14 +426,17 @@ int coffe_covariance_init(
     struct coffe_covariance_array_t *cov_ramp
 )
 {
-    if (par->output_type == 4 || par->output_type == 5){
+    if (
+        par->output_type == COVARIANCE_MULTIPOLES ||
+        par->output_type == COVARIANCE_AVERAGE_MULTIPOLES
+    ){
         coffe_covariance_free(cov_mp);
         coffe_covariance_free(cov_ramp);
         time_t start, end;
         start = clock();
 
         if (par->verbose){
-            if (par->output_type == 4)
+            if (par->output_type == COVARIANCE_MULTIPOLES)
                 printf("Calculating covariance of multipoles...\n");
             else
                 printf("Calculating covariance of redshift averaged multipoles...\n");
@@ -442,7 +445,7 @@ int coffe_covariance_init(
         gsl_error_handler_t *default_handler =
             gsl_set_error_handler_off();
 
-        if (par->output_type == 4){
+        if (par->output_type == COVARIANCE_MULTIPOLES){
             cov_mp->size =
               par->multipole_values_len * par->multipole_values_len
             * par->sep_len * par->sep_len
@@ -712,7 +715,7 @@ int coffe_covariance_init(
         double z_mean = 0;
         for (size_t k = 0; k < par->covariance_density_len; ++k){
 
-            if (par->output_type == 4){
+            if (par->output_type == COVARIANCE_MULTIPOLES){
                 z_mean = par->z_mean[k];
                 volume[k] = 4 * M_PI
                    *par->covariance_fsky[k]
@@ -860,7 +863,7 @@ int coffe_covariance_init(
                            *coeffbar_sum
                         )
                        /volume[k];
-                    if (par->output_type == 4){
+                    if (par->output_type == COVARIANCE_MULTIPOLES){
                         cov_mp->array[index].value = result_mp_or_ramp;
                     }
                     else{

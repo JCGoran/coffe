@@ -68,82 +68,79 @@ int coffe_corrfunc_init(
     }
 #endif
     coffe_corrfunc_free(corrfunc);
-    if (par->output_type == 1){
 
-        clock_t start, end;
-        start = clock();
+    clock_t start, end;
+    start = clock();
 
-        if (par->verbose)
-            printf("Calculating the correlation function...\n");
+    if (par->verbose)
+        printf("Calculating the correlation function...\n");
 
-        gsl_error_handler_t *default_handler =
-            gsl_set_error_handler_off();
+    gsl_error_handler_t *default_handler =
+        gsl_set_error_handler_off();
 
-        corrfunc->size = par->mu_len
-            * par->z_mean_len
-            * par->sep_len;
+    corrfunc->size = par->mu_len
+        * par->z_mean_len
+        * par->sep_len;
 
-        corrfunc->array = (coffe_corrfunc_t *)coffe_malloc(
-            sizeof(coffe_corrfunc_t) * corrfunc->size
-        );
+    corrfunc->array = (coffe_corrfunc_t *)coffe_malloc(
+        sizeof(coffe_corrfunc_t) * corrfunc->size
+    );
 
-        {
-        size_t counter = 0;
-        for (size_t i = 0; i < par->z_mean_len; ++i){
-        for (size_t j = 0; j < par->mu_len; ++j){
-        for (size_t k = 0; k < par->sep_len; ++k){
-            corrfunc->array[counter].coords.z_mean = par->z_mean[i];
-            corrfunc->array[counter].coords.mu = par->mu[j];
-            corrfunc->array[counter].coords.separation = par->sep[k] * COFFE_H0;
-            ++counter;
-        }}}
-        }
-
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value = coffe_integrate(
-                par, bg, integral,
-                corrfunc->array[i].coords.z_mean,
-                corrfunc->array[i].coords.separation,
-                corrfunc->array[i].coords.mu,
-                0,
-                NONINTEGRATED, CORRFUNC
-            );
-        }
-
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value += coffe_integrate(
-                par, bg, integral,
-                corrfunc->array[i].coords.z_mean,
-                corrfunc->array[i].coords.separation,
-                corrfunc->array[i].coords.mu,
-                0,
-                SINGLE_INTEGRATED, CORRFUNC
-            );
-        }
-
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value += coffe_integrate(
-                par, bg, integral,
-                corrfunc->array[i].coords.z_mean,
-                corrfunc->array[i].coords.separation,
-                corrfunc->array[i].coords.mu,
-                0,
-                DOUBLE_INTEGRATED, CORRFUNC
-            );
-        }
-
-        end = clock();
-
-        if (par->verbose)
-            printf("Correlation function calculated in %.2f s\n",
-                (double)(end - start) / CLOCKS_PER_SEC);
-
-        gsl_set_error_handler(default_handler);
-
+    {
+    size_t counter = 0;
+    for (size_t i = 0; i < par->z_mean_len; ++i){
+    for (size_t j = 0; j < par->mu_len; ++j){
+    for (size_t k = 0; k < par->sep_len; ++k){
+        corrfunc->array[counter].coords.z_mean = par->z_mean[i];
+        corrfunc->array[counter].coords.mu = par->mu[j];
+        corrfunc->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+        ++counter;
+    }}}
     }
+
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < corrfunc->size; ++i){
+        corrfunc->array[i].value = coffe_integrate(
+            par, bg, integral,
+            corrfunc->array[i].coords.z_mean,
+            corrfunc->array[i].coords.separation,
+            corrfunc->array[i].coords.mu,
+            0,
+            NONINTEGRATED, CORRFUNC
+        );
+    }
+
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < corrfunc->size; ++i){
+        corrfunc->array[i].value += coffe_integrate(
+            par, bg, integral,
+            corrfunc->array[i].coords.z_mean,
+            corrfunc->array[i].coords.separation,
+            corrfunc->array[i].coords.mu,
+            0,
+            SINGLE_INTEGRATED, CORRFUNC
+        );
+    }
+
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < corrfunc->size; ++i){
+        corrfunc->array[i].value += coffe_integrate(
+            par, bg, integral,
+            corrfunc->array[i].coords.z_mean,
+            corrfunc->array[i].coords.separation,
+            corrfunc->array[i].coords.mu,
+            0,
+            DOUBLE_INTEGRATED, CORRFUNC
+        );
+    }
+
+    end = clock();
+
+    if (par->verbose)
+        printf("Correlation function calculated in %.2f s\n",
+            (double)(end - start) / CLOCKS_PER_SEC);
+
+    gsl_set_error_handler(default_handler);
 
     return EXIT_SUCCESS;
 }

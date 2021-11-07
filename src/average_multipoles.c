@@ -79,7 +79,7 @@ int coffe_average_multipoles_init(
 #endif
     coffe_average_multipoles_free(ramp);
 /*
-    if (par->output_type == 3){
+    if (par->output_type == AVERAGE_MULTIPOLES){
 
         clock_t start, end;
         start = clock();

@@ -361,24 +361,24 @@ int coffe_output_init(
     output_background(filepath, "\t", par, bg);
 
     /* correlation function (full) */
-    if (par->output_type == 1){
+    if (par->output_type == CORRFUNC){
         snprintf(filepath, COFFE_MAX_STRLEN, "%scorrfunc.dat", prefix);
         output_corrfunc(filepath, par->correlation_contrib, cf);
     }
 
     /* multipoles */
-    else if (par->output_type == 2){
+    else if (par->output_type == MULTIPOLES){
         snprintf(filepath, COFFE_MAX_STRLEN, "%smultipoles.dat", prefix);
         output_multipoles(filepath, par->correlation_contrib, mp);
     }
 
     /* covariance of multipoles */
-    else if (par->output_type == 4){
+    else if (par->output_type == COVARIANCE_MULTIPOLES){
         snprintf(filepath, COFFE_MAX_STRLEN, "%scovariance_multipoles.dat", prefix);
         output_covariance(filepath, par->correlation_contrib, cov_mp);
     }
 
-    else if (par->output_type == 5){
+    else if (par->output_type == COVARIANCE_AVERAGE_MULTIPOLES){
         snprintf(
             filepath, COFFE_MAX_STRLEN,
             "%scovariance_average_multipoles.dat", prefix

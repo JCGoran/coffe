@@ -604,11 +604,9 @@ int coffe_integrals_init(
     integral->size = 0;
 
     if (
-        par->output_type == 0 ||
-        par->output_type == 1 ||
-        par->output_type == 2 ||
-        par->output_type == 3 ||
-        par->output_type == 6
+        par->output_type == CORRFUNC ||
+        par->output_type == MULTIPOLES ||
+        par->output_type == AVERAGE_MULTIPOLES
     ){
         /* the default renormalizable linear theory integrals in full-sky */
         const struct nl_terms terms[] = {
@@ -871,14 +869,10 @@ int coffe_integrals_init(
 
             double chi_min = 0.;
             double chi_max = 0.;
-            if (par->output_type == 0){
-                /* dimensionless */
-                chi_max = coffe_interp_spline(
-                    &bg->comoving_distance,
-                    coffe_max_array_double(par->z_mean, par->z_mean_len)
-                );
-            }
-            else if (par->output_type == 1 || par->output_type == 2){
+            if (
+                par->output_type == CORRFUNC ||
+                par->output_type == MULTIPOLES
+            ){
                 /* dimensionless */
                 double *temp = (double *)coffe_malloc(sizeof(double) * par->z_mean_len);
                 for (size_t i = 0; i < par->z_mean_len; ++i)
@@ -889,18 +883,12 @@ int coffe_integrals_init(
                 );
                 free(temp);
             }
-            else if (par->output_type == 3){
+            else if (par->output_type == AVERAGE_MULTIPOLES){
                 /* dimensionless */
                 chi_max = coffe_interp_spline(
                     &bg->comoving_distance,
                     par->z_max
                 );
-            }
-            else if (par->output_type == 6){
-                chi_max = coffe_interp_spline(
-                    &bg->comoving_distance,
-                    coffe_max_array_double(par->z_mean, par->z_mean_len)
-                ) + 300. * COFFE_H0;
             }
             double *chi_array = (double *)coffe_malloc(
                 sizeof(double) * (nbins + 1)
@@ -1111,7 +1099,7 @@ int coffe_integrals_init(
         /* lensing-lensing multipoles are special */
         if (
             par->flatsky_nonlocal &&
-            par->output_type == 2
+            par->output_type == MULTIPOLES
         ){
             for (size_t i = 0; i < par->multipole_values_len; ++i){
                 const int l = par->multipole_values[i];
@@ -1276,7 +1264,7 @@ int coffe_integrals_init(
         /* density-lensing multipoles are also special */
         if (
             par->flatsky_local_nonlocal &&
-            par->output_type == 2
+            par->output_type == MULTIPOLES
         ){
             for (size_t i = 0; i < par->multipole_values_len; ++i){
                 const int l = par->multipole_values[i];

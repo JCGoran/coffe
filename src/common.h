@@ -19,10 +19,6 @@
 #ifndef COFFE_COMMON_H
 #define COFFE_COMMON_H
 
-/*
-#include <vector>
-*/
-
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_spline2d.h>
 #include <libconfig.h>
@@ -84,6 +80,12 @@
 #define COFFE_ARRAY_SIZE(arr) ((size_t) (sizeof (arr) / sizeof (arr)[0]))
 #endif
 
+
+
+/**
+    finds the max of an array of doubles
+**/
+
 double coffe_max_array_double(
     const double *array,
     const size_t size
@@ -91,13 +93,9 @@ double coffe_max_array_double(
 
 
 /**
-    simple wrapper with failsafe for malloc
-**/
-
-
-/**
     contains the coordinates for the correlation function at (z, r, mu)
 **/
+
 typedef struct coffe_corrfunc_coords_t
 {
     double z_mean;
@@ -106,17 +104,16 @@ typedef struct coffe_corrfunc_coords_t
 } coffe_corrfunc_coords_t;
 
 
-
 /**
     same as above for multipoles
 **/
+
 typedef struct coffe_multipoles_coords_t
 {
     double z_mean;
     double separation;
     int l;
 } coffe_multipoles_coords_t;
-
 
 
 /**
@@ -130,9 +127,11 @@ typedef struct coffe_average_multipoles_coords_t
     int l;
 } coffe_average_multipoles_coords_t;
 
+
 /**
     -||- for covariance of multipoles
 **/
+
 typedef struct coffe_covariance_coords_t
 {
     int l1, l2;
@@ -141,7 +140,16 @@ typedef struct coffe_covariance_coords_t
 } coffe_covariance_coords_t;
 
 
+/**
+    simple wrapper with failsafe for malloc
+**/
+
 void *coffe_malloc(size_t size);
+
+
+/**
+    wrapper for 1D GSL interpolation structure
+**/
 
 typedef struct coffe_interpolation
 {
@@ -149,21 +157,37 @@ typedef struct coffe_interpolation
     gsl_interp_accel *accel;
 } coffe_interpolation;
 
+
+/**
+    wrapper for 2D GSL interpolation structure
+**/
+
 typedef struct coffe_interpolation2d
 {
     gsl_spline2d *spline;
     gsl_interp_accel *xaccel, *yaccel;
 } coffe_interpolation2d;
 
+
+/**
+    simple enum to specify which correlation terms we need to compute
+**/
+
 enum coffe_integral_type
 {
     NONINTEGRATED, SINGLE_INTEGRATED, DOUBLE_INTEGRATED
 };
 
+
+/**
+    same as above, but for specifing the output type
+**/
+
 enum coffe_output_type
 {
-    CORRFUNC, MULTIPOLES, AVERAGE_MULTIPOLES
+    CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4, COVARIANCE_AVERAGE_MULTIPOLES = 5
 };
+
 
 /**
     contains all the values for n and l
@@ -664,5 +688,6 @@ int coffe_approx_equal(
     const double rel_epsilon,
     const double abs_epsilon
 );
+
 
 #endif

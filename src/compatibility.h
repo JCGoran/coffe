@@ -17,11 +17,6 @@ static complex_t csin(complex_t value)
     return std::sin(value);
 }
 
-static complex_t ccos(complex_t value)
-{
-    return std::cos(value);
-}
-
 static complex_t cpow(complex_t value, complex_t exponent)
 {
     return std::pow(value, exponent);

@@ -127,10 +127,10 @@ static complex_t twofast_lgamma(complex_t z)
             fprintf(
                 stderr,
                 "Values: "
-                "z = %.3Le + %.3LeI, "
-                "x = %.3Le + %.3LeI, "
-                "t = %.3Le + %.3LeI, "
-                "result = %.3Le + %.3LeI\n",
+                "z = %.3e + %.3eI, "
+                "x = %.3e + %.3eI, "
+                "t = %.3e + %.3eI, "
+                "result = %.3e + %.3eI\n",
                 creal(z), cimag(z),
                 creal(x), cimag(x),
                 creal(t), cimag(t),
@@ -176,10 +176,10 @@ static complex_t twofast_gamma(complex_t z)
             fprintf(
                 stderr,
                 "Values: "
-                "z = %.3Le + %.3LeI, "
-                "x = %.3Le + %.3LeI, "
-                "t = %.3Le + %.3LeI, "
-                "result = %.3Le + %.3LeI\n",
+                "z = %.3e + %.3eI, "
+                "x = %.3e + %.3eI, "
+                "t = %.3e + %.3eI, "
+                "result = %.3e + %.3eI\n",
                 creal(z), cimag(z),
                 creal(x), cimag(x),
                 creal(t), cimag(t),

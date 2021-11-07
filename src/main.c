@@ -135,11 +135,17 @@ int main(int argc, char *argv[])
 
     coffe_integrals_init(&par, &bg, &integral);
 
-    coffe_corrfunc_init(&par, &bg, &integral, &cf);
+    if (par.output_type == CORRFUNC)
+        coffe_corrfunc_init(&par, &bg, &integral, &cf);
 
-    coffe_multipoles_init(&par, &bg, &integral, &mp);
+    if (par.output_type == MULTIPOLES)
+        coffe_multipoles_init(&par, &bg, &integral, &mp);
 
-    coffe_covariance_init(&par, &bg, &cov_mp, &cov_ramp);
+    if (
+        par.output_type == COVARIANCE_MULTIPOLES ||
+        par.output_type == COVARIANCE_AVERAGE_MULTIPOLES
+    )
+        coffe_covariance_init(&par, &bg, &cov_mp, &cov_ramp);
 
     coffe_output_init(
         &par, &bg,
@@ -160,6 +166,10 @@ int main(int argc, char *argv[])
     coffe_corrfunc_free(&cf);
 
     coffe_multipoles_free(&mp);
+
+    coffe_covariance_free(&cov_mp);
+
+    coffe_covariance_free(&cov_ramp);
 
     coffe_parameters_free(&par);
 

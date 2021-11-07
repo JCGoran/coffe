@@ -615,7 +615,7 @@ int coffe_parse_default_parameters(
     par->read_evolution_bias2 = 0;
     par->file_evolution_bias2[0] = 0;
 
-    par->output_type = 2;
+    par->output_type = MULTIPOLES;
     par->covariance_density = NULL;
     par->covariance_density_len = 0;
     par->covariance_z_mean = NULL;
@@ -760,10 +760,9 @@ int coffe_parser_init(
 
     /* mean redshift */
     if (
-        par->output_type == 0 ||
-        par->output_type == 1 ||
-        par->output_type == 2 ||
-        par->output_type == 6
+        par->output_type == CORRFUNC ||
+        par->output_type == MULTIPOLES ||
+        par->output_type == COVARIANCE_MULTIPOLES
     ){
         parse_double_array(conf, "z_mean", &par->z_mean, &par->z_mean_len);
         for (size_t i = 0; i < par->z_mean_len; ++i){
@@ -775,7 +774,7 @@ int coffe_parser_init(
     }
 
     /* range of integration for redshift averaged multipoles */
-    if (par->output_type == 3){
+    if (par->output_type == AVERAGE_MULTIPOLES){
         parse_double(conf, "z_min", &par->z_min, COFFE_TRUE);
         parse_double(conf, "z_max", &par->z_max, COFFE_TRUE);
     }
@@ -784,22 +783,27 @@ int coffe_parser_init(
     parse_int(conf, "interpolation", &par->interp_method, COFFE_FALSE);
 
     /* the cosine of the angle for the full sky correlation function */
-    if (par->output_type == 1){
+    if (par->output_type == CORRFUNC){
         parse_double_array(conf, "mu", &par->mu, &par->mu_len);
     }
 
     /* the multipoles of the correlation function */
     if (
-        par->output_type == 2 ||
-        par->output_type == 3 ||
-        par->output_type == 4 ||
-        par->output_type == 5
+        par->output_type == MULTIPOLES ||
+        par->output_type == AVERAGE_MULTIPOLES ||
+        par->output_type == COVARIANCE_MULTIPOLES ||
+        par->output_type == COVARIANCE_AVERAGE_MULTIPOLES
     ){
         parse_int_array(conf, "multipoles", &par->multipole_values, &par->multipole_values_len);
     }
 
     /* the custom separations for the ang/full correlation function or multipoles */
-    if (par->output_type == 1 || par->output_type == 2 || par->output_type == 3 || par->output_type == 4){
+    if (
+        par->output_type == CORRFUNC ||
+        par->output_type == MULTIPOLES ||
+        par->output_type == AVERAGE_MULTIPOLES ||
+        par->output_type == COVARIANCE_MULTIPOLES
+    ){
         double xmin, xmax;
         parse_double(conf, "separations_min", &xmin, COFFE_TRUE);
         parse_double(conf, "separations_max", &xmax, COFFE_TRUE);
@@ -971,7 +975,10 @@ int coffe_parser_init(
     );
 
     /* parsing the covariance parameters */
-    if (par->output_type == 4 || par->output_type == 5){
+    if (
+        par->output_type == COVARIANCE_MULTIPOLES ||
+        par->output_type == COVARIANCE_AVERAGE_MULTIPOLES
+    ){
         parse_double_array(
             conf,
             "covariance_density",
@@ -1010,7 +1017,7 @@ int coffe_parser_init(
         );
     }
 
-    if (par->output_type == 4){
+    if (par->output_type == COVARIANCE_MULTIPOLES){
         parse_double_array(
             conf,
             "covariance_z_mean",
@@ -1044,7 +1051,7 @@ int coffe_parser_init(
         }
     }
 
-    if (par->output_type == 5){
+    if (par->output_type == COVARIANCE_AVERAGE_MULTIPOLES){
         parse_double_array(
             conf,
             "covariance_zmin",
@@ -1068,16 +1075,6 @@ int coffe_parser_init(
                 "please ensure they have the same length!\n");
             exit(EXIT_FAILURE);
         }
-    }
-
-    /* if we just want the angular correlation function */
-    if (par->output_type == 0){
-        parse_int(
-            conf,
-            "theta_sampling",
-            &par->theta_len,
-            COFFE_TRUE
-        );
     }
 
     /* parsing the contributions to the correlation function and covariance */

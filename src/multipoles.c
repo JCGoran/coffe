@@ -61,36 +61,35 @@ int coffe_multipoles_init(
     }
 #endif
     coffe_multipoles_free(mp);
-    if (par->output_type == 2){
 
-        clock_t start, end;
-        start = clock();
+    clock_t start, end;
+    start = clock();
 
-        if (par->verbose)
-            printf("Calculating multipoles...\n");
+    if (par->verbose)
+        printf("Calculating multipoles...\n");
 
-        gsl_error_handler_t *default_handler =
-            gsl_set_error_handler_off();
+    gsl_error_handler_t *default_handler =
+        gsl_set_error_handler_off();
 
-        mp->size = par->multipole_values_len
-            * par->z_mean_len
-            * par->sep_len;
+    mp->size = par->multipole_values_len
+        * par->z_mean_len
+        * par->sep_len;
 
-        mp->array = (coffe_multipoles_t *)coffe_malloc(
-            sizeof(coffe_multipoles_t) * mp->size
-        );
+    mp->array = (coffe_multipoles_t *)coffe_malloc(
+        sizeof(coffe_multipoles_t) * mp->size
+    );
 
-        {
-        size_t counter = 0;
-        for (size_t i = 0; i < par->z_mean_len; ++i){
-        for (size_t j = 0; j < par->multipole_values_len; ++j){
-        for (size_t k = 0; k < par->sep_len; ++k){
-            mp->array[counter].coords.z_mean = par->z_mean[i];
-            mp->array[counter].coords.l = par->multipole_values[j];
-            mp->array[counter].coords.separation = par->sep[k] * COFFE_H0;
-            ++counter;
-        }}}
-        }
+    {
+    size_t counter = 0;
+    for (size_t i = 0; i < par->z_mean_len; ++i){
+    for (size_t j = 0; j < par->multipole_values_len; ++j){
+    for (size_t k = 0; k < par->sep_len; ++k){
+        mp->array[counter].coords.z_mean = par->z_mean[i];
+        mp->array[counter].coords.l = par->multipole_values[j];
+        mp->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+        ++counter;
+    }}}
+    }
 
     #pragma omp parallel for num_threads(par->nthreads)
     for (size_t i = 0; i < mp->size; ++i){
@@ -135,8 +134,6 @@ int coffe_multipoles_init(
                 (double)(end - start) / CLOCKS_PER_SEC);
 
     gsl_set_error_handler(default_handler);
-
-    }
 
     return EXIT_SUCCESS;
 }
