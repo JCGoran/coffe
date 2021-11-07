@@ -108,16 +108,18 @@ static int output_corrfunc(
 )
 {
     char header[COFFE_MAX_STRLEN];
+    snprintf(
+        header, COFFE_MAX_STRLEN,
+        "# correlation contributions: "
+    );
+    output_correlation_contributions_header(cc, header);
+    strncat(header, "\n", COFFE_MAX_STRLEN);
+    strncat(header, "# z_mean, sep, mu, value\n", COFFE_MAX_STRLEN);
+
     FILE *data = fopen(filepath, "a");
+    fprintf(data, header);
+
     for (size_t i = 0; i < cf->size; ++i){
-        snprintf(
-            header, COFFE_MAX_STRLEN,
-            "# correlation contributions: "
-        );
-        output_correlation_contributions_header(cc, header);
-        strncat(header, "\n", COFFE_MAX_STRLEN);
-        strncat(header, "# z_mean, sep, mu, value\n", COFFE_MAX_STRLEN);
-        fprintf(data, header);
         fprintf(
             data,
             "%.10e %.10e %.10e %.10e\n",
@@ -139,7 +141,6 @@ static int output_multipoles(
 )
 {
     char header[COFFE_MAX_STRLEN];
-    FILE *data = fopen(filepath, "a");
     snprintf(
         header, COFFE_MAX_STRLEN,
         "# correlation contributions: "
@@ -147,7 +148,10 @@ static int output_multipoles(
     output_correlation_contributions_header(cc, header);
     strncat(header, "\n", COFFE_MAX_STRLEN);
     strncat(header, "# z_mean, l, sep, value\n", COFFE_MAX_STRLEN);
+
+    FILE *data = fopen(filepath, "a");
     fprintf(data, header);
+
     for (size_t i = 0; i < mp->size; ++i){
         fprintf(
             data,
