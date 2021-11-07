@@ -49,28 +49,6 @@
 #include "signal.h"
 
 
-static double corrfunc_compute(
-    coffe_parameters_t *par,
-    coffe_background_t *bg,
-    coffe_integral_array_t *integral,
-    const double z_mean,
-    const double separation,
-    const double mu,
-    const enum coffe_integral_type integral_type,
-    const enum coffe_output_type output_type
-)
-{
-    return coffe_integrate(
-        par, bg, integral,
-        z_mean,
-        separation,
-        mu,
-        0,
-        integral_type,
-        output_type
-    );
-}
-
 /**
     computes and stores the values of the correlation
     function
@@ -114,33 +92,36 @@ int coffe_corrfunc_init(
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value = corrfunc_compute(
+            corrfunc->array[i].value = coffe_integrate(
                 par, bg, integral,
                 par->corrfunc_coords.array[i].z_mean,
                 par->corrfunc_coords.array[i].separation,
                 par->corrfunc_coords.array[i].mu,
+                0,
                 NONINTEGRATED, CORRFUNC
             );
         }
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value += corrfunc_compute(
+            corrfunc->array[i].value += coffe_integrate(
                 par, bg, integral,
                 par->corrfunc_coords.array[i].z_mean,
                 par->corrfunc_coords.array[i].separation,
                 par->corrfunc_coords.array[i].mu,
+                0,
                 SINGLE_INTEGRATED, CORRFUNC
             );
         }
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < corrfunc->size; ++i){
-            corrfunc->array[i].value += corrfunc_compute(
+            corrfunc->array[i].value += coffe_integrate(
                 par, bg, integral,
                 par->corrfunc_coords.array[i].z_mean,
                 par->corrfunc_coords.array[i].separation,
                 par->corrfunc_coords.array[i].mu,
+                0,
                 DOUBLE_INTEGRATED, CORRFUNC
             );
         }

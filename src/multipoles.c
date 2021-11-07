@@ -47,29 +47,6 @@
 #include "signal.h"
 
 
-static double multipoles_compute(
-    coffe_parameters_t *par,
-    coffe_background_t *bg,
-    coffe_integral_array_t *integral,
-    const double z_mean,
-    const double separation,
-    const int l,
-    const enum coffe_integral_type integral_type,
-    const enum coffe_output_type output_type
-)
-{
-    return coffe_integrate(
-        par, bg, integral,
-        z_mean,
-        separation,
-        0,
-        l,
-        integral_type,
-        output_type
-    );
-}
-
-
 int coffe_multipoles_init(
     coffe_parameters_t *par,
     coffe_background_t *bg,
@@ -108,10 +85,11 @@ int coffe_multipoles_init(
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value = multipoles_compute(
+            mp->array[i].value = coffe_integrate(
                 par, bg, integral,
                 par->multipoles_coords.array[i].z_mean,
                 par->multipoles_coords.array[i].separation,
+                0,
                 par->multipoles_coords.array[i].l,
                 NONINTEGRATED, MULTIPOLES
             );
@@ -119,10 +97,11 @@ int coffe_multipoles_init(
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value += multipoles_compute(
+            mp->array[i].value += coffe_integrate(
                 par, bg, integral,
                 par->multipoles_coords.array[i].z_mean,
                 par->multipoles_coords.array[i].separation,
+                0,
                 par->multipoles_coords.array[i].l,
                 SINGLE_INTEGRATED, MULTIPOLES
             );
@@ -130,10 +109,11 @@ int coffe_multipoles_init(
 
         #pragma omp parallel for num_threads(par->nthreads)
         for (size_t i = 0; i < mp->size; ++i){
-            mp->array[i].value += multipoles_compute(
+            mp->array[i].value += coffe_integrate(
                 par, bg, integral,
                 par->multipoles_coords.array[i].z_mean,
                 par->multipoles_coords.array[i].separation,
+                0,
                 par->multipoles_coords.array[i].l,
                 DOUBLE_INTEGRATED, MULTIPOLES
             );
