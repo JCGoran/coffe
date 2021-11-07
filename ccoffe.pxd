@@ -46,13 +46,12 @@ cdef extern from "common.h":
         double separation
         int l
 
-    cdef struct coffe_corrfunc_t:
-        coffe_corrfunc_coords_t coords
-        double value
-
-    cdef struct coffe_corrfunc_array_t:
-        coffe_corrfunc_t *array
-        size_t size
+    cdef struct coffe_covariance_coords_t:
+        double separation1
+        double separation2
+        double z_mean
+        int l1
+        int l2
 
     cdef struct coffe_interpolation:
         gsl_spline *spline
@@ -265,6 +264,26 @@ cdef extern from "common.h":
         coffe_parameters_t *
     )
 
+    double coffe_interp_spline(
+        const coffe_interpolation *,
+        const double
+    )
+
+    double coffe_interp_spline2d(
+        const coffe_interpolation2d *,
+        const double,
+        const double
+    )
+
+    int coffe_free_spline(
+        coffe_interpolation *
+    )
+
+    int coffe_free_spline2d(
+        coffe_interpolation2d *
+    )
+
+
 cdef extern from "parser.h":
 
     int coffe_parse_default_parameters(
@@ -292,6 +311,8 @@ cdef extern from "background.h":
         coffe_interpolation G1
         coffe_interpolation G2
         coffe_interpolation comoving_distance
+
+        int flag
 
     int coffe_background_init(
         coffe_parameters_t *,
@@ -333,6 +354,20 @@ cdef extern from "integrals.h":
     )
 
 
+cdef extern from "signal.h":
+    double coffe_integrate(
+        coffe_parameters_t *par,
+        coffe_background_t *bg,
+        coffe_integral_array_t *integral,
+        double z_mean,
+        double sep,
+        double mu,
+        int l,
+        coffe_integral_type flag_integral,
+        coffe_output_type flag_output
+    )
+
+
 cdef extern from "corrfunc.h":
     cdef struct coffe_corrfunc_t:
         coffe_corrfunc_coords_t coords
@@ -341,6 +376,17 @@ cdef extern from "corrfunc.h":
     cdef struct coffe_corrfunc_array_t:
         coffe_corrfunc_t *array
         size_t size
+
+    int coffe_corrfunc_init(
+        coffe_parameters_t *,
+        coffe_background_t *,
+        coffe_integral_array_t *,
+        coffe_corrfunc_array_t *
+    )
+
+    int coffe_corrfunc_free(
+        coffe_corrfunc_array_t *
+    )
 
 cdef extern from "multipoles.h":
     cdef struct coffe_multipoles_t:
@@ -351,16 +397,47 @@ cdef extern from "multipoles.h":
         coffe_multipoles_t *array
         size_t size
 
+    int coffe_multipoles_init(
+        coffe_parameters_t *,
+        coffe_background_t *,
+        coffe_integral_array_t *,
+        coffe_multipoles_array_t *
+    )
 
-#cdef from extern "multipoles.h":
-#
-#    cdef struct coffe_multipoles_t:
-#        double **result
-#        int *l
-#        double *sep
-#        size_t l_len, sep_len
-#        int flag
-#
+    int coffe_multipoles_free(
+        coffe_multipoles_array_t *
+    )
+
+cdef extern from "covariance.h":
+
+    cdef struct coffe_covariance_t:
+        coffe_covariance_coords_t coords
+        double value
+
+    cdef struct coffe_covariance_array_t:
+        coffe_covariance_t *array
+        size_t size
+
+    int coffe_covariance_init(
+        coffe_parameters_t *,
+        coffe_background_t *,
+        coffe_covariance_array_t *,
+        coffe_covariance_array_t *
+    )
+
+    int coffe_covariance_free(
+        coffe_covariance_array_t *
+    )
+
+    coffe_covariance_t coffe_covariance_find(
+        const coffe_covariance_array_t *,
+        const double z_mean,
+        const int l1,
+        const int l2,
+        const double sep1,
+        const double sep2
+    )
+
 #cdef from extern "average_multipoles.h":
 #
 #    cdef struct coffe_average_multipoles_t:
