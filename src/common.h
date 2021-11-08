@@ -165,7 +165,8 @@ typedef struct coffe_interpolation
 typedef struct coffe_interpolation2d
 {
     gsl_spline2d *spline;
-    gsl_interp_accel *xaccel, *yaccel;
+    gsl_interp_accel *xaccel;
+    gsl_interp_accel *yaccel;
 } coffe_interpolation2d;
 
 
@@ -527,8 +528,16 @@ double coffe_interp_spline2d(
     const double value2
 );
 
+int coffe_new_spline(
+    coffe_interpolation *interp
+);
+
 int coffe_free_spline(
     coffe_interpolation *interp
+);
+
+int coffe_new_spline2d(
+    coffe_interpolation2d *interp
 );
 
 int coffe_free_spline2d(
@@ -688,6 +697,5 @@ int coffe_approx_equal(
     const double rel_epsilon,
     const double abs_epsilon
 );
-
 
 #endif

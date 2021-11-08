@@ -10,7 +10,7 @@
 #include "tools.h"
 
 static int coffe_test_background(
-    const struct coffe_background_t *bg
+    const coffe_background_t *bg
 )
 {
     int error_flag = 0;
@@ -90,16 +90,12 @@ static int coffe_test_background(
 
 int main(void)
 {
-    struct coffe_parameters_t par;
+    coffe_parameters_t par;
     coffe_parse_default_parameters(&par);
 
     par.divergent = 1;
 
-    #ifdef _OPENMP
-    par.nthreads = omp_get_num_procs();
-    #endif
-
-    struct coffe_background_t bg;
+    coffe_background_t bg = {.flag = 0};
     coffe_background_init(&par, &bg);
 
     const int error_flag = coffe_test_background(&bg);

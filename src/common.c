@@ -608,7 +608,6 @@ int coffe_init_spline2d(
 }
 
 
-
 int coffe_free_spline(
     coffe_interpolation *interp
 )
@@ -617,10 +616,13 @@ int coffe_free_spline(
         gsl_spline_free(interp->spline);
     if (interp->accel != NULL)
         gsl_interp_accel_free(interp->accel);
-    if (interp->spline != NULL) interp->spline = NULL;
-    if (interp->accel != NULL) interp->accel = NULL;
+
+    interp->spline = NULL;
+    interp->accel = NULL;
+
     return EXIT_SUCCESS;
 }
+
 
 int coffe_free_spline2d(
     coffe_interpolation2d *interp
@@ -633,9 +635,10 @@ int coffe_free_spline2d(
     if (interp->yaccel != NULL)
         gsl_interp_accel_free(interp->yaccel);
 
-    if (interp->spline != NULL) interp->spline = NULL;
-    if (interp->xaccel != NULL) interp->xaccel = NULL;
-    if (interp->yaccel != NULL) interp->yaccel = NULL;
+    interp->spline = NULL;
+    interp->xaccel = NULL;
+    interp->yaccel = NULL;
+
     return EXIT_SUCCESS;
 }
 
@@ -659,7 +662,6 @@ int coffe_compare_descending(
     else if (*(double *)a < *(double *)b) return 1;
     else return 0;
 }
-
 
 
 /**
@@ -1214,3 +1216,23 @@ int coffe_approx_equal(
     }
 }
 
+int coffe_new_spline(
+    coffe_interpolation *input
+)
+{
+    input->spline = NULL;
+    input->accel = NULL;
+
+    return EXIT_SUCCESS;
+}
+
+int coffe_new_spline2d(
+    coffe_interpolation2d *input
+)
+{
+    input->spline = NULL;
+    input->xaccel = NULL;
+    input->yaccel = NULL;
+
+    return EXIT_SUCCESS;
+}

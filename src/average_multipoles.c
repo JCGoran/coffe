@@ -157,7 +157,7 @@ int coffe_average_multipoles_init(
 
 
 int coffe_average_multipoles_free(
-    struct coffe_average_multipoles_array_t *ramp
+    coffe_average_multipoles_array_t *ramp
 )
 {
     if (ramp->size)

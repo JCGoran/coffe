@@ -20,18 +20,18 @@
 #define COFFE_FUNCTIONS_H
 
 double functions_nonintegrated(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integral_array_t *integral,
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    const coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r
 );
 
 double functions_single_integrated(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integral_array_t *integral,
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    const coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r,
@@ -39,9 +39,9 @@ double functions_single_integrated(
 );
 
 double functions_double_integrated(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integral_array_t *integral,
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    const coffe_integral_array_t *integral,
     const double z_mean,
     const double mu,
     const double r,
@@ -50,9 +50,9 @@ double functions_double_integrated(
 );
 
 double functions_flatsky_lensing_lensing_multipoles(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integral_array_t *integral,
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    const coffe_integral_array_t *integral,
     const double z_mean,
     const double sep,
     const int l,
@@ -60,9 +60,9 @@ double functions_flatsky_lensing_lensing_multipoles(
 );
 
 double functions_flatsky_density_lensing_multipoles(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    const struct coffe_integral_array_t *integral,
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    const coffe_integral_array_t *integral,
     const double z_mean,
     const double sep,
     const int l

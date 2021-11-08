@@ -36,11 +36,11 @@ struct integration_params
 
     double Omega0_de; /* present omega parameter for dark energy-like component */
 
-    struct coffe_interpolation w; /* interpolator of w(z) */
+    coffe_interpolation w; /* interpolator of w(z) */
 
-    struct coffe_interpolation wint; /* result of exp(3*int((1 + w(z))/(1 + z))) */
+    coffe_interpolation wint; /* result of exp(3*int((1 + w(z))/(1 + z))) */
 
-    struct coffe_interpolation xint; /* result of Omega0_m/(1 - Omega0_m)*exp(-3*int(w(a)/a)) */
+    coffe_interpolation xint; /* result of Omega0_m/(1 - Omega0_m)*exp(-3*int(w(a)/a)) */
 };
 
 int coffe_check_range(
@@ -196,7 +196,7 @@ static double integrand_comoving(
 **/
 
 int coffe_background_init(
-    const struct coffe_parameters_t *par,
+    const coffe_parameters_t *par,
     coffe_background_t *bg
 )
 {
@@ -205,6 +205,9 @@ int coffe_background_init(
 
     if (par->verbose)
         printf("Initializing the background...\n");
+
+    /* make sure we don't have memory leaks */
+    coffe_background_free(bg);
 
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();

@@ -17,7 +17,7 @@
 #endif
 
 static int coffe_test_integrals(
-    const struct coffe_integral_array_t *integrals
+    const coffe_integral_array_t *integrals
 )
 {
     int error_flag = 0;
@@ -246,20 +246,16 @@ static int coffe_test_integrals(
 
 int main(void)
 {
-    struct coffe_parameters_t par;
+    coffe_parameters_t par;
     coffe_parse_default_parameters(&par);
 
     par.divergent = 1;
     par.flatsky_nonlocal = 1;
 
-    #ifdef _OPENMP
-    par.nthreads = omp_get_num_procs();
-    #endif
-
-    struct coffe_background_t bg;
+    coffe_background_t bg = {.flag = 0};
     coffe_background_init(&par, &bg);
 
-    struct coffe_integral_array_t integrals;
+    coffe_integral_array_t integrals = {.array = NULL, .size = 0};
     coffe_integrals_init(&par, &bg, &integrals);
 
     const int error_flag = coffe_test_integrals(&integrals);

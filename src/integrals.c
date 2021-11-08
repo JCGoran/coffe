@@ -48,26 +48,26 @@
     parameters for the integrand of the form P(k) k^2 j_l(k r)/(k r)^n
 **/
 
-struct integrals_params
+typedef struct integrals_params_t
 {
-    struct coffe_interpolation *result;
+    coffe_interpolation *result;
     double r;
     int n, l;
     enum coffe_integer_state state_n, state_l;
-};
+} integrals_params_t;
 
 
 /**
     structure needed for integration of renormalization term
 **/
 
-struct integrals_divergent_params
+typedef struct integrals_divergent_params_t
 {
-    struct coffe_interpolation *result;
+    coffe_interpolation *result;
     double chi1, chi2;
     /* placeholder: in flat-sky, the non-renormalizable terms are nonzero */
     enum coffe_integer_state state;
-};
+} integrals_divergent_params_t;
 
 
 /**
@@ -139,8 +139,8 @@ static const size_t min_sep_len = sizeof(min_sep) / sizeof(min_sep[0]);
     find a given integral
 **/
 
-struct coffe_integral_t *coffe_find_integral(
-    const struct coffe_integral_array_t *integral,
+coffe_integral_t *coffe_find_integral(
+    const coffe_integral_array_t *integral,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
@@ -168,6 +168,19 @@ struct coffe_integral_t *coffe_find_integral(
     else{
         return NULL;
     }
+}
+
+
+int coffe_integral_new(
+    coffe_integral_t *integral
+)
+{
+    coffe_new_spline(&integral->result);
+    coffe_new_spline(&integral->renormalization_zero_separation);
+    coffe_new_spline2d(&integral->renormalization);
+    coffe_new_spline2d(&integral->result2d);
+
+    return EXIT_SUCCESS;
 }
 
 
@@ -233,7 +246,7 @@ static double integrals_prefactor(
 #endif
 )
 {
-    struct integrals_params *test = (struct integrals_params *) p;
+    integrals_params_t *test = (integrals_params_t *) p;
 
     double local_n, local_l;
 
@@ -279,7 +292,7 @@ static double integrals_bessel_integrand(
 #endif
 )
 {
-    const struct integrals_params *integrand = (const struct integrals_params *) p;
+    const integrals_params_t *integrand = (const integrals_params_t *) p;
 
     double local_n, local_l;
 
@@ -336,7 +349,7 @@ static double integrals_integrate_function(
         void*
 #endif
     ),
-    const struct coffe_interpolation *input,
+    const coffe_interpolation *input,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
@@ -346,8 +359,8 @@ static double integrals_integrate_function(
     const double kmax
 )
 {
-    struct integrals_params test;
-    test.result = (struct coffe_interpolation *) input;
+    integrals_params_t test;
+    test.result = (coffe_interpolation *) input;
     test.n = n;
     test.l = l;
     test.state_n = state_n;
@@ -396,7 +409,7 @@ static double integrals_renormalization0_integrand(
 #endif
 )
 {
-    struct integrals_params *integrand = (struct integrals_params *) p;
+    integrals_params_t *integrand = (integrals_params_t *) p;
     return coffe_interp_spline(integrand->result, k)
         *(1. - pow(gsl_sf_bessel_j0(k * integrand->r), 2))
         / k / k;
@@ -416,8 +429,8 @@ static double integrals_renormalization_integrand(
 #endif
 )
 {
-    struct integrals_divergent_params *integrand =
-        (struct integrals_divergent_params *) p;
+    integrals_divergent_params_t *integrand =
+        (integrals_divergent_params_t *) p;
     return coffe_interp_spline(integrand->result, k)
            *gsl_sf_bessel_j0(k * integrand->chi1)
            *gsl_sf_bessel_j0(k * integrand->chi2)
@@ -430,15 +443,15 @@ static double integrals_renormalization_integrand(
 **/
 
 static double integrals_renormalization(
-    const struct coffe_interpolation *input,
+    const coffe_interpolation *input,
     const double chi1,
     const double chi2,
     const double kmin,
     const double kmax
 )
 {
-    struct integrals_divergent_params test;
-    test.result = (struct coffe_interpolation*) input;
+    integrals_divergent_params_t test;
+    test.result = (coffe_interpolation*) input;
     test.chi1 = chi1;
     test.chi2 = chi2;
 
@@ -468,7 +481,7 @@ int coffe_integrals_renormalizable(
     double **output_y,
     const size_t output_len,
     size_t *real_output_len,
-    const struct coffe_interpolation *spectrum,
+    const coffe_interpolation *spectrum,
     const int n,
     const int l,
     const enum coffe_integer_state state_n,
@@ -585,9 +598,9 @@ int coffe_integrals_renormalizable(
 **/
 
 int coffe_integrals_init(
-    const struct coffe_parameters_t *par,
-    const struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral
+    const coffe_parameters_t *par,
+    const coffe_background_t *bg,
+    coffe_integral_array_t *integral
 )
 {
     clock_t start, end;
@@ -599,9 +612,8 @@ int coffe_integrals_init(
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
 
-    /* default size is zero, and points to nothing */
-    integral->array = NULL;
-    integral->size = 0;
+    /* to prevent memory leaks */
+    coffe_integrals_free(integral);
 
     if (
         par->output_type == CORRFUNC ||
@@ -609,7 +621,7 @@ int coffe_integrals_init(
         par->output_type == AVERAGE_MULTIPOLES
     ){
         /* the default renormalizable linear theory integrals in full-sky */
-        const struct nl_terms terms[] = {
+        const nl_terms terms[] = {
             {.n = 0, .l = 0},
             {.n = 0, .l = 2},
             {.n = 0, .l = 4},
@@ -620,7 +632,7 @@ int coffe_integrals_init(
             {.n = 3, .l = 1}
         };
 
-        integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t) * sizeof(terms) / sizeof(*terms));
+        integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t) * sizeof(terms) / sizeof(*terms));
 
         /* those default renormalized integrals */
         for (size_t i = 0; i < sizeof(terms) / sizeof(*terms); ++i){
@@ -631,19 +643,18 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t));
             else
-                integral->array = (struct coffe_integral_t *)realloc(
+                integral->array = (coffe_integral_t *)realloc(
                     integral->array,
-                    sizeof(struct coffe_integral_t) * (current_index + 1)
+                    sizeof(coffe_integral_t) * (current_index + 1)
                 );
+
+            coffe_integral_new(&integral->array[current_index]);
             integral->array[current_index].n = n;
             integral->array[current_index].l = l;
             integral->array[current_index].state_n = COFFE_INTEGER;
             integral->array[current_index].state_l = COFFE_INTEGER;
-            integral->array[current_index].renormalization.spline = NULL;
-            integral->array[current_index].renormalization.xaccel = NULL;
-            integral->array[current_index].renormalization.yaccel = NULL;
 
             /* if integral is not divergent, use implementation of 2FAST */
             const size_t npoints = par->bessel_bins;
@@ -726,7 +737,7 @@ int coffe_integrals_init(
                     }
 
                     /* setup the interpolation of the power spectrum */
-                    struct coffe_interpolation pk_at_z;
+                    coffe_interpolation pk_at_z;
                     coffe_init_spline(
                         &pk_at_z,
                         k,
@@ -790,12 +801,14 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t));
             else
-                integral->array = (struct coffe_integral_t *)realloc(
+                integral->array = (coffe_integral_t *)realloc(
                     integral->array,
-                    sizeof(struct coffe_integral_t) * (current_index + 1)
+                    sizeof(coffe_integral_t) * (current_index + 1)
                 );
+
+            coffe_integral_new(&integral->array[current_index]);
             integral->array[current_index].n = 4;
             integral->array[current_index].l = 0;
             integral->array[current_index].state_n = COFFE_INTEGER;
@@ -934,19 +947,18 @@ int coffe_integrals_init(
             const size_t current_index = integral->size;
             /* alloc the space */
             if (current_index == 0)
-                integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t));
             else
-                integral->array = (struct coffe_integral_t *)realloc(
+                integral->array = (coffe_integral_t *)realloc(
                     integral->array,
-                    sizeof(struct coffe_integral_t) * (current_index + 1)
+                    sizeof(coffe_integral_t) * (current_index + 1)
                 );
+
+            coffe_integral_new(&integral->array[current_index]);
             integral->array[current_index].n = 1;
             integral->array[current_index].l = -1;
             integral->array[current_index].state_n = COFFE_HALF_INTEGER;
             integral->array[current_index].state_l = COFFE_HALF_INTEGER;
-            integral->array[current_index].renormalization.spline = NULL;
-            integral->array[current_index].renormalization.xaccel = NULL;
-            integral->array[current_index].renormalization.yaccel = NULL;
 
             /* if integral is not divergent, use implementation of 2FAST */
             const size_t npoints = par->bessel_bins;
@@ -1037,7 +1049,7 @@ int coffe_integrals_init(
                     }
 
                     /* setup the interpolation of the power spectrum */
-                    struct coffe_interpolation pk_at_z;
+                    coffe_interpolation pk_at_z;
                     coffe_init_spline(
                         &pk_at_z,
                         k,
@@ -1107,19 +1119,18 @@ int coffe_integrals_init(
                 const size_t current_index = integral->size;
                 /* alloc the space */
                 if (current_index == 0)
-                    integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                    integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t));
                 else
-                    integral->array = (struct coffe_integral_t *)realloc(
+                    integral->array = (coffe_integral_t *)realloc(
                         integral->array,
-                        sizeof(struct coffe_integral_t) * (current_index + 1)
+                        sizeof(coffe_integral_t) * (current_index + 1)
                     );
+
+                coffe_integral_new(&integral->array[current_index]);
                 integral->array[current_index].n = 1;
                 integral->array[current_index].l = l;
                 integral->array[current_index].state_n = COFFE_INTEGER;
                 integral->array[current_index].state_l = COFFE_INTEGER;
-                integral->array[current_index].renormalization.spline = NULL;
-                integral->array[current_index].renormalization.xaccel = NULL;
-                integral->array[current_index].renormalization.yaccel = NULL;
 
                 /* if integral is not divergent, use implementation of 2FAST */
                 const size_t npoints = par->bessel_bins;
@@ -1202,7 +1213,7 @@ int coffe_integrals_init(
                     }
 
                     /* setup the interpolation of the power spectrum */
-                    struct coffe_interpolation pk_at_z;
+                    coffe_interpolation pk_at_z;
                     coffe_init_spline(
                         &pk_at_z,
                         k,
@@ -1273,19 +1284,18 @@ int coffe_integrals_init(
                     const size_t current_index = integral->size;
                     /* alloc the space */
                     if (current_index == 0)
-                        integral->array = (struct coffe_integral_t *)coffe_malloc(sizeof(struct coffe_integral_t));
+                        integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t));
                     else
-                        integral->array = (struct coffe_integral_t *)realloc(
+                        integral->array = (coffe_integral_t *)realloc(
                             integral->array,
-                            sizeof(struct coffe_integral_t) * (current_index + 1)
+                            sizeof(coffe_integral_t) * (current_index + 1)
                         );
+
+                    coffe_integral_new(&integral->array[current_index]);
                     integral->array[current_index].n = l - 2 * k + 3;
                     integral->array[current_index].l = l - 2 * k + 1;
                     integral->array[current_index].state_n = COFFE_HALF_INTEGER;
                     integral->array[current_index].state_l = COFFE_HALF_INTEGER;
-                    integral->array[current_index].renormalization.spline = NULL;
-                    integral->array[current_index].renormalization.xaccel = NULL;
-                    integral->array[current_index].renormalization.yaccel = NULL;
 
                     /* if integral is not divergent, use implementation of 2FAST */
                     const size_t npoints = par->bessel_bins;
@@ -1368,7 +1378,7 @@ int coffe_integrals_init(
                     }
 
                     /* setup the interpolation of the power spectrum */
-                    struct coffe_interpolation pk_at_z;
+                    coffe_interpolation pk_at_z;
                     coffe_init_spline(
                         &pk_at_z,
                         k,
@@ -1442,20 +1452,22 @@ int coffe_integrals_init(
 
 
 int coffe_integrals_free(
-    struct coffe_integral_array_t *integral
+    coffe_integral_array_t *integral
 )
 {
-    return EXIT_SUCCESS;
-    if (integral->size > 0){
+    if (integral->size){
         for (size_t i = 0; i < integral->size; ++i){
             coffe_free_spline(&integral->array[i].result);
             coffe_free_spline(&integral->array[i].renormalization_zero_separation);
             coffe_free_spline2d(&integral->array[i].renormalization);
+            coffe_free_spline2d(&integral->array[i].result2d);
         }
         /* so we don't free it again */
-        integral->size = 0;
         free(integral->array);
     }
+    integral->size = 0;
+    integral->array = NULL;
+
     return EXIT_SUCCESS;
 }
 

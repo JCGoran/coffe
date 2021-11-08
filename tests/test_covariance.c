@@ -130,11 +130,8 @@ int main(void)
     par.sep_len = 6;
     free(par.sep);
     par.sep = coffe_generate_range(50, 350, par.sep_len);
-    #ifdef _OPENMP
-    par.nthreads = omp_get_num_procs();
-    #endif
 
-    coffe_background_t bg;
+    coffe_background_t bg = {.flag = 0};
     coffe_background_init(&par, &bg);
 
     coffe_integral_array_t integral = {.array = NULL, .size = 0};

@@ -212,7 +212,7 @@ static int parse_double_array(
 
 static int parse_bias_default(
     double value,
-    struct coffe_interpolation *spline,
+    coffe_interpolation *spline,
     int method
 )
 {
@@ -238,7 +238,7 @@ static int parse_bias(
     char *setting,
     char *filename,
     char *setting_single,
-    struct coffe_interpolation *spline,
+    coffe_interpolation *spline,
     int method,
     int flag
 )
@@ -271,10 +271,14 @@ static int parse_bias(
     parsing the power spectrum from an external source (only CLASS for now)
 **/
 #ifdef HAVE_CLASS
-static int parse_external_power_spectrum(
-    struct coffe_parameters_t *par
+int parse_external_power_spectrum(
+    coffe_parameters_t *par
 )
 {
+    /* so we don't leak memory */
+    coffe_free_spline(&par->power_spectrum);
+    coffe_free_spline(&par->power_spectrum_norm);
+
     struct precision *ppr = (struct precision *)coffe_malloc(sizeof(struct precision));
     struct background *pba = (struct background *)coffe_malloc(sizeof(struct background));
     struct thermo *pth = (struct thermo *)coffe_malloc(sizeof(struct thermo));
@@ -495,13 +499,17 @@ static int parse_external_power_spectrum(
 
     return EXIT_SUCCESS;
 }
-#endif
+
 
 int coffe_parse_default_parameters(
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
 )
 {
+    #ifdef _OPENMP
+    par->nthreads = omp_get_max_threads();
+    #else
     par->nthreads = 1;
+    #endif
     /* cosmological parameters */
     par->Omega0_m = 0.3;
     par->Omega0_baryon = 0.05;
@@ -719,7 +727,7 @@ int coffe_parse_default_parameters(
 
 int coffe_parser_init(
     char *filename,
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
 )
 {
     coffe_parse_default_parameters(par);

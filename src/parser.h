@@ -20,12 +20,16 @@
 #define COFFE_PARSER_H
 
 int coffe_parse_default_parameters(
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
 );
 
 int coffe_parser_init(
     char *filename,
-    struct coffe_parameters_t *par
+    coffe_parameters_t *par
+);
+
+int parse_external_power_spectrum(
+    coffe_parameters_t *par
 );
 
 #endif

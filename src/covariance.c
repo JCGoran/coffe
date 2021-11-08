@@ -271,7 +271,7 @@ static double covariance_integrand(
     integrates the above
 **/
 static double covariance_integral(
-    struct coffe_interpolation *power_spectrum,
+    coffe_interpolation *power_spectrum,
     double chi1, double chi2,
     double chi1_delta, double chi2_delta,
     int l1, int l2,
@@ -300,7 +300,7 @@ static double covariance_integral(
     2d FFTlog integration
 **/
 static int covariance_integrate_fftlog(
-    const struct coffe_interpolation *spline,
+    const coffe_interpolation *spline,
     const double power,
     const int l1,
     const int l2,
@@ -383,7 +383,7 @@ static int covariance_integrate_fftlog(
         free(result_pk[i]);
     free(result_pk);
 
-    struct coffe_interpolation2d pk;
+    coffe_interpolation2d pk;
 
     coffe_init_spline2d(
         &pk,
@@ -420,10 +420,10 @@ static int covariance_integrate_fftlog(
     multipoles
 **/
 int coffe_covariance_init(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_covariance_array_t *cov_mp,
-    struct coffe_covariance_array_t *cov_ramp
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_covariance_array_t *cov_mp,
+    coffe_covariance_array_t *cov_ramp
 )
 {
     if (
@@ -542,7 +542,7 @@ int coffe_covariance_init(
 #endif
 
             /* setup the interpolation of the power spectrum */
-            struct coffe_interpolation pk_at_z;
+            coffe_interpolation pk_at_z;
             coffe_init_spline(
                 &pk_at_z,
                 k,
@@ -555,7 +555,7 @@ int coffe_covariance_init(
                 (double *)coffe_malloc(sizeof(double) * k_size);
             double *temp_spectrum_pk2 =
                 (double *)coffe_malloc(sizeof(double) * k_size);
-            struct coffe_interpolation integrand_pk, integrand_pk2;
+            coffe_interpolation integrand_pk, integrand_pk2;
 
             /* setting the power spectra P(k) and P^2(k) */
             for (size_t i = 0; i < k_size; ++i){

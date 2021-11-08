@@ -25,13 +25,13 @@ enum coffe_integer_state {COFFE_INTEGER, COFFE_HALF_INTEGER};
 typedef struct coffe_integral_t
 {
     /* result I^n_l, or r^(n - l) I^n_l if n > l */
-    struct coffe_interpolation result;
+    coffe_interpolation result;
     /* result I^n_l(r, z), or r^(n - l) I^n_l if n > l */
-    struct coffe_interpolation2d result2d;
+    coffe_interpolation2d result2d;
     /* the suitable renormalization (if necessary) */
-    struct coffe_interpolation2d renormalization;
+    coffe_interpolation2d renormalization;
     /* the suitable renormalization at zero separation (if necessary) */
-    struct coffe_interpolation renormalization_zero_separation;
+    coffe_interpolation renormalization_zero_separation;
     /* the power and the degree of the spherical Bessel function, respectively */
     int n, l;
     /* if state = COFFE_integer_state, the passed value of n or l should be the NUMERATOR */
@@ -39,17 +39,21 @@ typedef struct coffe_integral_t
 } coffe_integral_t;
 
 
+int coffe_integral_new(
+    coffe_integral_t *
+);
+
 /* only has a pointer to multiple structures */
 typedef struct coffe_integral_array_t
 {
-    struct coffe_integral_t *array;
+    coffe_integral_t *array;
     /* how many integrals are currently allocated */
     size_t size;
 } coffe_integral_array_t;
 
 
 /* returns a pointer to the suitable array, or NULL if nothing is found */
-struct coffe_integral_t *coffe_find_integral(
+coffe_integral_t *coffe_find_integral(
     const coffe_integral_array_t *array,
     const int n,
     const int l,

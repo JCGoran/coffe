@@ -44,7 +44,7 @@
 int main(int argc, char *argv[])
 {
     coffe_parameters_t par;
-    coffe_background_t bg;
+    coffe_background_t bg = {.flag = 0};
     coffe_integral_array_t integral = {.array = NULL, .size = 0};
     coffe_corrfunc_array_t cf = {.array = NULL, .size = 0};
     coffe_multipoles_array_t mp = {.array = NULL, .size = 0};

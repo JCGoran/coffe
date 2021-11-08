@@ -97,9 +97,9 @@ static void reset_signal(
 }
 
 static int coffe_test_corrfunc(
-    struct coffe_parameters_t *par,
-    struct coffe_background_t *bg,
-    struct coffe_integral_array_t *integral
+    coffe_parameters_t *par,
+    coffe_background_t *bg,
+    coffe_integral_array_t *integral
 )
 {
     /* no errors initially */
@@ -427,7 +427,7 @@ static int coffe_test_corrfunc(
 
 int main(void)
 {
-    struct coffe_parameters_t par;
+    coffe_parameters_t par;
     coffe_parse_default_parameters(&par);
 
     par.divergent = 1;
@@ -442,14 +442,10 @@ int main(void)
             par.mu[i] = mu[i];
     }
 
-    #ifdef _OPENMP
-    par.nthreads = omp_get_num_procs();
-    #endif
-
-    struct coffe_background_t bg;
+    coffe_background_t bg = {.flag = 0};
     coffe_background_init(&par, &bg);
 
-    struct coffe_integral_array_t integrals;
+    coffe_integral_array_t integrals = {.array = NULL, .size = 0};
     par.flatsky_nonlocal = 1;
     coffe_integrals_init(&par, &bg, &integrals);
     par.flatsky_nonlocal = 0;
