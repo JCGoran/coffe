@@ -213,6 +213,11 @@ cdef class Coffe:
     def _free_background(self):
         ccoffe.coffe_background_free(&self._background)
 
+    def _free_power_spectrum(self):
+        ccoffe.coffe_free_spline(&self._parameters.power_spectrum)
+        ccoffe.coffe_free_spline(&self._parameters.power_spectrum_norm)
+        self._power_spectrum_flag = 0
+
 
     def _free_integrals(self):
         ccoffe.coffe_integrals_free(&self._integral)
@@ -232,6 +237,7 @@ cdef class Coffe:
 
     def _free_except_parameters(self):
         self._free_background()
+        self._free_power_spectrum()
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
@@ -355,6 +361,7 @@ cdef class Coffe:
         if not np.allclose(value, self.h):
             # we set the value, but don't free the background since it's unaffected by h
             self._parameters.h = value
+            self._free_power_spectrum()
             self._free_integrals()
             self._free_corrfunc()
             self._free_multipoles()
@@ -394,6 +401,7 @@ cdef class Coffe:
         _check_parameter('n_s', value, (int, float), 0.5, 1.5)
         if not np.allclose(value, self.n_s):
             self._parameters.n_s = value
+            self._free_power_spectrum()
             self._free_integrals()
             self._free_corrfunc()
             self._free_multipoles()
@@ -409,6 +417,7 @@ cdef class Coffe:
         _check_parameter('sigma8', value, (int, float), 0, 2)
         if not np.allclose(value, self.sigma8):
             self._parameters.sigma8 = value
+            self._free_power_spectrum()
             self._free_integrals()
             self._free_corrfunc()
             self._free_multipoles()
