@@ -1,7 +1,7 @@
 # distutils: sources = src/errors.c src/common.c src/parser.c src/background.c src/twofast.c src/integrals.c src/signal.c src/functions.c src/corrfunc.c src/multipoles.c src/utils.c src/twobessel.c src/covariance.c
 # distutils: include_dirs = src/ ./
 # distutils: libraries = m gsl gslcblas config fftw3 cuba class gomp
-# distutils: extra_compile_args = ['-fopenmp', '-Ofast']
+# distutils: extra_compile_args = ['-fopenmp', '-Ofast', '-DHAVE_CLASS']
 # distutils: extra_link_args = ['-fopenmp', '-DHAVE_CLASS']
 
 # TODO figure out how to use OpenMP
