@@ -250,6 +250,7 @@ cdef class Coffe:
             self._parameters.Omega0_baryon - self._parameters.Omega0_gamma
 
 
+    @property
     def parameters(self):
         """
         Returns the current writable parameters as a dictionary (can be
@@ -258,7 +259,7 @@ cdef class Coffe:
         properties = {
             key : getattr(self, key) \
             for key in dir(self.__class__) \
-            if hasattr(getattr(self.__class__, key), '__set__')
+            if key != 'parameters' and hasattr(getattr(self.__class__, key), '__set__')
         }
         writable = {}
         for key in properties:
