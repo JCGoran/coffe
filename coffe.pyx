@@ -502,7 +502,7 @@ cdef class Coffe:
 
     def galaxy_bias2(self, z : float):
         """
-        Evaluates the galaxy bias of the first population at some redshift.
+        Evaluates the galaxy bias of the second population at some redshift.
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -547,7 +547,7 @@ cdef class Coffe:
 
     def magnification_bias1(self, z : float):
         """
-        Evaluates the galaxy bias of the first population at some redshift.
+        Evaluates the magnification bias of the first population at some redshift.
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -557,7 +557,7 @@ cdef class Coffe:
 
     def set_magnification_bias1(self, value : Callable):
         """
-        Sets the value of the galaxy bias.
+        Sets the value of the magnification bias.
         The value set must be callable.
         """
         x_sampling = np.linspace(0, 15, 1000)
@@ -592,7 +592,7 @@ cdef class Coffe:
 
     def magnification_bias2(self, z : float):
         """
-        Evaluates the galaxy bias of the first population at some redshift.
+        Evaluates the magnification bias of the second population at some redshift.
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -602,7 +602,7 @@ cdef class Coffe:
 
     def set_magnification_bias2(self, value : Callable):
         """
-        Sets the value of the galaxy bias.
+        Sets the value of the magnification bias.
         The value set must be callable.
         """
         x_sampling = np.linspace(0, 15, 1000)
