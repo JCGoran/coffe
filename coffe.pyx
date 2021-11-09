@@ -1023,7 +1023,7 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z)
+        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / _COFFE_HUBBLE
 
 
     def scale_factor(self, z : float):
@@ -1168,7 +1168,7 @@ cdef class Coffe:
         return np.array([
             Multipoles(
                 z=self._multipoles.array[i].coords.z_mean,
-                r=self._multipoles.array[i].coords.separation,
+                r=self._multipoles.array[i].coords.separation / _COFFE_HUBBLE,
                 l=self._multipoles.array[i].coords.l,
                 value=self._multipoles.array[i].value,
             ) for i in range(self._multipoles.size)
@@ -1194,7 +1194,7 @@ cdef class Coffe:
         return np.array([
             Corrfunc(
                 z=self._corrfunc.array[i].coords.z_mean,
-                r=self._corrfunc.array[i].coords.separation,
+                r=self._corrfunc.array[i].coords.separation / _COFFE_HUBBLE,
                 mu=self._corrfunc.array[i].coords.mu,
                 value=self._corrfunc.array[i].value,
             ) for i in range(self._corrfunc.size)
