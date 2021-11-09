@@ -1202,6 +1202,17 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
+        if not all(
+            len(self.z_mean) == len(_) \
+            for _ in (self.deltaz, self.number_density, self.pixelsize, self.fsky)
+        ):
+            raise ValueError('Mismatching lengths for covariance parameters')
+
+        try:
+            [self.maximum_separation(zi, deltazi) for zi, deltazi in zip(self.z_mean, self.deltaz)]
+        except ValueError as err:
+            raise ValueError from err
+
         temp = self._parameters.output_type
         self._parameters.output_type = 4
         if not self._covariance_multipoles.size:
