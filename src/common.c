@@ -756,32 +756,24 @@ int coffe_parameters_free(
             free(par->deltaz);
         par->deltaz_len = 0;
 
-        if (par->covariance_z_mean_len)
-            free(par->covariance_z_mean);
-        par->covariance_z_mean_len = 0;
+        if (par->fsky_len)
+            free(par->fsky);
+        par->fsky_len = 0;
 
-        if (par->covariance_deltaz_len)
-            free(par->covariance_deltaz);
-        par->covariance_deltaz_len = 0;
+        if (par->density_len)
+            free(par->density);
+        par->density_len = 0;
 
-        if (par->covariance_fsky_len)
-            free(par->covariance_fsky);
-        par->covariance_fsky_len = 0;
+        if (par->pixelsize_len)
+            free(par->pixelsize);
+        par->pixelsize_len = 0;
 
-        if (par->covariance_density_len)
-            free(par->covariance_density);
-        par->covariance_density_len = 0;
+        if (par->zmin_len)
+            free(par->zmin);
 
-        if (par->covariance_pixelsize_len)
-            free(par->covariance_pixelsize);
-        par->covariance_pixelsize_len = 0;
-
-        if (par->covariance_zmin_len)
-            free(par->covariance_zmin);
-
-        if (par->covariance_zmax_len)
-            free(par->covariance_zmax);
-        par->covariance_zmax_len = 0;
+        if (par->zmax_len)
+            free(par->zmax);
+        par->zmax_len = 0;
 
         par->flag = 0;
     }

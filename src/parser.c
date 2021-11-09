@@ -624,22 +624,18 @@ int coffe_parse_default_parameters(
     par->file_evolution_bias2[0] = 0;
 
     par->output_type = MULTIPOLES;
-    par->covariance_density = NULL;
-    par->covariance_density_len = 0;
-    par->covariance_z_mean = NULL;
-    par->covariance_z_mean_len = 0;
-    par->covariance_deltaz = NULL;
-    par->covariance_deltaz_len = 0;
-    par->covariance_fsky = NULL;
-    par->covariance_fsky_len = 0;
-    par->covariance_pixelsize = NULL;
-    par->covariance_pixelsize_len = 0;
-    par->covariance_step_size = 10.0;
-    par->covariance_zmin = NULL;
-    par->covariance_zmin_len = 0;
-    par->covariance_zmax = NULL;
-    par->covariance_zmax_len = 0;
-    par->covariance_minimum_separation = 0.0;
+    par->density = NULL;
+    par->density_len = 0;
+    par->deltaz = NULL;
+    par->deltaz_len = 0;
+    par->fsky = NULL;
+    par->fsky_len = 0;
+    par->pixelsize = NULL;
+    par->pixelsize_len = 0;
+    par->zmin = NULL;
+    par->zmin_len = 0;
+    par->zmax = NULL;
+    par->zmax_len = 0;
     par->covariance_window = 0;
 
     par->have_window = 0;
@@ -989,33 +985,21 @@ int coffe_parser_init(
     ){
         parse_double_array(
             conf,
-            "covariance_density",
-            &par->covariance_density,
-            &par->covariance_density_len
+            "density",
+            &par->density,
+            &par->density_len
         );
         parse_double_array(
             conf,
             "fsky",
-            &par->covariance_fsky,
-            &par->covariance_fsky_len
+            &par->fsky,
+            &par->fsky_len
         );
         parse_double_array(
             conf,
-            "covariance_pixelsize",
-            &par->covariance_pixelsize,
-            &par->covariance_pixelsize_len
-        );
-        parse_double(
-            conf,
-            "covariance_step_size",
-            &par->covariance_step_size,
-            COFFE_TRUE
-        );
-        parse_double(
-            conf,
-            "covariance_minimum_separation",
-            &par->covariance_minimum_separation,
-            COFFE_TRUE
+            "pixelsize",
+            &par->pixelsize,
+            &par->pixelsize_len
         );
         parse_int(
             conf,
@@ -1028,28 +1012,28 @@ int coffe_parser_init(
     if (par->output_type == COVARIANCE_MULTIPOLES){
         parse_double_array(
             conf,
-            "covariance_z_mean",
-            &par->covariance_z_mean,
-            &par->covariance_z_mean_len
+            "z_mean",
+            &par->z_mean,
+            &par->z_mean_len
         );
         parse_double_array(
             conf,
-            "covariance_deltaz",
-            &par->covariance_deltaz,
-            &par->covariance_deltaz_len
+            "deltaz",
+            &par->deltaz,
+            &par->deltaz_len
         );
         parse_double_array(
             conf,
-            "covariance_fsky",
-            &par->covariance_fsky,
-            &par->covariance_fsky_len
+            "fsky",
+            &par->fsky,
+            &par->fsky_len
         );
 
         if (
-            par->covariance_density_len != par->covariance_fsky_len ||
-            par->covariance_density_len != par->covariance_z_mean_len ||
-            par->covariance_density_len != par->covariance_deltaz_len ||
-            par->covariance_density_len != par->covariance_pixelsize_len
+            par->density_len != par->fsky_len ||
+            par->density_len != par->z_mean_len ||
+            par->density_len != par->deltaz_len ||
+            par->density_len != par->pixelsize_len
         ){
             fprintf(
                 stderr,
@@ -1062,20 +1046,20 @@ int coffe_parser_init(
     if (par->output_type == COVARIANCE_AVERAGE_MULTIPOLES){
         parse_double_array(
             conf,
-            "covariance_zmin",
-            &par->covariance_zmin,
-            &par->covariance_zmin_len
+            "zmin",
+            &par->zmin,
+            &par->zmin_len
         );
         parse_double_array(
             conf,
-            "covariance_zmax",
-            &par->covariance_zmax,
-            &par->covariance_zmax_len
+            "zmax",
+            &par->zmax,
+            &par->zmax_len
         );
         if (
-            par->covariance_density_len != par->covariance_fsky_len ||
-            par->covariance_density_len != par->covariance_zmin_len ||
-            par->covariance_density_len != par->covariance_zmax_len
+            par->density_len != par->fsky_len ||
+            par->density_len != par->zmin_len ||
+            par->density_len != par->zmax_len
         ){
             fprintf(
                 stderr,

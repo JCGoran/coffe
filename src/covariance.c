@@ -449,7 +449,7 @@ int coffe_covariance_init(
             cov_mp->size =
               par->multipole_values_len * par->multipole_values_len
             * par->sep_len * par->sep_len
-            * par->covariance_z_mean_len;
+            * par->z_mean_len;
             cov_mp->array = (coffe_covariance_t *)coffe_malloc(
                 sizeof(coffe_covariance_t) * cov_mp->size
             );
@@ -458,7 +458,7 @@ int coffe_covariance_init(
             cov_ramp->size =
               par->multipole_values_len * par->multipole_values_len
             * par->sep_len * par->sep_len
-            * par->covariance_zmin_len;
+            * par->zmin_len;
             cov_ramp->array = (coffe_covariance_t *)coffe_malloc(
                 sizeof(coffe_covariance_t) * cov_ramp->size
             );
@@ -469,7 +469,7 @@ int coffe_covariance_init(
             separations[i] = par->sep[i];
         const size_t redshifts_to_allocate =
             /* trigraph */
-            par->pk_type ? par->covariance_z_mean_len : 1;
+            par->pk_type ? par->z_mean_len : 1;
         /* allocating memory for the integrals of P(k) and P^2(k) (D_l1l2 and G_l1l2) */
         /* why triple pointers, you ask? First index is redshift, second is multipole, third are separations */
         double ***integral_pk =
@@ -511,7 +511,7 @@ int coffe_covariance_init(
                     pk_type,
 
                     /* trigraph */
-                    par->pk_type ? par->covariance_z_mean[index_redshift] : 0,
+                    par->pk_type ? par->z_mean[index_redshift] : 0,
                     ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
                     pk,
                     NULL
@@ -603,9 +603,9 @@ int coffe_covariance_init(
                                 separations[m],
                                 separations[n],
                                 /* trigraph */
-                                (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
+                                (par->covariance_window ? par->pixelsize[index_redshift] : 0),
                                 /* trigraph */
-                                (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
+                                (par->covariance_window ? par->pixelsize[index_redshift] : 0),
                                 par->multipole_values[i],
                                 par->multipole_values[j],
                                 k_min,
@@ -624,9 +624,9 @@ int coffe_covariance_init(
                                 separations[m],
                                 separations[n],
                                 /* trigraph */
-                                (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
+                                (par->covariance_window ? par->pixelsize[index_redshift] : 0),
                                 /* trigraph */
-                                (par->covariance_window ? par->covariance_pixelsize[index_redshift] : 0),
+                                (par->covariance_window ? par->pixelsize[index_redshift] : 0),
                                 par->multipole_values[i],
                                 par->multipole_values[j],
                                 k_min,
@@ -710,23 +710,23 @@ int coffe_covariance_init(
         }}}}}
 
         double *volume =
-            (double *)coffe_malloc(sizeof(double)*par->covariance_density_len);
+            (double *)coffe_malloc(sizeof(double)*par->density_len);
         size_t index = 0;
         double z_mean = 0;
-        for (size_t k = 0; k < par->covariance_density_len; ++k){
+        for (size_t k = 0; k < par->density_len; ++k){
 
             if (par->output_type == COVARIANCE_MULTIPOLES){
                 z_mean = par->z_mean[k];
                 volume[k] = 4 * M_PI
-                   *par->covariance_fsky[k]
+                   *par->fsky[k]
                    *covariance_volume_no_4pi(
                         coffe_interp_spline(
                             &bg->comoving_distance,
-                            par->z_mean[k] - par->covariance_deltaz[k]
+                            par->z_mean[k] - par->deltaz[k]
                         ),
                         coffe_interp_spline(
                             &bg->comoving_distance,
-                            par->z_mean[k] + par->covariance_deltaz[k]
+                            par->z_mean[k] + par->deltaz[k]
                         )
                     )
                    /pow(COFFE_H0, 3);
@@ -825,17 +825,17 @@ int coffe_covariance_init(
                                 ?
                                 1.
                                 / covariance_volume_no_4pi(
-                                    separations[m] - par->covariance_pixelsize[k] / 2.,
-                                    separations[m] + par->covariance_pixelsize[k] / 2.
+                                    separations[m] - par->pixelsize[k] / 2.,
+                                    separations[m] + par->pixelsize[k] / 2.
                                 )
                                 :
                                 1.
                                 / separations[n]
                                 / separations[m]
-                                / par->covariance_pixelsize[k]
+                                / par->pixelsize[k]
                             )
-                            /par->covariance_density[k]
-                            /par->covariance_density[k]
+                            /par->density[k]
+                            /par->density[k]
                             +
                             /* trigraph */
                             (par->pk_type ? 1 : D1z * D1z)
@@ -847,7 +847,7 @@ int coffe_covariance_init(
                                 :
                                 integral_pk[0][i*par->multipole_values_len + j][par->sep_len*n + m]
                             )
-                           *coeff_sum/par->covariance_density[k]
+                           *coeff_sum/par->density[k]
                             +
                             /* trigraph */
                             (par->pk_type ? 1 : D1z * D1z * D1z * D1z)

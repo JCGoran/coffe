@@ -320,37 +320,25 @@ typedef struct coffe_parameters_t
 
     size_t multipole_values_len;
 
-    double *covariance_z_mean;
+    double *zmin;
 
-    size_t covariance_z_mean_len;
+    size_t zmin_len;
 
-    double *covariance_deltaz;
+    double *zmax;
 
-    size_t covariance_deltaz_len;
+    size_t zmax_len;
 
-    double *covariance_zmin;
+    double *fsky;
 
-    size_t covariance_zmin_len;
+    size_t fsky_len;
 
-    double *covariance_zmax;
+    double *density;
 
-    size_t covariance_zmax_len;
+    size_t density_len;
 
-    double *covariance_fsky;
+    double *pixelsize;
 
-    size_t covariance_fsky_len;
-
-    double *covariance_density;
-
-    size_t covariance_density_len;
-
-    double *covariance_pixelsize;
-
-    size_t covariance_pixelsize_len;
-
-    double covariance_step_size;
-
-    double covariance_minimum_separation;
+    size_t pixelsize_len;
 
     int covariance_integration_method;
 
