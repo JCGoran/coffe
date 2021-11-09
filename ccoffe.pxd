@@ -29,10 +29,6 @@ cdef extern from "<gsl/gsl_spline2d.h>":
 DEF COFFE_MAX_STRLEN = 256
 
 
-cdef extern from "error.h":
-    print_error(int code)
-
-
 cdef extern from "common.h":
 
     cdef struct coffe_corrfunc_coords_t:
@@ -67,10 +63,6 @@ cdef extern from "common.h":
     cdef enum coffe_output_type:
         CORRFUNC, MULTIPOLES, AVERAGE_MULTIPOLES
 
-    cdef struct nl_terms:
-        int n
-        int l
-
     cdef struct coffe_correlation_contributions:
         int den
         int rsd
@@ -92,12 +84,6 @@ cdef extern from "common.h":
         size_t mu_len
 
         coffe_correlation_contributions correlation_contrib
-
-        nl_terms nonzero_terms[10]
-
-        char **type_bg
-
-        size_t type_bg_len
 
         int background_bins
 
@@ -145,31 +131,13 @@ cdef extern from "common.h":
 
         double k_max_norm
 
-        int read_galaxy_bias1
-        int read_galaxy_bias2
-
-        char file_galaxy_bias1[COFFE_MAX_STRLEN]
-        char file_galaxy_bias2[COFFE_MAX_STRLEN]
-
         coffe_interpolation galaxy_bias1
         coffe_interpolation galaxy_bias2
 
-        int read_magnification_bias1
-        int read_magnification_bias2
-
         int galaxy_bias_analytic
-
-        char file_magnification_bias1[COFFE_MAX_STRLEN]
-        char file_magnification_bias2[COFFE_MAX_STRLEN]
 
         coffe_interpolation magnification_bias1
         coffe_interpolation magnification_bias2
-
-        int read_evolution_bias1
-        int read_evolution_bias2
-
-        char file_evolution_bias1[COFFE_MAX_STRLEN]
-        char file_evolution_bias2[COFFE_MAX_STRLEN]
 
         coffe_interpolation evolution_bias1
         coffe_interpolation evolution_bias2
@@ -182,33 +150,25 @@ cdef extern from "common.h":
 
         size_t multipole_values_len
 
-        double *covariance_z_mean
+        double *zmin
 
-        size_t covariance_z_mean_len
+        size_t zmin_len
 
-        double *covariance_deltaz
+        double *zmax
 
-        size_t covariance_deltaz_len
+        size_t zmax_len
 
-        double *covariance_zmin
+        double *fsky
 
-        size_t covariance_zmin_len
+        size_t fsky_len
 
-        double *covariance_zmax
+        double *density
 
-        size_t covariance_zmax_len
+        size_t density_len
 
-        double *covariance_fsky
+        double *pixelsize
 
-        size_t covariance_fsky_len
-
-        double *covariance_density
-
-        size_t covariance_density_len
-
-        double covariance_pixelsize
-
-        double covariance_minimum_separation
+        size_t pixelsize_len
 
         int covariance_integration_method
 
@@ -220,21 +180,11 @@ cdef extern from "common.h":
 
         double window_size
 
-        double z_min
-
-        double z_max
-
-        int theta_len
-
         int flatsky_local
 
         int flatsky_local_nonlocal
 
         int flatsky_nonlocal
-
-        int verbose
-
-        int have_class
 
         double n_s
 
@@ -243,8 +193,6 @@ cdef extern from "common.h":
         double h
 
         double k_pivot
-
-        double (*dark_energy_eos)(double, void *)
 
 
     int coffe_parameters_free(
@@ -295,11 +243,6 @@ cdef extern from "parser.h":
         coffe_parameters_t *
     )
 
-    int coffe_parser_init(
-        char *filename,
-        coffe_parameters_t *
-    )
-
     int parse_external_power_spectrum(
         coffe_parameters_t *
     )
@@ -335,18 +278,8 @@ cdef extern from "background.h":
 
 cdef extern from "integrals.h":
 
-    cdef enum coffe_integer_state:
-        COFFE_INTEGER, COFFE_HALF_INTEGER
-
     cdef struct coffe_integral_t:
-
-        coffe_interpolation result
-        coffe_interpolation2d renormalization
-        coffe_interpolation renormalization_zero_separation
-        int n
-        int l
-        coffe_integer_state state_n
-        coffe_integer_state state_l
+        pass
 
     cdef struct coffe_integral_array_t:
         coffe_integral_t *array
@@ -364,6 +297,7 @@ cdef extern from "integrals.h":
 
 
 cdef extern from "signal.h":
+
     double coffe_integrate(
         coffe_parameters_t *par,
         coffe_background_t *bg,
@@ -378,6 +312,7 @@ cdef extern from "signal.h":
 
 
 cdef extern from "corrfunc.h":
+
     cdef struct coffe_corrfunc_t:
         coffe_corrfunc_coords_t coords
         double value
