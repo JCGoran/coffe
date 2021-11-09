@@ -730,6 +730,138 @@ cdef class Coffe:
 
 
     @property
+    def number_density(self):
+        return np.array(
+            [self._parameters.density[i] for i in range(self._parameters.density_len)]
+        )
+
+    @number_density.setter
+    def number_density(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_>= 0 and _ < 10 for _ in temp):
+            raise ValueError
+
+        if self._parameters.density_len:
+            free(self._parameters.density)
+
+        self._parameters.density_len = len(temp)
+        self._parameters.density = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.density_len):
+            self._parameters.density[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+
+
+    @property
+    def pixelsize(self):
+        return np.array(
+            [self._parameters.pixelsize[i] for i in range(self._parameters.pixelsize_len)]
+        )
+
+    @pixelsize.setter
+    def pixelsize(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_> 0 and _ < 1000 for _ in temp):
+            raise ValueError
+
+        if self._parameters.pixelsize_len:
+            free(self._parameters.pixelsize)
+
+        self._parameters.pixelsize_len = len(temp)
+        self._parameters.pixelsize = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.pixelsize_len):
+            self._parameters.pixelsize[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+
+
+    @property
+    def fsky(self):
+        return np.array(
+            [self._parameters.fsky[i] for i in range(self._parameters.fsky_len)]
+        )
+
+    @fsky.setter
+    def fsky(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_> 0 and _ <= 1 for _ in temp):
+            raise ValueError
+
+        if self._parameters.fsky_len:
+            free(self._parameters.fsky)
+
+        self._parameters.fsky_len = len(temp)
+        self._parameters.fsky = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.fsky_len):
+            self._parameters.fsky[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+
+
+    @property
+    def deltaz(self):
+        return np.array(
+            [self._parameters.deltaz[i] for i in range(self._parameters.deltaz_len)]
+        )
+
+    @deltaz.setter
+    def deltaz(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_>= 0 and _ < 10 for _ in temp):
+            raise ValueError
+
+        if self._parameters.deltaz_len:
+            free(self._parameters.deltaz)
+
+        self._parameters.deltaz_len = len(temp)
+        self._parameters.deltaz = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.deltaz_len):
+            self._parameters.deltaz[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+
+
+    @property
     def has_density(self):
         """
         Returns whether the density contribution is taken into account.
