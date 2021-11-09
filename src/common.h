@@ -555,8 +555,8 @@ int coffe_compare_descending(
 );
 
 double coffe_dark_energy_eos(
-    const coffe_parameters_t *par,
-    double z
+    double z,
+    const void *p
 );
 
 int coffe_parameters_free(

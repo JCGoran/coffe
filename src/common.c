@@ -667,15 +667,16 @@ int coffe_compare_descending(
 /**
     function describing the dark energy EOS
     for now only w(z) = w0 + wa*(1 - a),
-    but others straightforward to implement
+    but others are straightforward to implement
 **/
 
 double coffe_dark_energy_eos(
-    const coffe_parameters_t *par,
-    double z
+    double z,
+    const void *p
 )
 {
-    return par->w0 + par->wa*z/(1 + z);
+    const coffe_parameters_t *par = (coffe_parameters_t *)p;
+    return par->w0 + par->wa * z / (1 + z);
 }
 
 
