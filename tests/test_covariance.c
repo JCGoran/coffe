@@ -104,28 +104,25 @@ int main(void)
     /* in the new code, we can choose to compute just the covariance of a given tracer */
     par.correlation_contrib.rsd = 1;
 
-    par.covariance_density = (double *)malloc(sizeof(double));
-    par.covariance_density[0] = 1e-3;
-    par.covariance_density_len = 1;
+    par.density = (double *)malloc(sizeof(double));
+    par.density[0] = 1e-3;
+    par.density_len = 1;
 
-    par.covariance_z_mean = (double *)malloc(sizeof(double));
-    par.covariance_z_mean[0] = 1.0;
-    par.covariance_z_mean_len = 1;
+    par.z_mean = (double *)malloc(sizeof(double));
+    par.z_mean[0] = 1.0;
+    par.z_mean_len = 1;
 
-    par.covariance_deltaz = (double *)malloc(sizeof(double));
-    par.covariance_deltaz[0] = 0.1;
-    par.covariance_deltaz_len = 1;
+    par.deltaz = (double *)malloc(sizeof(double));
+    par.deltaz[0] = 0.1;
+    par.deltaz_len = 1;
 
-    par.covariance_fsky = (double *)malloc(sizeof(double));
-    par.covariance_fsky[0] = 0.2;
-    par.covariance_fsky_len = 1;
+    par.fsky = (double *)malloc(sizeof(double));
+    par.fsky[0] = 0.2;
+    par.fsky_len = 1;
 
-    par.covariance_pixelsize = (double *)malloc(sizeof(double));
-    par.covariance_pixelsize[0] = 50.0;
-    par.covariance_pixelsize_len = 1;
-
-    par.covariance_step_size = 50.0;
-    par.covariance_minimum_separation = 50.0;
+    par.pixelsize = (double *)malloc(sizeof(double));
+    par.pixelsize[0] = 50.0;
+    par.pixelsize_len = 1;
 
     par.sep_len = 6;
     free(par.sep);
