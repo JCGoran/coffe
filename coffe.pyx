@@ -2,7 +2,7 @@
 # distutils: include_dirs = src/ ./
 # distutils: libraries = m gsl gslcblas config fftw3 cuba class gomp
 # distutils: extra_compile_args = ['-fopenmp', '-Ofast']
-# distutils: extra_link_args = ['-fopenmp']
+# distutils: extra_link_args = ['-fopenmp', '-DHAVE_CLASS']
 
 # TODO figure out how to use OpenMP
 
