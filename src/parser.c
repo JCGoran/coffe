@@ -499,6 +499,7 @@ int parse_external_power_spectrum(
 
     return EXIT_SUCCESS;
 }
+#endif
 
 
 int coffe_parse_default_parameters(
