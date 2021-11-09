@@ -1,10 +1,9 @@
-# Bunch of declarations from C to python. The idea here is to define only the
-# quantities that will be used, for input, output or intermediate manipulation,
-# by the python wrapper. For instance, in the precision structure, the only
-# item used here is its error message. That is why nothing more is defined from
-# this structure. The rest is internal in COFFE.
-# If, for whatever reason, you need another, existing parameter from COFFE,
+# Bunch of declarations from C to python. The idea here is to
+# define only the quantities that will be used, for input, output
+# or intermediate manipulation, by the python wrapper.  If, for
+# whatever reason, you need another, existing parameter from COFFE,
 # remember to add it inside this cdef.
+
 
 cdef extern from "<libconfig.h>":
 
@@ -134,33 +133,31 @@ cdef extern from "common.h":
 
         int nthreads
 
-        char file_power_spectrum[COFFE_MAX_STRLEN]
-
         coffe_interpolation power_spectrum
-
-        coffe_interpolation power_spectrum_norm
 
         double k_min
 
         double k_max
 
+        coffe_interpolation power_spectrum_norm
+
         double k_min_norm
 
         double k_max_norm
 
-        int read_matter_bias1
-        int read_matter_bias2
+        int read_galaxy_bias1
+        int read_galaxy_bias2
 
-        char file_matter_bias1[COFFE_MAX_STRLEN]
-        char file_matter_bias2[COFFE_MAX_STRLEN]
+        char file_galaxy_bias1[COFFE_MAX_STRLEN]
+        char file_galaxy_bias2[COFFE_MAX_STRLEN]
 
-        coffe_interpolation matter_bias1
-        coffe_interpolation matter_bias2
+        coffe_interpolation galaxy_bias1
+        coffe_interpolation galaxy_bias2
 
         int read_magnification_bias1
         int read_magnification_bias2
 
-        int matter_bias_analytic
+        int galaxy_bias_analytic
 
         char file_magnification_bias1[COFFE_MAX_STRLEN]
         char file_magnification_bias2[COFFE_MAX_STRLEN]
@@ -178,14 +175,6 @@ cdef extern from "common.h":
         coffe_interpolation evolution_bias2
 
         int divergent
-
-        config_t *conf
-
-        char timestamp[COFFE_MAX_STRLEN]
-
-        char output_path[COFFE_MAX_STRLEN]
-
-        char output_prefix[COFFE_MAX_STRLEN]
 
         int interp_method
 
@@ -232,36 +221,52 @@ cdef extern from "common.h":
         double window_size
 
         double z_min
+
         double z_max
 
         int theta_len
 
-        int flatsky
+        int flatsky_local
+
+        int flatsky_local_nonlocal
+
+        int flatsky_nonlocal
 
         int verbose
-
-    #ifdef HAVE_CLASS
 
         int have_class
 
         double n_s
 
-        double ln_10_pow_10_A_s
+        double sigma8
 
         double h
 
         double k_pivot
 
-    #endif
+        double (*dark_energy_eos)(double, void *)
 
-    double *coffe_generate_range(
-        double xmin,
-        double xmax,
-        size_t size
-    )
 
     int coffe_parameters_free(
         coffe_parameters_t *
+    )
+
+    int coffe_init_spline(
+        coffe_interpolation *interp,
+        const double *xi,
+        const double *yi,
+        const size_t bins,
+        const int interpolation_type
+    )
+
+    int coffe_init_spline2d(
+        coffe_interpolation2d *interp,
+        const double *xi,
+        const double *yi,
+        const double *zi,
+        const size_t binsx,
+        const size_t binsy,
+        const int interpolation_type
     )
 
     double coffe_interp_spline(
@@ -292,6 +297,10 @@ cdef extern from "parser.h":
 
     int coffe_parser_init(
         char *filename,
+        coffe_parameters_t *
+    )
+
+    int parse_external_power_spectrum(
         coffe_parameters_t *
     )
 
