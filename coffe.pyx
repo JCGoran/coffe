@@ -781,6 +781,7 @@ cdef class Coffe:
     @has_flatsky_local.setter
     def has_flatsky_local(self, value):
         self._parameters.flatsky_local = int(bool(value))
+        self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -792,6 +793,7 @@ cdef class Coffe:
     @has_flatsky_local_nonlocal.setter
     def has_flatsky_local_nonlocal(self, value):
         self._parameters.flatsky_local_nonlocal = int(bool(value))
+        self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -803,6 +805,7 @@ cdef class Coffe:
     @has_flatsky_nonlocal.setter
     def has_flatsky_nonlocal(self, value):
         self._parameters.flatsky_nonlocal = int(bool(value))
+        self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -1080,7 +1083,6 @@ cdef class Coffe:
                 r2=self._covariance_multipoles.array[i].coords.separation2,
                 l1=self._covariance_multipoles.array[i].coords.l1,
                 l2=self._covariance_multipoles.array[i].coords.l2,
-                mu=self._covariance_multipoles.array[i].coords.l,
                 value=self._covariance_multipoles.array[i].value,
             ) for i in range(self._covariance_multipoles.size)
         ])
