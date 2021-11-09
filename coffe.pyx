@@ -184,8 +184,7 @@ cdef class Coffe:
     cdef ccoffe.coffe_covariance_array_t __dummy
     cdef int _power_spectrum_flag
 
-    # TODO make it possible to set parameters directly in the constructor
-    def __cinit__(self):
+    def __cinit__(self, parameters = None):
         """
         Constructor that initializes the structures and sets default parameters.
         """
@@ -206,6 +205,9 @@ cdef class Coffe:
         self._covariance_multipoles.array = NULL
 
         self._power_spectrum_flag = 0
+
+        if parameters is not None:
+            self.set_parameters(parameters)
 
 
     def _free_background(self):
