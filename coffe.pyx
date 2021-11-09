@@ -39,7 +39,43 @@ def _check_parameter(
 
 
 
-class Covariance:
+class Representation:
+    def to_dict(self):
+        """
+        The representation of the class as a dictionary.
+        """
+        return {
+            key : getattr(self, key) \
+            for key in dir(self.__class__) \
+            if hasattr(getattr(self.__class__, key), '__set__') \
+            and not key.startswith('__')
+        }
+
+
+    def __repr__(self):
+        """
+        User-friendly representation of the class
+        """
+        return f'{self.__class__}({self.to_dict()})'
+
+
+    def _repr_html_(self):
+        names = self.to_dict().keys()
+        values = self.to_dict().values()
+        temp = (
+            '<tr>' + ('<th>{}</th>' * len(names)).format(*names) + '</tr>'
+        ) if names else ''
+        header = f'<thead>{temp}</thead>'
+
+        body = '<tbody>' + (
+            '<td>{}</td>' * len(values)
+        ).format(*values) + '</tbody>'
+
+        return f'<table>{header}{body}</table>'
+
+
+
+class Covariance(Representation):
     def __init__(
         self, *,
         r1 : float, r2 : float,
@@ -78,22 +114,9 @@ class Covariance:
     def value(self):
         return self._value
 
-    def to_dict(self):
-        """
-        For easier conversion to Pandas dataframes.
-        """
-        return {
-            'r1' : self.r1,
-            'r2' : self.r2,
-            'l1' : self.l1,
-            'l2' : self.l2,
-            'z' : self.z,
-            'value' : self.value,
-        }
 
 
-
-class Corrfunc:
+class Corrfunc(Representation):
     def __init__(
         self, *,
         r : float, mu : float, z : float,
@@ -120,20 +143,9 @@ class Corrfunc:
     def value(self):
         return self._value
 
-    def to_dict(self):
-        """
-        For easier conversion to Pandas dataframes.
-        """
-        return {
-            'mu' : self.mu,
-            'r' : self.r,
-            'z' : self.z,
-            'value' : self.value,
-        }
 
 
-
-class Multipoles:
+class Multipoles(Representation):
     def __init__(
         self, *,
         l : int, r : float, z : float,
@@ -159,17 +171,6 @@ class Multipoles:
     @property
     def value(self):
         return self._value
-
-    def to_dict(self):
-        """
-        For easier conversion to Pandas dataframes.
-        """
-        return {
-            'l' : self.l,
-            'r' : self.r,
-            'z' : self.z,
-            'value' : self.value,
-        }
 
 
 
