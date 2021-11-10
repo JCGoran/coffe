@@ -162,6 +162,10 @@ cdef extern from "common.h":
 
         size_t fsky_len
 
+        int has_class
+
+        int has_cuba
+
         double *density
 
         size_t density_len

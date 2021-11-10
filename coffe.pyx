@@ -1,8 +1,8 @@
 # distutils: sources = src/errors.c src/common.c src/parser.c src/background.c src/twofast.c src/integrals.c src/signal.c src/functions.c src/corrfunc.c src/multipoles.c src/utils.c src/twobessel.c src/covariance.c
 # distutils: include_dirs = src/ ./
 # distutils: libraries = m gsl gslcblas config fftw3 cuba class gomp
-# distutils: extra_compile_args = ['-fopenmp', '-Ofast', '-DHAVE_CLASS']
-# distutils: extra_link_args = ['-fopenmp', '-DHAVE_CLASS']
+# distutils: extra_compile_args = ['-fopenmp', '-Ofast', '-DHAVE_CLASS', '-DHAVE_CUBA']
+# distutils: extra_link_args = ['-fopenmp']
 
 # TODO figure out how to use OpenMP
 
@@ -246,6 +246,15 @@ cdef class Coffe:
     def __dealloc__(self):
         self._free_except_parameters()
         ccoffe.coffe_parameters_free(&self._parameters)
+
+
+    @property
+    def has_cuba(self):
+        return bool(self._parameters.has_cuba)
+
+    @property
+    def has_class(self):
+        return bool(self._parameters.has_class)
 
 
     def _balance_content(self):
