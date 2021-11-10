@@ -320,6 +320,10 @@ typedef struct coffe_parameters_t
 
     size_t multipole_values_len;
 
+    int has_class;
+
+    int has_cuba;
+
     double *zmin;
 
     size_t zmin_len;

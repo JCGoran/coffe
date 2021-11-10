@@ -533,6 +533,18 @@ int coffe_parse_default_parameters(
     par->b_tilde_derivative = 0;
     par->f_tilde_derivative = 0;
 
+    #ifdef HAVE_CLASS
+    par->has_class = 1;
+    #else
+    par->has_class = 0;
+    #endif
+
+    #ifdef HAVE_CUBA
+    par->has_cuba = 1;
+    #else
+    par->has_cuba = 0;
+    #endif
+
     par->only_cross_correlations = 0;
 
     const size_t separations_size = 100;
