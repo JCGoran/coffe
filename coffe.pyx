@@ -669,7 +669,7 @@ cdef class Coffe:
             raise ValueError
 
         if self._parameters.mu_len:
-            free(self._parameters.sep)
+            free(self._parameters.mu)
 
         self._parameters.mu_len = len(temp)
         self._parameters.mu = <double *> malloc(sizeof(double) * len(temp))
