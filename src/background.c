@@ -21,10 +21,66 @@
 #include <math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_multifit.h>
 
 #include "common.h"
 #include "background.h"
+
+
+
+/**
+    fits some data to a polynomial of some degree
+**/
+
+int coffe_fit_polynomial(
+    const double *data_x,
+    const double *data_y,
+    const size_t data_size,
+    const double rel_tol,
+    const size_t degree_max,
+    double **coefficients,
+    size_t *coefficients_size
+)
+{
+    double chisq;
+    size_t degree_current = 2;
+    /* by default, try a quadratic fit */
+    gsl_matrix *X = gsl_matrix_alloc(data_size, degree_current + 1);
+    gsl_vector *y = gsl_vector_alloc(data_size);
+    gsl_vector *c = gsl_vector_alloc(degree_current + 1);
+    gsl_matrix *cov = gsl_matrix_alloc(degree_current + 1, degree_current + 1);
+
+    for (size_t i = 0; i < data_size; ++i){
+        const double xi = data_x[i];
+        const double yi = data_y[i];
+
+        for (size_t j = 0; j < degree_current + 1; ++j)
+            gsl_matrix_set(X, i, j, pow(xi, j));
+
+        gsl_vector_set(y, i, yi);
+    }
+
+    gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(data_size, degree_current + 1);
+    gsl_multifit_linear(X, y, c, cov, &chisq, work);
+    gsl_multifit_linear_free(work);
+
+    *coefficients_size = degree_current + 1;
+    *coefficients = (double *)coffe_malloc(sizeof(double) * *coefficients_size);
+
+    for (size_t i = 0; i < *coefficients_size; ++i)
+        (*coefficients)[i] = gsl_vector_get(c, i);
+
+    gsl_matrix_free(X);
+    gsl_vector_free(y);
+    gsl_matrix_free(cov);
+
+    return EXIT_SUCCESS;
+}
+
+
+
 
 struct integration_params
 {
