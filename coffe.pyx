@@ -1075,17 +1075,18 @@ cdef class Coffe:
         self, *,
         # TODO how should we name the parameters?
         z : float, r : float, mu : float,
+        recompute : bool = False,
     ):
         """
         Computes the correlation function of the current configuration at the point (z, r, mu)
         """
-        if not self._background.flag:
+        if not self._background.flag or recompute:
             self._background_init()
 
-        if not self._power_spectrum_flag:
+        if not self._power_spectrum_flag or recompute:
             self._power_spectrum_init()
 
-        if not self._integral.size:
+        if not self._integral.size or recompute:
             self._integrals_init()
 
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1118,17 +1119,18 @@ cdef class Coffe:
     def compute_multipole(
         self, *,
         z : float, r : float, l : int,
+        recompute : bool = False,
     ):
         """
         Computes the multipole of the current configuration at the point (z, r, l)
         """
-        if not self._background.flag:
+        if not self._background.flag or recompute:
             self._background_init()
 
-        if not self._power_spectrum_flag:
+        if not self._power_spectrum_flag or recompute:
             self._power_spectrum_init()
 
-        if not self._integral.size:
+        if not self._integral.size or recompute:
             self._integrals_init()
 
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1158,20 +1160,21 @@ cdef class Coffe:
         )
 
 
-    def compute_multipoles_bulk(self):
+    def compute_multipoles_bulk(self, recompute : bool = False):
         """
         Returns whatever `coffe_multipoles_init` returns.
         """
-        if not self._background.flag:
+        recompute = bool(recompute)
+        if not self._background.flag or recompute:
             self._background_init()
 
-        if not self._power_spectrum_flag:
+        if not self._power_spectrum_flag or recompute:
             self._power_spectrum_init()
 
-        if not self._integral.size:
+        if not self._integral.size or recompute:
             self._integrals_init()
 
-        if not self._multipoles.size:
+        if not self._multipoles.size or recompute:
             self._multipoles_init()
 
         return np.array([
@@ -1184,20 +1187,21 @@ cdef class Coffe:
         ])
 
 
-    def compute_corrfunc_bulk(self):
+    def compute_corrfunc_bulk(self, recompute : bool = False):
         """
         Returns whatever `coffe_corrfunc_init` returns.
         """
-        if not self._background.flag:
+        recompute = bool(recompute)
+        if not self._background.flag or recompute:
             self._background_init()
 
-        if not self._power_spectrum_flag:
+        if not self._power_spectrum_flag or recompute:
             self._power_spectrum_init()
 
-        if not self._integral.size:
+        if not self._integral.size or recompute:
             self._integrals_init()
 
-        if not self._corrfunc.size:
+        if not self._corrfunc.size or recompute:
             self._corrfunc_init()
 
         return np.array([
@@ -1210,21 +1214,23 @@ cdef class Coffe:
         ])
 
 
-    def compute_covariance_bulk(self):
+    def compute_covariance_bulk(self, recompute : bool = False):
         """
         Returns whatever `coffe_covariance_init` returns.
         """
-        if not self._power_spectrum_flag:
-            self._power_spectrum_init()
-
-        if not self._background.flag:
-            self._background_init()
+        recompute = bool(recompute)
 
         if not all(
             len(self.z_mean) == len(_) \
             for _ in (self.deltaz, self.number_density, self.pixelsize, self.fsky)
         ):
             raise ValueError('Mismatching lengths for covariance parameters')
+
+        if not self._power_spectrum_flag or recompute:
+            self._power_spectrum_init()
+
+        if not self._background.flag or recompute:
+            self._background_init()
 
         try:
             [self.maximum_separation(zi, deltazi) for zi, deltazi in zip(self.z_mean, self.deltaz)]
@@ -1233,7 +1239,7 @@ cdef class Coffe:
 
         temp = self._parameters.output_type
         self._parameters.output_type = ccoffe.COVARIANCE_MULTIPOLES
-        if not self._covariance_multipoles.size:
+        if not self._covariance_multipoles.size or recompute:
             self._covariance_init()
         self._parameters.output_type = temp
 
