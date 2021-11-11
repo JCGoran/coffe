@@ -1232,7 +1232,7 @@ cdef class Coffe:
             raise ValueError from err
 
         temp = self._parameters.output_type
-        self._parameters.output_type = 4
+        self._parameters.output_type = ccoffe.COVARIANCE_MULTIPOLES
         if not self._covariance_multipoles.size:
             self._covariance_init()
         self._parameters.output_type = temp

@@ -61,7 +61,7 @@ cdef extern from "common.h":
         NONINTEGRATED, SINGLE_INTEGRATED, DOUBLE_INTEGRATED
 
     cdef enum coffe_output_type:
-        CORRFUNC, MULTIPOLES, AVERAGE_MULTIPOLES
+        CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4
 
     cdef struct coffe_correlation_contributions:
         int den
