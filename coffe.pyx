@@ -483,7 +483,7 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias1, z)
 
 
-    def set_galaxy_bias1(self, value : Callable):
+    def set_galaxy_bias1(self, value : Callable, **kwargs):
         """
         Sets the value of the galaxy bias.
         The value set must be callable.
@@ -501,7 +501,7 @@ cdef class Coffe:
         y = <double *>malloc(sizeof(double) * len(x_sampling))
         for i in range(len(x_sampling)):
             x[i] = x_sampling[i]
-            y[i] = value(x[i])
+            y[i] = value(x[i], **kwargs)
         ccoffe.coffe_init_spline(
             &self._parameters.galaxy_bias1,
             x, y, len(x_sampling), self._parameters.interp_method
@@ -528,7 +528,7 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias2, z)
 
 
-    def set_galaxy_bias2(self, value : Callable):
+    def set_galaxy_bias2(self, value : Callable, **kwargs):
         """
         Sets the value of the galaxy bias.
         The value set must be callable.
@@ -546,7 +546,7 @@ cdef class Coffe:
         y = <double *>malloc(sizeof(double) * len(x_sampling))
         for i in range(len(x_sampling)):
             x[i] = x_sampling[i]
-            y[i] = value(x[i])
+            y[i] = value(x[i], **kwargs)
         ccoffe.coffe_init_spline(
             &self._parameters.galaxy_bias2,
             x, y, len(x_sampling), self._parameters.interp_method
@@ -573,7 +573,7 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias1, z)
 
 
-    def set_magnification_bias1(self, value : Callable):
+    def set_magnification_bias1(self, value : Callable, **kwargs):
         """
         Sets the value of the magnification bias.
         The value set must be callable.
@@ -591,7 +591,7 @@ cdef class Coffe:
         y = <double *>malloc(sizeof(double) * len(x_sampling))
         for i in range(len(x_sampling)):
             x[i] = x_sampling[i]
-            y[i] = value(x[i])
+            y[i] = value(x[i], **kwargs)
         ccoffe.coffe_init_spline(
             &self._parameters.magnification_bias1,
             x, y, len(x_sampling), self._parameters.interp_method
@@ -618,7 +618,7 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias2, z)
 
 
-    def set_magnification_bias2(self, value : Callable):
+    def set_magnification_bias2(self, value : Callable, **kwargs):
         """
         Sets the value of the magnification bias.
         The value set must be callable.
@@ -636,7 +636,7 @@ cdef class Coffe:
         y = <double *>malloc(sizeof(double) * len(x_sampling))
         for i in range(len(x_sampling)):
             x[i] = x_sampling[i]
-            y[i] = value(x[i])
+            y[i] = value(x[i], **kwargs)
         ccoffe.coffe_init_spline(
             &self._parameters.magnification_bias2,
             x, y, len(x_sampling), self._parameters.interp_method
