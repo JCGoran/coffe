@@ -31,6 +31,26 @@
 #include "class.h"
 #endif
 
+
+
+static int parse_bias_default(
+    double value,
+    coffe_interpolation *spline,
+    const enum coffe_interp1d_type method
+)
+{
+    double redshifts[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    double values[] = {value, value, value, value, value, value, value, value, value, value, value};
+    coffe_init_spline(
+        spline, redshifts, values,
+        COFFE_ARRAY_SIZE(redshifts),
+        method
+    );
+
+    return EXIT_SUCCESS;
+}
+
+
 static int parse_double(
     config_t *conf,
     const char *setting,
@@ -206,24 +226,6 @@ static int parse_double_array(
         temp_value = config_setting_get_float_elem(type, i);
         *(*values + i) = temp_value;
     }
-    return EXIT_SUCCESS;
-}
-
-
-static int parse_bias_default(
-    double value,
-    coffe_interpolation *spline,
-    int method
-)
-{
-    double redshifts[] = {0, 25, 50, 75, 100};
-    double values[] = {value, value, value, value, value};
-    coffe_init_spline(
-        spline, redshifts, values,
-        COFFE_ARRAY_SIZE(redshifts),
-        method
-    );
-
     return EXIT_SUCCESS;
 }
 
