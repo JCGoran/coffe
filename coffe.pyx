@@ -472,6 +472,32 @@ cdef class Coffe:
             [self._parameters.mu[i] for i in range(self._parameters.mu_len)]
         )
 
+    @mu.setter
+    def mu(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_> -1 and _ < 1 for _ in temp):
+            raise ValueError
+
+        if self._parameters.mu_len:
+            free(self._parameters.mu)
+
+        self._parameters.mu_len = len(temp)
+        self._parameters.mu = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.mu_len):
+            self._parameters.mu[i] = temp[i]
+        # we need to re-compute it since we changed the values
+        # TODO make it so that if we give identical values, we don't recompute it
+        self._free_corrfunc()
+
 
     def galaxy_bias1(self, z : float):
         """
@@ -651,33 +677,6 @@ cdef class Coffe:
 
         self._free_corrfunc()
         self._free_multipoles()
-
-
-    @mu.setter
-    def mu(self, value):
-        try:
-            _ = iter(value)
-        except TypeError as err:
-            raise TypeError(f'The value {value} is not iterable') from err
-
-        try:
-            temp = [float(_) for _ in value]
-        except TypeError as err:
-            raise TypeError('Cannot convert all values to floats') from err
-
-        if not all(_> -1 and _ < 1 for _ in temp):
-            raise ValueError
-
-        if self._parameters.mu_len:
-            free(self._parameters.mu)
-
-        self._parameters.mu_len = len(temp)
-        self._parameters.mu = <double *> malloc(sizeof(double) * len(temp))
-        for i in range(self._parameters.mu_len):
-            self._parameters.mu[i] = temp[i]
-        # we need to re-compute it since we changed the values
-        # TODO make it so that if we give identical values, we don't recompute it
-        self._free_corrfunc()
 
 
     @property
