@@ -521,7 +521,7 @@ int coffe_init_spline(
     const double *xi,
     const double *yi,
     const size_t bins,
-    const int interpolation_type
+    const enum coffe_interp1d_type interpolation_type
 )
 {
     if (bins <= 0){
@@ -530,25 +530,25 @@ int coffe_init_spline(
     }
     const gsl_interp_type *T;
     switch(interpolation_type){
-        case 1:
+        case COFFE_INTERP_LINEAR:
             T = gsl_interp_linear;
             break;
-        case 2:
+        case COFFE_INTERP_POLYNOMIAL:
             T = gsl_interp_polynomial;
             break;
-        case 3:
+        case COFFE_INTERP_CSPLINE:
             T = gsl_interp_cspline;
             break;
-        case 4:
+        case COFFE_INTERP_CSPLINE_PERIODIC:
             T = gsl_interp_cspline_periodic;
             break;
-        case 5:
+        case COFFE_INTERP_AKIMA:
             T = gsl_interp_akima;
             break;
-        case 6:
+        case COFFE_INTERP_AKIMA_PERIODIC:
             T = gsl_interp_akima_periodic;
             break;
-        case 7:{
+        case COFFE_INTERP_STEFFEN:{
 #if GSL_MAJOR_VERSION > 1
                 T = gsl_interp_steffen;
                 break;
@@ -578,7 +578,7 @@ int coffe_init_spline2d(
     const double *zi,
     const size_t binsx,
     const size_t binsy,
-    const int interpolation_type
+    const enum coffe_interp2d_type interpolation_type
 )
 {
     if (binsx <= 0 || binsy <= 0){
@@ -587,10 +587,10 @@ int coffe_init_spline2d(
     }
     const gsl_interp2d_type *T;
     switch(interpolation_type){
-        case 1:
+        case COFFE_INTERP2D_BILINEAR:
             T = gsl_interp2d_bilinear;
             break;
-        case 2:
+        case COFFE_INTERP2D_BICUBIC:
             T = gsl_interp2d_bicubic;
             break;
         default:

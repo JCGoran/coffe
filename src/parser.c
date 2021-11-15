@@ -239,7 +239,7 @@ static int parse_bias(
     char *filename,
     char *setting_single,
     coffe_interpolation *spline,
-    int method,
+    const enum coffe_interp1d_type method,
     int flag
 )
 {
@@ -551,10 +551,10 @@ int coffe_parse_default_parameters(
     par->sep = coffe_generate_range(5, 305, separations_size);
     par->sep_len = separations_size;
 
-    par->interp_method = 5;
+    par->interp_method = COFFE_INTERP_AKIMA;
     par->covariance_integration_method = 1;
     par->covariance_integration_bins = 8000;
-    par->covariance_interpolation_method = 2;
+    par->covariance_interpolation_method = COFFE_INTERP2D_BICUBIC;
     par->file_power_spectrum[0] = 0;
     /*
         turns out you can do this

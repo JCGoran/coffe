@@ -186,7 +186,39 @@ enum coffe_integral_type
 
 enum coffe_output_type
 {
-    CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4, COVARIANCE_AVERAGE_MULTIPOLES = 5
+    CORRFUNC = 1,
+    MULTIPOLES = 2,
+    AVERAGE_MULTIPOLES = 3,
+    COVARIANCE_MULTIPOLES = 4,
+    COVARIANCE_AVERAGE_MULTIPOLES = 5
+};
+
+
+enum coffe_interp1d_type
+{
+    COFFE_INTERP_LINEAR = 1,
+    COFFE_INTERP_POLYNOMIAL = 2,
+    COFFE_INTERP_CSPLINE = 3,
+    COFFE_INTERP_CSPLINE_PERIODIC = 4,
+    COFFE_INTERP_AKIMA = 5,
+    COFFE_INTERP_AKIMA_PERIODIC = 6,
+    COFFE_INTERP_STEFFEN = 7
+};
+
+
+enum coffe_interp2d_type
+{
+    COFFE_INTERP2D_BILINEAR = 1,
+    COFFE_INTERP2D_BICUBIC = 2
+};
+
+
+enum coffe_pk_type
+{
+    COFFE_PK_LINEAR = 0,
+    COFFE_PK_LINEAR_CLASS = 1,
+    COFFE_PK_NONLINEAR_HALOFIT = 2,
+    COFFE_PK_NONLINEAR_HMCODE = 3
 };
 
 
@@ -314,7 +346,7 @@ typedef struct coffe_parameters_t
 
     char output_prefix[COFFE_MAX_STRLEN]; /* output prefix for all the files */
 
-    int interp_method; /* method used for interpolation (linear, poly, etc.) */
+    enum coffe_interp1d_type interp_method; /* method used for interpolation (linear, poly, etc.) */
 
     int *multipole_values; /* the multipoles to calculate */
 
@@ -397,7 +429,7 @@ typedef struct coffe_parameters_t
 
     int flag;
 
-    int pk_type;
+    enum coffe_pk_type pk_type;
 
     int zeldovich_approximation;
 
@@ -496,7 +528,7 @@ int coffe_init_spline(
     const double *xi,
     const double *yi,
     const size_t bins,
-    const int interpolation_type
+    const enum coffe_interp1d_type interpolation_type
 );
 
 int coffe_init_spline2d(
@@ -506,7 +538,7 @@ int coffe_init_spline2d(
     const double *zi,
     const size_t binsx,
     const size_t binsy,
-    const int interpolation_type
+    const enum coffe_interp2d_type interpolation_type
 );
 
 double coffe_interp_spline(

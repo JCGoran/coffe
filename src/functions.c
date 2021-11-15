@@ -84,7 +84,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result +=
@@ -141,7 +141,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result +=
@@ -185,7 +185,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result +=
@@ -237,7 +237,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result +=
@@ -318,7 +318,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
             result +=
@@ -415,7 +415,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if(
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result +=
@@ -625,7 +625,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
             result +=
@@ -672,7 +672,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result += (b1 * f2 / 3. + b2 * f1 / 3.)
@@ -726,7 +726,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
             result += (
@@ -766,7 +766,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
             result += -(
@@ -858,7 +858,7 @@ double functions_nonintegrated(
         if (par->flatsky_local){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result += (
@@ -932,7 +932,7 @@ double functions_nonintegrated(
         else{
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
                 result += (
@@ -1378,7 +1378,7 @@ double functions_nonintegrated(
     if (gsl_finite(result)){
 #ifdef HAVE_CLASS
         if (
-            par->pk_type &&
+            par->pk_type != COFFE_PK_LINEAR &&
             par->midpoint_approximation
         )
             return result;
@@ -1516,7 +1516,7 @@ double functions_single_integrated(
         ){
 #ifdef HAVE_CLASS
             if (
-                par->pk_type &&
+                par->pk_type != COFFE_PK_LINEAR &&
                 par->midpoint_approximation
             ){
 
@@ -1574,7 +1574,7 @@ double functions_single_integrated(
             if (r21 != 0.0 && r22 != 0.0){
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -1730,7 +1730,7 @@ double functions_single_integrated(
             }
             else if (r21 == 0.0 && r22 != 0){
 #ifdef HAVE_CLASS
-                if (par->pk_type){
+                if (par->pk_type != COFFE_PK_LINEAR){
                     result +=
                        -3*(par->Omega0_cdm + par->Omega0_baryon)/2.
                        *(
@@ -1826,7 +1826,7 @@ double functions_single_integrated(
             else if (r21 != 0 && r22 == 0.0){
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -1924,7 +1924,7 @@ double functions_single_integrated(
             else{
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -2009,7 +2009,7 @@ double functions_single_integrated(
             if (r21 != 0 && r22 != 0){
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                 result +=
@@ -2148,7 +2148,7 @@ double functions_single_integrated(
                 if (fabs(mu) < 0.999){
 #ifdef HAVE_CLASS
                     if (
-                        par->pk_type &&
+                        par->pk_type != COFFE_PK_LINEAR &&
                         par->midpoint_approximation
                     ){
                     result +=
@@ -2274,7 +2274,7 @@ double functions_single_integrated(
                 else{
 #ifdef HAVE_CLASS
                     if (
-                        par->pk_type &&
+                        par->pk_type != COFFE_PK_LINEAR &&
                         par->midpoint_approximation
                     ){
                     result +=
@@ -2440,7 +2440,7 @@ double functions_single_integrated(
             if (r21 != 0 && r22 != 0){
 #if HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -2612,7 +2612,7 @@ double functions_single_integrated(
             else if (r21 == 0 && r22 != 0){
 #if HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -2742,7 +2742,7 @@ double functions_single_integrated(
             else if (r21 != 0 && r22 == 0){
 #if HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                 result +=
@@ -2866,7 +2866,7 @@ double functions_single_integrated(
             else{
 #if HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                 result +=
@@ -3510,7 +3510,7 @@ double functions_double_integrated(
             if (r2 > 1e-20){
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -3722,7 +3722,7 @@ double functions_double_integrated(
             else{
 #ifdef HAVE_CLASS
                 if (
-                    par->pk_type &&
+                    par->pk_type != COFFE_PK_LINEAR &&
                     par->midpoint_approximation
                 ){
                     result +=
@@ -3990,7 +3990,7 @@ double functions_flatsky_lensing_lensing_multipoles(
     double result = 0;
 #ifdef HAVE_CLASS
     if (
-        par->pk_type &&
+        par->pk_type != COFFE_PK_LINEAR &&
         par->midpoint_approximation
     ){
         result =
@@ -4109,7 +4109,7 @@ double functions_flatsky_density_lensing_multipoles(
 
 #ifdef HAVE_CLASS
     if (
-        par->pk_type &&
+        par->pk_type != COFFE_PK_LINEAR &&
         par->midpoint_approximation
     ){
         /* part with even multipoles */
