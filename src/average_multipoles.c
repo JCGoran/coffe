@@ -71,12 +71,6 @@ int coffe_average_multipoles_init(
     coffe_average_multipoles_array_t *ramp
 )
 {
-#ifdef HAVE_CUBA
-    {
-        int n = 0, p = 10000;
-        cubacores(&n, &p);
-    }
-#endif
     coffe_average_multipoles_free(ramp);
 /*
     if (par->output_type == AVERAGE_MULTIPOLES){

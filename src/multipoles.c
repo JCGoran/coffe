@@ -54,12 +54,6 @@ int coffe_multipoles_init(
     coffe_multipoles_array_t *mp
 )
 {
-#ifdef HAVE_CUBA
-    {
-        int n = 0, p = 10000;
-        cubacores(&n, &p);
-    }
-#endif
     coffe_multipoles_free(mp);
 
     clock_t start, end;

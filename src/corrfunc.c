@@ -61,12 +61,6 @@ int coffe_corrfunc_init(
     coffe_corrfunc_array_t *corrfunc
 )
 {
-#ifdef HAVE_CUBA
-    {
-        int n = 0, p = 10000;
-        cubacores(&n, &p);
-    }
-#endif
     coffe_corrfunc_free(corrfunc);
 
     clock_t start, end;

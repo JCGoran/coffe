@@ -131,6 +131,13 @@ int main(int argc, char *argv[])
     if (par.verbose)
         printf("Number of threads in use: %d\n", par.nthreads);
 
+    #ifdef HAVE_CUBA
+    {
+    const int n = 0, p = 10000;
+    cubacores(&n, &p);
+    }
+    #endif
+
     coffe_background_init(&par, &bg);
 
     coffe_integrals_init(&par, &bg, &integral);
