@@ -1023,7 +1023,7 @@ cdef class Coffe:
 
     def comoving_distance(self, z : float):
         """
-        Evaluates the comoving distance at some redshift.
+        Evaluates the comoving distance at some redshift (in Mpc/h).
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1032,6 +1032,18 @@ cdef class Coffe:
             self._background_init()
 
         return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / _COFFE_HUBBLE
+
+
+    def hubble_rate(self, z : float):
+        """
+        Evaluates the Hubble rate (H(z)) at some redshift (in h/Mpc).
+        """
+        _check_parameter('z', z, (int, float), 0, 15)
+
+        if not self._background.flag:
+            self._background_init()
+
+        return ccoffe.coffe_interp_spline(&self._background.Hz, z) * _COFFE_HUBBLE
 
 
     def scale_factor(self, z : float):
@@ -1044,6 +1056,31 @@ cdef class Coffe:
             self._background_init()
 
         return ccoffe.coffe_interp_spline(&self._background.a, z)
+
+
+    def hubble_rate_conformal(self, z : float):
+        """
+        Evaluates the conformal Hubble rate (𝓗(z)) at some redshift (in h/Mpc).
+        """
+        _check_parameter('z', z, (int, float), 0, 15)
+
+        if not self._background.flag:
+            self._background_init()
+
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz, z) * _COFFE_HUBBLE
+
+
+    def hubble_rate_conformal_derivative(self, z : float):
+        """
+        Evaluates the first derivative of the conformal Hubble rate w.r.t.
+        conformal time (d𝓗(z)/dτ) at some redshift (in h^/Mpc^2).
+        """
+        _check_parameter('z', z, (int, float), 0, 15)
+
+        if not self._background.flag:
+            self._background_init()
+
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz_prime, z) * _COFFE_HUBBLE**2
 
 
     def growth_factor(self, z : float):
