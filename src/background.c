@@ -38,14 +38,12 @@ int coffe_fit_polynomial(
     const double *data_x,
     const double *data_y,
     const size_t data_size,
-    const double rel_tol,
-    const size_t degree_max,
+    const size_t degree_current,
     double **coefficients,
-    size_t *coefficients_size
+    size_t *coefficients_size,
+    double *chisq
 )
 {
-    double chisq;
-    size_t degree_current = 2;
     /* by default, try a quadratic fit */
     gsl_matrix *X = gsl_matrix_alloc(data_size, degree_current + 1);
     gsl_vector *y = gsl_vector_alloc(data_size);
@@ -63,7 +61,8 @@ int coffe_fit_polynomial(
     }
 
     gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(data_size, degree_current + 1);
-    gsl_multifit_linear(X, y, c, cov, &chisq, work);
+
+    gsl_multifit_linear(X, y, c, cov, chisq, work);
     gsl_multifit_linear_free(work);
 
     *coefficients_size = degree_current + 1;
@@ -72,14 +71,76 @@ int coffe_fit_polynomial(
     for (size_t i = 0; i < *coefficients_size; ++i)
         (*coefficients)[i] = gsl_vector_get(c, i);
 
+    gsl_matrix_free(cov);
     gsl_matrix_free(X);
     gsl_vector_free(y);
-    gsl_matrix_free(cov);
+    gsl_vector_free(c);
 
     return EXIT_SUCCESS;
 }
 
 
+int coffe_get_bias_coefficients(
+    const coffe_interpolation *comoving_distance,
+    const coffe_interpolation *z_as_chi,
+    const double *z_mean,
+    const size_t z_mean_size,
+    const double *sep,
+    const size_t sep_size,
+    const coffe_interpolation *bias,
+    const int degree,
+    coffe_fit_coefficients_array_t *bias_coefficients
+)
+{
+    bias_coefficients->array = (coffe_fit_coefficients_t *)coffe_malloc(
+        sizeof(coffe_fit_coefficients_t) * z_mean_size
+    );
+
+    /* set everything to NULL so we don't free it accidentally */
+    for (size_t i = 0; i < z_mean_size; ++i)
+        coffe_new_fit_coefficients(&bias_coefficients->array[i]);
+
+    for (size_t i = 0; i < z_mean_size; ++i){
+        const double z_min = coffe_interp_spline(
+            z_as_chi,
+            coffe_interp_spline(comoving_distance, z_mean[i])
+            -
+            sep[sep_size - 1] * COFFE_H0
+        );
+        const double z_max = coffe_interp_spline(
+            z_as_chi,
+            coffe_interp_spline(comoving_distance, z_mean[i])
+            +
+            sep[sep_size - 1] * COFFE_H0
+        );
+        const double z_mean = (z_min + z_max) / 2;
+
+        /* sampling the input spline */
+        /* note that we cannot sample beyond z = 15 (hardcoded for now) */
+        const size_t num = bias->spline->size;
+        double *x = (double *)coffe_malloc(sizeof(double) * num);
+        double *y = (double *)coffe_malloc(sizeof(double) * num);
+        for (size_t j = 0; j < num; ++j){
+            const double z = bias->spline->x[j];
+            x[j] = coffe_interp_spline(comoving_distance, z)
+                 - coffe_interp_spline(comoving_distance, z_mean);
+            y[j] = coffe_interp_spline(bias, z);
+        }
+
+        bias_coefficients->array[i].degree = degree;
+        bias_coefficients->array[i].z_min = z_min;
+        bias_coefficients->array[i].z_max = z_max;
+        coffe_fit_polynomial(
+            x, y, num,
+            degree,
+            &bias_coefficients->array[i].coefficients,
+            &bias_coefficients->array[i].size,
+            &bias_coefficients->array[i].chisq
+        );
+    }
+
+    return EXIT_SUCCESS;
+}
 
 
 struct integration_params
@@ -252,7 +313,7 @@ static double integrand_comoving(
 **/
 
 int coffe_background_init(
-    const coffe_parameters_t *par,
+    coffe_parameters_t *par,
     coffe_background_t *bg
 )
 {
@@ -544,6 +605,39 @@ int coffe_background_init(
     gsl_spline_free(ipar.w.spline), gsl_interp_accel_free(ipar.w.accel);
     gsl_spline_free(ipar.wint.spline), gsl_interp_accel_free(ipar.wint.accel);
     gsl_spline_free(ipar.xint.spline), gsl_interp_accel_free(ipar.xint.accel);
+
+    /* this should maybe be placed in some other module as to not bloat this one */
+    if (par->flatsky_nonlocal && par->z_mean_len){
+
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->galaxy_bias1, par->degree_galaxy_bias1, &par->galaxy_bias1_coefficients
+        );
+
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->galaxy_bias2, par->degree_galaxy_bias2, &par->galaxy_bias2_coefficients
+        );
+
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->magnification_bias1, par->degree_magnification_bias1, &par->magnification_bias1_coefficients
+        );
+
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->magnification_bias2, par->degree_magnification_bias2, &par->magnification_bias2_coefficients
+        );
+
+    }
 
     gsl_set_error_handler(default_handler);
 

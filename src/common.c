@@ -1229,3 +1229,13 @@ int coffe_new_spline2d(
 
     return EXIT_SUCCESS;
 }
+
+int coffe_new_fit_coefficients(
+    coffe_fit_coefficients_t *input
+)
+{
+    input->coefficients = NULL;
+    input->size = 0;
+
+    return EXIT_SUCCESS;
+}

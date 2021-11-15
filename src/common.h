@@ -92,6 +92,38 @@ double coffe_max_array_double(
 );
 
 
+
+/**
+    contains the coefficients for the bias fitting at a given redshift
+**/
+typedef struct coffe_fit_coefficients_t
+{
+    double *coefficients;
+    size_t size;
+    /**
+        I'm not sure how to parametrize the convergence; for now, I'm just
+        reading the maximum degree and using that to fit, which outputs the chi squared;
+        whether this is any good, I don't know
+    **/
+    double chisq;
+    int degree;
+    double z_min;
+    double z_max;
+} coffe_fit_coefficients_t;
+
+
+typedef struct coffe_fit_coefficients_array_t
+{
+    coffe_fit_coefficients_t *array;
+    size_t size;
+} coffe_fit_coefficients_array_t;
+
+
+int coffe_new_fit_coefficients(
+    coffe_fit_coefficients_t *input
+);
+
+
 /**
     contains the coordinates for the correlation function at (z, r, mu)
 **/
@@ -436,6 +468,14 @@ typedef struct coffe_parameters_t
     int midpoint_approximation;
 
     int only_cross_correlations;
+
+    coffe_fit_coefficients_array_t galaxy_bias1_coefficients;
+    coffe_fit_coefficients_array_t galaxy_bias2_coefficients;
+    coffe_fit_coefficients_array_t magnification_bias1_coefficients;
+    coffe_fit_coefficients_array_t magnification_bias2_coefficients;
+
+    int degree_galaxy_bias1, degree_galaxy_bias2;
+    int degree_magnification_bias1, degree_magnification_bias2;
 
 } coffe_parameters_t;
 
