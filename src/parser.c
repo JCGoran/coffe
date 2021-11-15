@@ -609,29 +609,34 @@ int coffe_parse_default_parameters(
     }
 
     par->galaxy_bias_analytic = 0;
+
     parse_bias_default(
         1.0, &par->galaxy_bias1, par->interp_method
     );
     par->read_galaxy_bias1 = 0;
     par->file_galaxy_bias1[0] = 0;
+    par->degree_galaxy_bias1 = 1;
 
     parse_bias_default(
         1.0, &par->galaxy_bias2, par->interp_method
     );
     par->read_galaxy_bias2 = 0;
     par->file_galaxy_bias2[0] = 0;
+    par->degree_galaxy_bias2 = 1;
 
     parse_bias_default(
         0.0, &par->magnification_bias1, par->interp_method
     );
     par->read_magnification_bias1 = 0;
     par->file_magnification_bias1[0] = 0;
+    par->degree_magnification_bias1 = 1;
 
     parse_bias_default(
         0.0, &par->magnification_bias2, par->interp_method
     );
     par->read_magnification_bias2 = 0;
     par->file_magnification_bias2[0] = 0;
+    par->degree_magnification_bias2 = 1;
 
     parse_bias_default(
         0.0, &par->evolution_bias1, par->interp_method
