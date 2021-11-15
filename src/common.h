@@ -21,7 +21,10 @@
 
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_spline2d.h>
+
+#ifndef COFFE_CYTHON
 #include <libconfig.h>
+#endif
 
 #ifdef HAVE_CUBA
 #include "cuba.h"
@@ -370,7 +373,9 @@ typedef struct coffe_parameters_t
 
     int divergent; /* flag for divergent integrals */
 
+    #ifndef COFFE_CYTHON
     config_t *conf; /* contains all the settings */
+    #endif
 
     char timestamp[COFFE_MAX_STRLEN]; /* when the calculation started */
 

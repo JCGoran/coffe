@@ -51,6 +51,9 @@ static int parse_bias_default(
 }
 
 
+
+#ifndef COFFE_CYTHON
+
 static int parse_double(
     config_t *conf,
     const char *setting,
@@ -267,6 +270,10 @@ static int parse_bias(
 
     return EXIT_SUCCESS;
 }
+
+#endif
+
+
 
 
 /**
@@ -723,7 +730,9 @@ int coffe_parse_default_parameters(
 
     par->verbose = 0;
 
+    #ifndef COFFE_CYTHON
     par->conf = NULL;
+    #endif
 
     par->flag = 1;
 
@@ -735,7 +744,7 @@ int coffe_parse_default_parameters(
     parses all the settings from the input file
     (given by argv[1]) into the structure <par>
 **/
-
+#ifndef COFFE_CYTHON
 int coffe_parser_init(
     char *filename,
     coffe_parameters_t *par
@@ -1339,3 +1348,4 @@ int coffe_parser_init(
 
     return EXIT_SUCCESS;
 }
+#endif

@@ -718,9 +718,11 @@ int coffe_parameters_free(
 )
 {
     if (par->flag){
+        #ifndef COFFE_CYTHON
         if (par->conf != NULL)
             config_destroy(par->conf);
         par->conf = NULL;
+        #endif
 
         coffe_free_spline(&par->power_spectrum);
         coffe_free_spline(&par->power_spectrum_norm);

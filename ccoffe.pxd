@@ -5,12 +5,6 @@
 # remember to add it inside this cdef.
 
 
-cdef extern from "<libconfig.h>":
-
-    cdef struct config_t:
-        pass
-
-
 cdef extern from "<gsl/gsl_spline.h>":
 
     cdef struct gsl_spline:
