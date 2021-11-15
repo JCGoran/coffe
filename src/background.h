@@ -46,7 +46,7 @@ typedef struct coffe_background_t
 
 
 int coffe_background_init(
-    const coffe_parameters_t *par,
+    coffe_parameters_t *par,
     coffe_background_t *bg
 );
 
