@@ -914,6 +914,7 @@ int coffe_parser_init(
     /* parsing the galaxy bias */
     if (!par->galaxy_bias_analytic){
         parse_int(conf, "read_galaxy_bias1", &par->read_galaxy_bias1, COFFE_FALSE);
+        parse_int(conf, "degree_galaxy_bias1", &par->degree_galaxy_bias1, COFFE_FALSE);
         parse_bias(
             conf,
             "input_galaxy_bias1",
@@ -925,6 +926,7 @@ int coffe_parser_init(
         );
 
         parse_int(conf, "read_galaxy_bias2", &par->read_galaxy_bias2, COFFE_FALSE);
+        parse_int(conf, "degree_galaxy_bias2", &par->degree_galaxy_bias2, COFFE_FALSE);
         parse_bias(
             conf,
             "input_galaxy_bias2",
@@ -963,6 +965,7 @@ int coffe_parser_init(
 
     /* parsing the magnification bias (s) */
     parse_int(conf, "read_magnification_bias1", &par->read_magnification_bias1, COFFE_FALSE);
+    parse_int(conf, "degree_magnification_bias1", &par->degree_magnification_bias1, COFFE_FALSE);
     parse_bias(
         conf,
         "input_magnification_bias1",
@@ -974,6 +977,7 @@ int coffe_parser_init(
     );
 
     parse_int(conf, "read_magnification_bias2", &par->read_magnification_bias2, COFFE_FALSE);
+    parse_int(conf, "degree_magnification_bias2", &par->degree_magnification_bias2, COFFE_FALSE);
     parse_bias(
         conf,
         "input_magnification_bias2",
