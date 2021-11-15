@@ -127,11 +127,13 @@ cdef extern from "common.h":
 
         coffe_interpolation galaxy_bias1
         coffe_interpolation galaxy_bias2
-
-        int galaxy_bias_analytic
+        int degree_galaxy_bias1
+        int degree_galaxy_bias2
 
         coffe_interpolation magnification_bias1
         coffe_interpolation magnification_bias2
+        int degree_magnification_bias1
+        int degree_magnification_bias2
 
         coffe_interpolation evolution_bias1
         coffe_interpolation evolution_bias2
