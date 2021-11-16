@@ -923,6 +923,15 @@ cdef class Coffe:
         self._free_multipoles()
 
 
+    def reset_contributions(self):
+        """
+        Helper function that resets all writable `has_*` attributes to False.
+        """
+        for prop in self.parameters:
+            if 'has_' in prop:
+                setattr(self, prop, False)
+
+
     @property
     def has_flatsky_local(self):
         return bool(self._parameters.flatsky_local)
