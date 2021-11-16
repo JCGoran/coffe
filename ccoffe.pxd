@@ -236,6 +236,8 @@ cdef extern from "common.h":
         coffe_interpolation2d *
     )
 
+    void *coffe_malloc(size_t)
+
 
 cdef extern from "parser.h":
 

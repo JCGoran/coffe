@@ -1021,6 +1021,57 @@ cdef class Coffe:
            *ccoffe.coffe_interp_spline(&self._background.D1, z)
 
 
+    def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
+        """
+        Sets the power spectrum, optionally at some redshift (by default it's
+        assumed the input is at z = 0).
+        The input k must be in units h/Mpc, and P(k) in units Mpc^3/h^3.
+        """
+        # value checking
+        if not np.allclose(k, np.sort(k)):
+            raise ValueError('The input k array must be sorted')
+
+        if len(k) != len(pk):
+            raise ValueError('The input arrays have mismatching lengths')
+
+        # TODO error checking for z and rescaling if z > 0
+
+        self._free_power_spectrum()
+        self._parameters.k_min = k[0]
+        self._parameters.k_max = k[-1]
+        self._parameters.k_min_norm = k[0] / _COFFE_HUBBLE
+        self._parameters.k_max_norm = k[-1] / _COFFE_HUBBLE
+        size = len(k)
+
+        cdef double *x = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
+        cdef double *y = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
+        cdef double *x_norm = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
+        cdef double *y_norm = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
+
+        for (i, ki), pki in zip(enumerate(k), pk):
+            x[i] = ki
+            y[i] = pki
+            x_norm[i] = ki / _COFFE_HUBBLE
+            y_norm[i] = pki * _COFFE_HUBBLE**3
+
+        ccoffe.coffe_init_spline(
+            &self._parameters.power_spectrum,
+            x, y, size, self._parameters.interp_method
+        )
+
+        ccoffe.coffe_init_spline(
+            &self._parameters.power_spectrum_norm,
+            x_norm, y_norm, size, self._parameters.interp_method
+        )
+
+        self._power_spectrum_flag = 1
+
+        free(x)
+        free(y)
+        free(x_norm)
+        free(y_norm)
+
+
     def comoving_distance(self, z : float):
         """
         Evaluates the comoving distance at some redshift (in Mpc/h).
