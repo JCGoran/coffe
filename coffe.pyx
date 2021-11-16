@@ -17,6 +17,7 @@ from ctypes import CFUNCTYPE
 
 from typing import Any, Callable, List, Tuple, Union
 from dataclasses import dataclass
+import os
 import numpy as np
 
 
@@ -188,6 +189,9 @@ cdef class Coffe:
         """
         Constructor that initializes the structures and sets default parameters.
         """
+        # disable paralellization in Cuba, leave in only the OpenMP one
+        os.environ['CUBACORES'] = '0'
+
         ccoffe.coffe_parse_default_parameters(&self._parameters)
 
         self._background.flag = 0
