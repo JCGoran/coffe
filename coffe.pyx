@@ -184,6 +184,8 @@ cdef class Coffe:
     cdef ccoffe.coffe_covariance_array_t _covariance_multipoles
     cdef ccoffe.coffe_covariance_array_t __dummy
     cdef int _power_spectrum_flag
+    # the max size allowed for setting the various *_sampling parameters
+    cdef size_t _max_size
 
     def __cinit__(self, **kwargs):
         """
@@ -191,6 +193,8 @@ cdef class Coffe:
         """
         # disable paralellization in Cuba, leave in only the OpenMP one
         os.environ['CUBACORES'] = '0'
+
+        self._max_size = 2147483647
 
         ccoffe.coffe_parse_default_parameters(&self._parameters)
 
@@ -880,6 +884,19 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+
+
+    @property
+    def integration_sampling(self):
+        return self._parameters.integration_bins
+
+    @integration_sampling.setter
+    def integration_sampling(self, value):
+        # the latter is at least the size of a long
+        if value <= 0 or value >= self._max_size:
+            raise ValueError
+
+        self._parameters.integration_bins = value
 
 
     @property
