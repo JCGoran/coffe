@@ -75,7 +75,7 @@ class TestCoffe:
             setattr(cosmo, f'has_{contributions[prefix]}', True)
             result = cosmo.compute_multipoles_bulk()
             df = pd.DataFrame([_.to_dict() for _ in result])
-            for index, mp in enumerate(cosmo.l):
+            for mp in cosmo.l:
                 data = np.loadtxt(
                     os.path.join(DATA_DIR, f'benchmark_{prefix}_multipoles{mp}.dat')
                 )
@@ -101,8 +101,8 @@ class TestCoffe:
 
         result = cosmo.compute_covariance_bulk()
         df = pd.DataFrame([_.to_dict() for _ in result])
-        for index1, mp1 in enumerate(cosmo.l):
-            for index2, mp2 in enumerate(cosmo.l):
+        for mp1 in cosmo.l:
+            for mp2 in cosmo.l:
                 data = np.loadtxt(
                     os.path.join(DATA_DIR, f'benchmark_multipoles_covariance_{mp1}{mp2}.dat')
                 )
@@ -110,4 +110,3 @@ class TestCoffe:
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r1.values, x)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values, y)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4)
-                #assert np.allclose(df.loc[df.mu == mu].value.values, y, rtol=5e-4)
