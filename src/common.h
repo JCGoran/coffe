@@ -468,8 +468,6 @@ typedef struct coffe_parameters_t
 
     enum coffe_pk_type pk_type;
 
-    int zeldovich_approximation;
-
     int midpoint_approximation;
 
     int only_cross_correlations;

@@ -584,7 +584,6 @@ int coffe_parse_default_parameters(
     par->k_min = 1e-5;
     par->k_max = 300.;
     par->pk_type = 0;
-    par->zeldovich_approximation = 0;
     par->midpoint_approximation = 0;
 
     {
@@ -1219,9 +1218,6 @@ int coffe_parser_init(
     if (par->have_class){
         parse_int(conf, "midpoint_approximation", &par->midpoint_approximation, COFFE_TRUE);
         parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
-        if (par->pk_type){
-            parse_int(conf, "zeldovich_approximation", &par->zeldovich_approximation, COFFE_TRUE);
-        }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "sigma8", &par->sigma8, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
