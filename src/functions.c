@@ -31,6 +31,57 @@
 #endif
 
 
+/*
+    explanation for the future reader:
+    There are several cases to consider for each of the `functions_*`, depending on whether or
+    not CLASS is included (hence the barrage of `#ifdef`s everywhere), and whether
+    or not the user requested the flatsky approximation, and even whether or not the output_type
+    is multipoles or not:
+    1. flatsky
+        1.a. with CLASS
+            1.a.I. power spectrum generated at z = 0
+            1.a.II. let CLASS generate the power spectrum at the _MEAN_
+                    redshift (so NOT P(k, z₁, z₂), but P(k, (z₁ + z₂) / 2).
+                    This case includes 3 ways to generate it: linear (pk_type = 1),
+                    nonlinear halofit (pk_type = 2), and nonlinear HMcode (pk_type = 2).
+                    Note that P(k) is not computed here (to save
+                    computational time), but rather in `integrals.c`, where we make
+                    a bicubic spline in (k, z), and here we just interpolate it.
+                    In practice, we don't interpolate P(k, z), but rather
+                    its Fourier-Bessel transform, I^n_l(r, z).
+                    You may ask why not simply interpolate P(k, z₁, z₂) instead of P(k, z).
+                    There are a couple of problems with this:
+                    - CLASS can only generate the nonlinear POWER spectrum P(k, z),
+                      but not the CROSS spectrum P(k, z₁, z₂). In principle, we may assume
+                      that P(k, z₁, z₂) ≈ √(P(k, z₁)×P(k, z₂), (or even better, use the Zeldovich
+                      approximation, see arXiv:1905.02078, eq. (13)), but this
+                      brings us to the below problem:
+                    - as of the time of writing, GSL, the C library used for 1D
+                      and 2D interpolation, does not support 3D interpolation.
+                      Even 2D interpolation is very computationally expensive
+                      and suffers from worse numerical errors compared to its 1D counterpart,
+                      and I imagine the 3D version would be even worse
+                    - finally, the (midpoint) approximation P(k, z₁, z₂) ≈ P(k, (z₁ + z₂) / 2),
+                      turns out to be almost unreasonably effective (even for lensing),
+                      see arXiv:2011.06185, notably their figures 9 and 10
+        1.b. without CLASS. In this case, since COFFE can't generate
+             P(k) on its own, it assumes that the user gave it a file with
+             P(k, z = 0), and setting any nonlinear parameters doesn't work.
+    2. full-sky
+        2.a. with CLASS
+            2.a.I. same as 1.a.I.
+            2.a.II. same as 1.a.II.
+        2.b. without CLASS. Same as 1.b., i.e. nonlinear parameters do NOT have any effect.
+
+    Note that in flat-sky, the multipoles of lensing-lensing and density-lensing can be
+    computed analytically (see arXiv:2011.01878), so they are in their own separate functions.
+    In principle, all of the nonintegrated terms have straightforward flat-sky
+    expressions for multipoles, but the 1D integrator is so fast that it currently
+    isn't practical to make separate functions (though it would be nice from a
+    software design perspective, but alas, there are only so many hours in a day).
+*/
+
+
 /**
     all the nonintegrated terms in one place
 **/
