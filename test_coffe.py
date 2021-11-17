@@ -96,6 +96,7 @@ class TestCoffe:
             sep=np.arange(50, 350, 50),
             l=[0, 2, 4],
         )
+
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
         cosmo.set_power_spectrum_linear(k, pk)
 
