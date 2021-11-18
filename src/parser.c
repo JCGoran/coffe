@@ -598,7 +598,7 @@ int coffe_parse_default_parameters(
     par->k_min = 1e-5;
     par->k_max = 300.;
     par->pk_type = COFFE_PK_LINEAR;
-    par->midpoint_approximation = 0;
+    par->midpoint_approximation = 1;
 
     {
         size_t len = par->power_spectrum.spline->size;
@@ -1247,7 +1247,6 @@ int coffe_parser_init(
 
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
-        parse_int(conf, "midpoint_approximation", &par->midpoint_approximation, COFFE_TRUE);
         parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "sigma8", &par->sigma8, COFFE_TRUE);
