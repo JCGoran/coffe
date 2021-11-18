@@ -151,6 +151,8 @@ cdef extern from "common.h":
 
         int divergent
 
+        int covariance_window
+
         int interp_method
 
         int *multipole_values

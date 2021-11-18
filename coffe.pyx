@@ -590,6 +590,7 @@ cdef class Coffe:
         self._parameters.multipole_values = <int *> malloc(sizeof(int) * len(temp))
         for i in range(self._parameters.multipole_values_len):
             self._parameters.multipole_values[i] = temp[i]
+        # we need to free the integrals since the flat-sky ones may depend on them
         self._free_multipoles()
         self._free_covariance_multipoles()
 
@@ -761,15 +762,49 @@ cdef class Coffe:
 
     @property
     def integration_sampling(self):
+        """
+        Returns the maximum number of points to be sampled when using multidimensional
+        integration.
+        """
         return self._parameters.integration_bins
 
     @integration_sampling.setter
     def integration_sampling(self, value):
         # the latter is at least the size of a long
-        if value <= 0 or value >= self._max_size:
-            raise ValueError
+        _check_parameter('integration_sampling', value, int, 0, self._max_size)
 
         self._parameters.integration_bins = value
+
+
+    @property
+    def background_sampling(self):
+        """
+        Returns the number of points we use to sample the background (from z = 0 to z = 15).
+        """
+        return self._parameters.background_bins
+
+    @background_sampling.setter
+    def background_sampling(self, value):
+        _check_parameter('background_sampling', value, int, 0, self._max_size)
+
+        self._parameters.background_bins = value
+        self._free_except_parameters()
+
+
+    @property
+    def has_binned_covariance(self):
+        """
+        Returns whether or not the covariance should be bin averaged (see eq. (A18) of arXiv:1509.04293).
+        Note that the parameter `pixelsize` controls the bin width (in Mpc/h) in each redshift bin.
+        If set to False, the covariance will not be bin averaged, and eq. (2.52)
+        from arXiv:1806.11090 will be used.
+        """
+        return bool(self._parameters.covariance_window)
+
+    @has_binned_covariance.setter
+    def has_binned_covariance(self, value):
+        self._parameters.covariance_window = int(bool(value))
+        self._free_covariance()
 
 
     @property
@@ -883,7 +918,8 @@ cdef class Coffe:
     @property
     def pk_type(self):
         """
-        Returns the currently set power spectrum type (COFFE linear, CLASS linear, nonlinear halofit, nonlinear HMcode)
+        Returns the currently set power spectrum type (COFFE linear, CLASS linear,
+        nonlinear halofit, nonlinear HMcode)
         """
         return _allowed_pk_types[self._parameters.pk_type]
 

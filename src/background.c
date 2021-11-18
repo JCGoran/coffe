@@ -685,8 +685,8 @@ int coffe_background_free(
         coffe_free_spline(&bg->G2);
         coffe_free_spline(&bg->comoving_distance);
 
-        bg->flag = 0;
     }
+    bg->flag = 0;
 
     return EXIT_SUCCESS;
 }
