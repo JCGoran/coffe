@@ -99,9 +99,12 @@ cdef class Coffe:
     def _free_background(self):
         ccoffe.coffe_background_free(&self._background)
 
+
     def _free_power_spectrum(self):
         ccoffe.coffe_free_spline(&self._parameters.power_spectrum)
         ccoffe.coffe_free_spline(&self._parameters.power_spectrum_norm)
+        ccoffe.coffe_free_spline2d(&self._parameters.power_spectrum2d)
+        ccoffe.coffe_free_spline2d(&self._parameters.power_spectrum2d_norm)
         self._power_spectrum_flag = 0
 
 
@@ -124,6 +127,7 @@ cdef class Coffe:
     def _free_except_parameters(self):
         self._free_background()
         self._free_power_spectrum()
+        self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
