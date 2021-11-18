@@ -876,11 +876,6 @@ cdef class Coffe:
         ) / _COFFE_HUBBLE
 
 
-    def _power_spectrum_init(self):
-        ccoffe.parse_external_power_spectrum(&self._parameters)
-        self._power_spectrum_flag = 1
-
-
     @property
     def pk_type(self):
         """
@@ -896,6 +891,7 @@ cdef class Coffe:
         if value != self.pk_type:
             self._parameters.pk_type = _allowed_pk_types_inverse[value]
             self._free_power_spectrum()
+            self._free_integrals()
 
 
     def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation : str = 'geometric'):
@@ -986,6 +982,8 @@ cdef class Coffe:
         free(y)
         free(x_norm)
         free(y_norm)
+
+        self._free_integrals()
 
 
     def comoving_distance(self, z : float):
@@ -1263,6 +1261,10 @@ cdef class Coffe:
             &self._parameters,
             &self._background
         )
+
+    def _power_spectrum_init(self):
+        ccoffe.parse_external_power_spectrum(&self._parameters)
+        self._power_spectrum_flag = 1
 
     def _integrals_init(self):
         ccoffe.coffe_integrals_init(
