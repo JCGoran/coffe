@@ -723,8 +723,10 @@ int coffe_parameters_free(
 {
     if (par->flag){
         #ifndef COFFE_CYTHON
-        if (par->conf != NULL)
+        if (par->conf != NULL){
             config_destroy(par->conf);
+            free(par->conf);
+        }
         par->conf = NULL;
         #endif
 
