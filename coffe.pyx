@@ -267,7 +267,8 @@ cdef class Coffe:
 
     def _balance_content(self):
         """
-        Balances the energy content of dark energy so it all adds up to 1
+        Internal function that balances the energy content of dark energy so it all adds up to 1.
+        Called automatically when any setter for the various omegas is called.
         """
         self._parameters.Omega0_de = 1 - self._parameters.Omega0_cdm - \
             self._parameters.Omega0_baryon - self._parameters.Omega0_gamma
@@ -717,7 +718,6 @@ cdef class Coffe:
             [self._parameters.z_mean[i] for i in range(self._parameters.z_mean_len)]
         )
 
-
     @z_mean.setter
     def z_mean(self, value):
         try:
@@ -1025,7 +1025,7 @@ cdef class Coffe:
 
     def power_spectrum(self, k : float, z : float):
         """
-        Evaluates the (for now linear) matter power spectrum at some k and z.
+        Evaluates the matter power spectrum at some k and z.
         """
         _check_parameter('k', k, (int, float), 1e-5, 1e3)
         _check_parameter('z', z, (int, float), 0, 15)
