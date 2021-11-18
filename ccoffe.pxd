@@ -25,6 +25,12 @@ DEF COFFE_MAX_STRLEN = 256
 
 cdef extern from "common.h":
 
+    cdef enum coffe_pk_type:
+        COFFE_PK_LINEAR = 0,
+        COFFE_PK_LINEAR_CLASS = 1,
+        COFFE_PK_NONLINEAR_HALOFIT = 2,
+        COFFE_PK_NONLINEAR_HMCODE = 3
+
     cdef struct coffe_corrfunc_coords_t:
         double z_mean
         double separation
@@ -115,6 +121,8 @@ cdef extern from "common.h":
 
         coffe_interpolation power_spectrum
 
+        coffe_pk_type pk_type
+
         double k_min
 
         double k_max
@@ -124,6 +132,9 @@ cdef extern from "common.h":
         double k_min_norm
 
         double k_max_norm
+
+        coffe_interpolation2d power_spectrum2d
+        coffe_interpolation2d power_spectrum2d_norm
 
         coffe_interpolation galaxy_bias1
         coffe_interpolation galaxy_bias2
