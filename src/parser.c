@@ -559,6 +559,8 @@ int coffe_parse_default_parameters(
     par->has_cuba = 0;
     #endif
 
+    coffe_new_class_struct(&par->class_struct);
+
     par->only_cross_correlations = 0;
 
     const size_t separations_size = 100;
