@@ -933,10 +933,11 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return \
-            ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
-           *ccoffe.coffe_interp_spline(&self._background.D1, z) \
-           *ccoffe.coffe_interp_spline(&self._background.D1, z)
+        if self._parameters.pk_type == ccoffe.COFFE_PK_LINEAR:
+            return \
+                ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
+               *ccoffe.coffe_interp_spline(&self._background.D1, z)**2
+        return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k)
 
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
