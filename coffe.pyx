@@ -891,7 +891,9 @@ cdef class Coffe:
     def pk_type(self, value):
         # we don't care about the case (user is lazy, and so am I)
         if value.lower() not in _allowed_pk_types.values():
-            raise ValueError(f'The value \'{value}\' is not one of: {list(_allowed_pk_types.values())}')
+            raise ValueError(
+                f'The value \'{value}\' is not one of: {list(_allowed_pk_types.values())}'
+            )
         if value != self.pk_type:
             self._parameters.pk_type = _allowed_pk_types_inverse[value]
             self._free_power_spectrum()
