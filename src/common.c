@@ -28,6 +28,10 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
 
+#ifdef HAVE_CLASS
+#include "class.h"
+#endif
+
 #ifdef HAVE_CUBA
 #include "cuba.h"
 #else
@@ -777,6 +781,8 @@ int coffe_parameters_free(
             free(par->zmax);
         par->zmax_len = 0;
 
+        coffe_free_class_struct(&par->class_struct);
+
         coffe_free_fit_coefficients_array(&par->galaxy_bias1_coefficients);
         coffe_free_fit_coefficients_array(&par->galaxy_bias2_coefficients);
         coffe_free_fit_coefficients_array(&par->magnification_bias1_coefficients);
@@ -1274,3 +1280,76 @@ int coffe_free_fit_coefficients_array(
     return EXIT_SUCCESS;
 }
 
+
+int coffe_new_class_struct(
+    coffe_class_struct_t *input
+)
+{
+    input->file_content = NULL;
+    input->background = NULL;
+    input->thermodynamics = NULL;
+    input->perturb = NULL;
+    input->primordial = NULL;
+    input->nonlinear = NULL;
+    input->transfer = NULL;
+    input->spectra = NULL;
+
+    return EXIT_SUCCESS;
+}
+
+int coffe_free_class_struct(
+    coffe_class_struct_t *input
+)
+{
+#ifdef HAVE_CLASS
+    if (input->file_content){
+        parser_free(input->file_content);
+        free(input->file_content);
+    }
+
+    if (input->background){
+        background_free(input->background);
+        free(input->background);
+    }
+
+    if (input->thermodynamics){
+        thermodynamics_free(input->thermodynamics);
+        free(input->thermodynamics);
+    }
+
+    if (input->perturb){
+        perturb_free(input->perturb);
+        free(input->perturb);
+    }
+
+    if (input->primordial){
+        primordial_free(input->primordial);
+        free(input->primordial);
+    }
+
+    if (input->nonlinear){
+        nonlinear_free(input->nonlinear);
+        free(input->nonlinear);
+    }
+
+    if (input->transfer){
+        transfer_free(input->transfer);
+        free(input->transfer);
+    }
+
+    if (input->spectra){
+        spectra_free(input->spectra);
+        free(input->spectra);
+    }
+#endif
+    input->background = NULL;
+    input->thermodynamics = NULL;
+    input->perturb = NULL;
+    input->primordial = NULL;
+    input->transfer = NULL;
+    input->spectra = NULL;
+    input->file_content = NULL;
+    input->nonlinear = NULL;
+
+    return EXIT_SUCCESS;
+}

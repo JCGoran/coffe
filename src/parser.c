@@ -407,9 +407,9 @@ int parse_external_power_spectrum(
 
     sprintf(fc->name[counter], "non linear");
 
-    if (par->pk_type == 2)
+    if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT)
         sprintf(fc->value[counter], "%s", "halofit");
-    else if (par->pk_type == 3)
+    else if (par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
         sprintf(fc->value[counter], "%s", "hmcode");
     ++counter;
 
@@ -497,14 +497,19 @@ int parse_external_power_spectrum(
 
     /* keeping it for later reuse */
 
-    par->class_file_content = fc;
-    par->class_background = pba;
-    par->class_thermodynamics = pth;
-    par->class_perturb = ppt;
-    par->class_primordial = ppm;
-    par->class_nonlinear = pnl;
-    par->class_transfer = ptr;
-    par->class_spectra = psp;
+    par->class_struct.file_content = fc;
+    par->class_struct.background = pba;
+    par->class_struct.thermodynamics = pth;
+    par->class_struct.perturb = ppt;
+    par->class_struct.primordial = ppm;
+    par->class_struct.nonlinear = pnl;
+    par->class_struct.transfer = ptr;
+    par->class_struct.spectra = psp;
+
+    lensing_free(ple);
+    free(ple);
+    free(ppr);
+    free(pop);
 
     return EXIT_SUCCESS;
 }

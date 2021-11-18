@@ -710,19 +710,19 @@ int coffe_integrals_init(
                 double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * output_real_len);
 
                 for (size_t i = 0; i < z_size; ++i){
-                    const size_t k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                    const size_t k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
                     /* alloc memory for k and pk */
                     double *k = (double *)coffe_malloc(sizeof(double) * k_size);
                     double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
 
                     /* get (non)linear power spectrum at redshift z (and store it in pk) */
                     nonlinear_pk_at_z(
-                        (struct background *)par->class_background,
-                        (struct nonlinear *)par->class_nonlinear,
+                        (struct background *)par->class_struct.background,
+                        (struct nonlinear *)par->class_struct.nonlinear,
                         logarithmic,
                         pk_type,
                         z[i],
-                        ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                        ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
                         pk,
                         NULL
                     );
@@ -730,7 +730,7 @@ int coffe_integrals_init(
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
                     /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h / COFFE_H0;
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
                         pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
                     }
 
@@ -1022,19 +1022,19 @@ int coffe_integrals_init(
                 double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * output_real_len);
 
                 for (size_t i = 0; i < z_size; ++i){
-                    const size_t k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                    const size_t k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
                     /* alloc memory for k and pk */
                     double *k = (double *)coffe_malloc(sizeof(double) * k_size);
                     double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
 
                     /* get (non)linear power spectrum at redshift z (and store it in pk) */
                     nonlinear_pk_at_z(
-                        (struct background *)par->class_background,
-                        (struct nonlinear *)par->class_nonlinear,
+                        (struct background *)par->class_struct.background,
+                        (struct nonlinear *)par->class_struct.nonlinear,
                         logarithmic,
                         pk_type,
                         z[i],
-                        ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                        ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
                         pk,
                         NULL
                     );
@@ -1042,7 +1042,7 @@ int coffe_integrals_init(
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
                     /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h / COFFE_H0;
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
                         pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
                     }
 
@@ -1186,19 +1186,19 @@ int coffe_integrals_init(
                 double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * output_real_len);
 
                 for (size_t i = 0; i < z_size; ++i){
-                    const size_t k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                    const size_t k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
                     /* alloc memory for k and pk */
                     double *k = (double *)coffe_malloc(sizeof(double) * k_size);
                     double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
 
                     /* get (non)linear power spectrum at redshift z (and store it in pk) */
                     nonlinear_pk_at_z(
-                        (struct background *)par->class_background,
-                        (struct nonlinear *)par->class_nonlinear,
+                        (struct background *)par->class_struct.background,
+                        (struct nonlinear *)par->class_struct.nonlinear,
                         logarithmic,
                         pk_type,
                         z[i],
-                        ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                        ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
                         pk,
                         NULL
                     );
@@ -1206,7 +1206,7 @@ int coffe_integrals_init(
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
                     /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h / COFFE_H0;
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
                         pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
                     }
 
@@ -1351,19 +1351,19 @@ int coffe_integrals_init(
                 double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * output_real_len);
 
                 for (size_t i = 0; i < z_size; ++i){
-                    const size_t k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+                    const size_t k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
                     /* alloc memory for k and pk */
                     double *k = (double *)coffe_malloc(sizeof(double) * k_size);
                     double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
 
                     /* get (non)linear power spectrum at redshift z (and store it in pk) */
                     nonlinear_pk_at_z(
-                        (struct background *)par->class_background,
-                        (struct nonlinear *)par->class_nonlinear,
+                        (struct background *)par->class_struct.background,
+                        (struct nonlinear *)par->class_struct.nonlinear,
                         logarithmic,
                         pk_type,
                         z[i],
-                        ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                        ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
                         pk,
                         NULL
                     );
@@ -1371,7 +1371,7 @@ int coffe_integrals_init(
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
                     /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h / COFFE_H0;
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
                         pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
                     }
 

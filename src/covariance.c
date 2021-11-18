@@ -495,31 +495,32 @@ int coffe_covariance_init(
             double k_min, k_max;
             double *k, *pk;
 #ifdef HAVE_CLASS
-            if (par->have_class && par->pk_type){
-                k_size = ((struct nonlinear *)par->class_nonlinear)->k_size;
+            if (par->have_class && par->pk_type != COFFE_PK_LINEAR){
+                k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
                 /* alloc memory for k and pk */
                 k = (double *)coffe_malloc(sizeof(double) * k_size);
                 pk = (double *)coffe_malloc(sizeof(double) * k_size);
                 enum pk_outputs pk_type = pk_linear;
-                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+                if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT || par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+                    pk_type = pk_nonlinear;
 
                 /* get (non)linear power spectrum at redshift z (and store it in pk) */
                 nonlinear_pk_at_z(
-                    (struct background *)par->class_background,
-                    (struct nonlinear *)par->class_nonlinear,
+                    (struct background *)par->class_struct.background,
+                    (struct nonlinear *)par->class_struct.nonlinear,
                     logarithmic,
                     pk_type,
 
                     /* trigraph */
                     par->pk_type ? par->z_mean[index_redshift] : 0,
-                    ((struct nonlinear *)par->class_nonlinear)->index_pk_total,
+                    ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
                     pk,
                     NULL
                 );
 
                 /* need to rescale since CLASS internally works in units of 1/Mpc */
                 for (size_t j = 0; j < k_size; ++j){
-                    k[j] = ((struct nonlinear *)par->class_nonlinear)->k[j] / par->h;
+                    k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h;
                     pk[j] = exp(pk[j]) * pow(par->h, 3);
                 }
 

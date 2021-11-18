@@ -85,6 +85,28 @@
 
 
 
+typedef struct coffe_class_struct_t
+{
+    void *file_content,
+         *background,
+         *thermodynamics,
+         *perturb,
+         *primordial,
+         *nonlinear,
+         *transfer,
+         *spectra;
+} coffe_class_struct_t;
+
+
+int coffe_new_class_struct(
+    coffe_class_struct_t *
+);
+
+int coffe_free_class_struct(
+    coffe_class_struct_t *
+);
+
+
 /**
     finds the max of an array of doubles
 **/
@@ -455,14 +477,7 @@ typedef struct coffe_parameters_t
     double k_pivot; /* for CLASS */
 
     /* in C we can use void for anything that's a pointer */
-    void *class_file_content,
-         *class_background,
-         *class_thermodynamics,
-         *class_perturb,
-         *class_primordial,
-         *class_nonlinear,
-         *class_transfer,
-         *class_spectra;
+    coffe_class_struct_t class_struct;
 
     int flag;
 
