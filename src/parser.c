@@ -511,6 +511,95 @@ int parse_external_power_spectrum(
     free(ppr);
     free(pop);
 
+    if (par->pk_type != COFFE_PK_LINEAR){
+
+        /* so we don't leak memory */
+        coffe_free_spline2d(&par->power_spectrum2d);
+        coffe_free_spline2d(&par->power_spectrum2d_norm);
+
+        enum pk_outputs pk_type = pk_linear;
+        if (
+            par->pk_type == COFFE_PK_NONLINEAR_HALOFIT ||
+            par->pk_type == COFFE_PK_NONLINEAR_HMCODE
+        )
+            pk_type = pk_nonlinear;
+
+        /* TODO make all of this modular */
+        const double z_min = 0.0;
+        const double z_max = 3.0;
+
+        /* list of all the redshifts */
+        const size_t z_size = 100;
+        double *z = (double *)coffe_malloc(sizeof(double) * z_size);
+        for (size_t i = 0; i < z_size; ++i)
+            z[i] = z_min + z_max * (double)i / z_size;
+
+        /* size of the wavevector array k */
+        const size_t k_size = ((struct nonlinear *)par->class_struct.nonlinear)->k_size;
+        double *k = (double *)coffe_malloc(sizeof(double) * k_size);
+        double *k_norm = (double *)coffe_malloc(sizeof(double) * k_size);
+        /* alloc memory for P(k) that CLASS outputs */
+        double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
+
+        for (size_t j = 0; j < k_size; ++j){
+            k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h;
+            k_norm[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
+        }
+
+        /* alloc memory for 2D interpolation */
+        double *pk_at_z2d = (double *)coffe_malloc(sizeof(double) * z_size * k_size);
+        double *pk_at_z2d_norm = (double *)coffe_malloc(sizeof(double) * z_size * k_size);
+
+        /* go over each redshift */
+        for (size_t i = 0; i < z_size; ++i){
+            /* get the (non)linear power spectrum at redshift z (and store it in pk) */
+            nonlinear_pk_at_z(
+                (struct background *)par->class_struct.background,
+                (struct nonlinear *)par->class_struct.nonlinear,
+                logarithmic,
+                pk_type,
+                z[i],
+                ((struct nonlinear *)par->class_struct.nonlinear)->index_pk_total,
+                pk,
+                NULL
+            );
+
+            /* need to rescale since CLASS internally works in units of 1/Mpc */
+            /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
+            for (size_t j = 0; j < k_size; ++j){
+                pk_at_z2d[j * z_size + i] = exp(pk[j]) * pow(par->h, 3);
+                pk_at_z2d_norm[j * z_size + i] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+            }
+        }
+
+        coffe_init_spline2d(
+            &par->power_spectrum2d,
+            z,
+            k,
+            pk_at_z2d,
+            z_size,
+            k_size,
+            COFFE_INTERP2D_BICUBIC
+        );
+
+        coffe_init_spline2d(
+            &par->power_spectrum2d_norm,
+            z,
+            k,
+            pk_at_z2d_norm,
+            z_size,
+            k_size,
+            COFFE_INTERP2D_BICUBIC
+        );
+
+        free(k);
+        free(k_norm);
+        free(pk);
+        free(pk_at_z2d);
+        free(pk_at_z2d_norm);
+        free(z);
+    }
+
     return EXIT_SUCCESS;
 }
 #endif
@@ -589,11 +678,18 @@ int coffe_parse_default_parameters(
     const double pk[] = {
         #include "POWER_SPECTRUM_HEADER.dat"
     };
+
+    coffe_new_spline(&par->power_spectrum);
+    coffe_new_spline(&par->power_spectrum_norm);
+
     coffe_init_spline(
         &par->power_spectrum,
         k, pk, COFFE_ARRAY_SIZE(k),
         par->interp_method
     );
+
+    coffe_new_spline2d(&par->power_spectrum2d);
+    coffe_new_spline2d(&par->power_spectrum2d_norm);
 
     par->k_min = 1e-5;
     par->k_max = 300.;

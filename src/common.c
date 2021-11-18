@@ -732,6 +732,8 @@ int coffe_parameters_free(
 
         coffe_free_spline(&par->power_spectrum);
         coffe_free_spline(&par->power_spectrum_norm);
+        coffe_free_spline2d(&par->power_spectrum2d);
+        coffe_free_spline2d(&par->power_spectrum2d_norm);
         coffe_free_spline(&par->galaxy_bias1);
         coffe_free_spline(&par->galaxy_bias2);
         coffe_free_spline(&par->magnification_bias1);

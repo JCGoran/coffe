@@ -364,6 +364,10 @@ typedef struct coffe_parameters_t
 
     coffe_interpolation power_spectrum_norm;
 
+    coffe_interpolation2d power_spectrum2d;
+
+    coffe_interpolation2d power_spectrum2d_norm;
+
     double k_min; /* min value to be taken from PS file */
 
     double k_max; /* max value to be taken from PS file */
