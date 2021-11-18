@@ -42,7 +42,14 @@ def _check_parameter(
 
 
 
+_allowed_pk_types = {
+    ccoffe.COFFE_PK_LINEAR : 'linear',
+    ccoffe.COFFE_PK_LINEAR_CLASS : 'linear_class',
+    ccoffe.COFFE_PK_NONLINEAR_HALOFIT : 'halofit',
+    ccoffe.COFFE_PK_NONLINEAR_HMCODE : 'hmcode',
+}
 
+_allowed_pk_types_inverse = {value : key for key, value in _allowed_pk_types.items()}
 
 
 
@@ -874,7 +881,23 @@ cdef class Coffe:
         self._power_spectrum_flag = 1
 
 
-    def cross_spectrum(self, k : float, z1 : float, z2 : float):
+    @property
+    def pk_type(self):
+        """
+        Returns the currently set power spectrum type (COFFE linear, CLASS linear, nonlinear halofit, nonlinear HMcode)
+        """
+        return _allowed_pk_types[self._parameters.pk_type]
+
+    @pk_type.setter
+    def pk_type(self, value):
+        # we don't care about the case (user is lazy, and so am I)
+        if value.lower() not in _allowed_pk_types.values():
+            raise ValueError(f'The value \'{value}\' is not one of: {list(_allowed_pk_types.values())}')
+        self._parameters.pk_type = _allowed_pk_types_inverse[value]
+        self._free_power_spectrum()
+
+
+    def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation : str = 'geometric'):
         """
         Evaluates the (for now linear) matter cross spectrum at some k and z1 and z2.
         """
