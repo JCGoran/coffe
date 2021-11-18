@@ -597,7 +597,7 @@ int coffe_parse_default_parameters(
 
     par->k_min = 1e-5;
     par->k_max = 300.;
-    par->pk_type = 0;
+    par->pk_type = COFFE_PK_LINEAR;
     par->midpoint_approximation = 0;
 
     {

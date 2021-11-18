@@ -3516,7 +3516,7 @@ double functions_double_integrated(
         par->correlation_contrib.len &&
         !par->only_cross_correlations
     ){
-        if (par->flatsky_nonlocal && par->output_type != 2){
+        if (par->flatsky_nonlocal && par->output_type != MULTIPOLES){
             /* len-len modified by flatsky */
             result +=
             /* constant in front */
