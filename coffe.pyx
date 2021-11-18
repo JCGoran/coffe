@@ -319,10 +319,7 @@ cdef class Coffe:
 
     @omega_cdm.setter
     def omega_cdm(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError
-        if value <= 0 or value >= 1:
-            raise ValueError
+        _check_parameter('omega_cdm', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_cdm):
             # we set the value, rebalance the Omega budget, and free memory
             self._parameters.Omega0_cdm = value
@@ -336,10 +333,7 @@ cdef class Coffe:
 
     @omega_baryon.setter
     def omega_baryon(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError
-        if value <= 0 or value >= 1:
-            raise ValueError
+        _check_parameter('omega_baryon', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_baryon):
             # we set the value, rebalance the Omega budget, and free memory
             self._parameters.Omega0_baryon = value
@@ -371,10 +365,7 @@ cdef class Coffe:
 
     @h.setter
     def h(self, value):
-        if not isinstance(value, (int, float)):
-            raise TypeError
-        if value <= 0 or value >= 1:
-            raise ValueError
+        _check_parameter('h', value, (int, float), 0, 1)
         if not np.allclose(value, self.h):
             # we set the value, but don't free the background since it's unaffected by h
             self._parameters.h = value
