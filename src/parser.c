@@ -609,6 +609,13 @@ int coffe_parse_default_parameters(
 
     par->galaxy_bias_analytic = 0;
 
+    coffe_new_spline(&par->galaxy_bias1);
+    coffe_new_spline(&par->galaxy_bias2);
+    coffe_new_spline(&par->magnification_bias1);
+    coffe_new_spline(&par->magnification_bias2);
+    coffe_new_spline(&par->evolution_bias1);
+    coffe_new_spline(&par->evolution_bias2);
+
     parse_bias_default(
         1.0, &par->galaxy_bias1, par->interp_method
     );
@@ -796,6 +803,9 @@ int coffe_parser_init(
         par->output_type == MULTIPOLES ||
         par->output_type == COVARIANCE_MULTIPOLES
     ){
+        if (par->z_mean_len)
+            free(par->z_mean);
+        par->z_mean_len = 0;
         parse_double_array(conf, "z_mean", &par->z_mean, &par->z_mean_len);
         for (size_t i = 0; i < par->z_mean_len; ++i){
             if (par->z_mean[i] <= 0){
@@ -826,6 +836,9 @@ int coffe_parser_init(
         par->output_type == COVARIANCE_MULTIPOLES ||
         par->output_type == COVARIANCE_AVERAGE_MULTIPOLES
     ){
+        if (par->multipole_values_len)
+            free(par->multipole_values);
+        par->multipole_values_len = 0;
         parse_int_array(conf, "multipoles", &par->multipole_values, &par->multipole_values_len);
     }
 

@@ -92,8 +92,9 @@ int coffe_get_bias_coefficients(
     coffe_fit_coefficients_array_t *bias_coefficients
 )
 {
+    bias_coefficients->size = z_mean_size;
     bias_coefficients->array = (coffe_fit_coefficients_t *)coffe_malloc(
-        sizeof(coffe_fit_coefficients_t) * z_mean_size
+        sizeof(coffe_fit_coefficients_t) * bias_coefficients->size
     );
 
     /* set everything to NULL so we don't free it accidentally */
@@ -137,6 +138,8 @@ int coffe_get_bias_coefficients(
             &bias_coefficients->array[i].size,
             &bias_coefficients->array[i].chisq
         );
+        free(x);
+        free(y);
     }
 
     return EXIT_SUCCESS;

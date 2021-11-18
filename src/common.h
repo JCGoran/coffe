@@ -765,4 +765,13 @@ int coffe_approx_equal(
     const double abs_epsilon
 );
 
+int coffe_free_fit_coefficients(
+    coffe_fit_coefficients_t *input
+);
+
+int coffe_free_fit_coefficients_array(
+    coffe_fit_coefficients_array_t *input
+);
+
+
 #endif

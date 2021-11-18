@@ -777,6 +777,11 @@ int coffe_parameters_free(
             free(par->zmax);
         par->zmax_len = 0;
 
+        coffe_free_fit_coefficients_array(&par->galaxy_bias1_coefficients);
+        coffe_free_fit_coefficients_array(&par->galaxy_bias2_coefficients);
+        coffe_free_fit_coefficients_array(&par->magnification_bias1_coefficients);
+        coffe_free_fit_coefficients_array(&par->magnification_bias2_coefficients);
+
         par->flag = 0;
     }
 
@@ -1241,3 +1246,31 @@ int coffe_new_fit_coefficients(
 
     return EXIT_SUCCESS;
 }
+
+
+int coffe_free_fit_coefficients(
+    coffe_fit_coefficients_t *input
+)
+{
+    if (input->size)
+        free(input->coefficients);
+    input->size = 0;
+    input->coefficients = NULL;
+
+    return EXIT_SUCCESS;
+}
+
+
+int coffe_free_fit_coefficients_array(
+    coffe_fit_coefficients_array_t *input
+)
+{
+    if (input->size){
+        for (size_t i = 0; i < input->size; ++i)
+            coffe_free_fit_coefficients(&input->array[i]);
+    }
+    input->size = 0;
+
+    return EXIT_SUCCESS;
+}
+

@@ -632,8 +632,6 @@ int coffe_integrals_init(
             {.n = 3, .l = 1}
         };
 
-        integral->array = (coffe_integral_t *)coffe_malloc(sizeof(coffe_integral_t) * sizeof(terms) / sizeof(*terms));
-
         /* those default renormalized integrals */
         for (size_t i = 0; i < sizeof(terms) / sizeof(*terms); ++i){
 
