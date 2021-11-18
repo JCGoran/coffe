@@ -1269,6 +1269,18 @@ int coffe_free_fit_coefficients(
 }
 
 
+int coffe_new_fit_coefficients_array(
+    coffe_fit_coefficients_array_t *input
+)
+{
+    input->size = 0;
+    input->array = NULL;
+
+    return EXIT_SUCCESS;
+}
+
+
+
 int coffe_free_fit_coefficients_array(
     coffe_fit_coefficients_array_t *input
 )

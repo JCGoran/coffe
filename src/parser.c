@@ -547,6 +547,11 @@ int coffe_parse_default_parameters(
     par->b_tilde_derivative = 0;
     par->f_tilde_derivative = 0;
 
+    coffe_new_fit_coefficients_array(&par->galaxy_bias1_coefficients);
+    coffe_new_fit_coefficients_array(&par->galaxy_bias2_coefficients);
+    coffe_new_fit_coefficients_array(&par->magnification_bias1_coefficients);
+    coffe_new_fit_coefficients_array(&par->magnification_bias2_coefficients);
+
     #ifdef HAVE_CLASS
     par->has_class = 1;
     #else
