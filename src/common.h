@@ -491,9 +491,12 @@ typedef struct coffe_parameters_t
     coffe_fit_coefficients_array_t galaxy_bias2_coefficients;
     coffe_fit_coefficients_array_t magnification_bias1_coefficients;
     coffe_fit_coefficients_array_t magnification_bias2_coefficients;
+    coffe_fit_coefficients_array_t evolution_bias1_coefficients;
+    coffe_fit_coefficients_array_t evolution_bias2_coefficients;
 
     int degree_galaxy_bias1, degree_galaxy_bias2;
     int degree_magnification_bias1, degree_magnification_bias2;
+    int degree_evolution_bias1, degree_evolution_bias2;
 
 } coffe_parameters_t;
 

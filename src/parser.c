@@ -551,6 +551,8 @@ int coffe_parse_default_parameters(
     coffe_new_fit_coefficients_array(&par->galaxy_bias2_coefficients);
     coffe_new_fit_coefficients_array(&par->magnification_bias1_coefficients);
     coffe_new_fit_coefficients_array(&par->magnification_bias2_coefficients);
+    coffe_new_fit_coefficients_array(&par->evolution_bias1_coefficients);
+    coffe_new_fit_coefficients_array(&par->evolution_bias2_coefficients);
 
     #ifdef HAVE_CLASS
     par->has_class = 1;
@@ -661,12 +663,14 @@ int coffe_parse_default_parameters(
     );
     par->read_evolution_bias1 = 0;
     par->file_evolution_bias1[0] = 0;
+    par->degree_evolution_bias1 = 1;
 
     parse_bias_default(
         0.0, &par->evolution_bias2, par->interp_method
     );
     par->read_evolution_bias2 = 0;
     par->file_evolution_bias2[0] = 0;
+    par->degree_evolution_bias2 = 1;
 
     par->output_type = MULTIPOLES;
     par->density = NULL;
@@ -1014,6 +1018,7 @@ int coffe_parser_init(
 
     /* parsing the evolution_bias (f_evo) */
     parse_int(conf, "read_evolution_bias1", &par->read_evolution_bias1, COFFE_FALSE);
+    parse_int(conf, "degree_evolution_bias1", &par->degree_evolution_bias1, COFFE_FALSE);
     parse_bias(
         conf,
         "input_evolution_bias1",
@@ -1025,6 +1030,7 @@ int coffe_parser_init(
     );
 
     parse_int(conf, "read_evolution_bias2", &par->read_evolution_bias2, COFFE_FALSE);
+    parse_int(conf, "degree_evolution_bias2", &par->degree_evolution_bias2, COFFE_FALSE);
     parse_bias(
         conf,
         "input_evolution_bias2",

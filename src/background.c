@@ -640,6 +640,20 @@ int coffe_background_init(
             &par->magnification_bias2, par->degree_magnification_bias2, &par->magnification_bias2_coefficients
         );
 
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->evolution_bias1, par->degree_evolution_bias1, &par->evolution_bias1_coefficients
+        );
+
+        coffe_get_bias_coefficients(
+            &bg->comoving_distance, &bg->z_as_chi,
+            par->z_mean, par->z_mean_len,
+            par->sep, par->sep_len,
+            &par->evolution_bias2, par->degree_evolution_bias2, &par->evolution_bias2_coefficients
+        );
+
     }
 
     gsl_set_error_handler(default_handler);
