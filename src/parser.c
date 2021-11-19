@@ -854,8 +854,6 @@ int coffe_parse_default_parameters(
 
     par->flatsky_nonlocal = 0;
 
-    par->theta_len = 0;
-
     par->verbose = 0;
 
     #ifndef COFFE_CYTHON
