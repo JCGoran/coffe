@@ -140,7 +140,12 @@ int main(int argc, char *argv[])
 
     coffe_background_init(&par, &bg);
 
-    coffe_integrals_init(&par, &bg, &integral);
+    if (
+        par.output_type == CORRFUNC ||
+        par.output_type == MULTIPOLES ||
+        par.output_type == AVERAGE_MULTIPOLES
+    )
+        coffe_integrals_init(&par, &bg, &integral);
 
     if (par.output_type == CORRFUNC)
         coffe_corrfunc_init(&par, &bg, &integral, &cf);

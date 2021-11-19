@@ -615,11 +615,6 @@ int coffe_integrals_init(
     /* to prevent memory leaks */
     coffe_integrals_free(integral);
 
-    if (
-        par->output_type == CORRFUNC ||
-        par->output_type == MULTIPOLES ||
-        par->output_type == AVERAGE_MULTIPOLES
-    ){
         /* the default renormalizable linear theory integrals in full-sky */
         const nl_terms terms[] = {
             {.n = 0, .l = 0},
@@ -1436,7 +1431,6 @@ int coffe_integrals_init(
                 }
             }
         }
-    }
 
     gsl_set_error_handler(default_handler);
     end = clock();
