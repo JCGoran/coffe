@@ -381,6 +381,46 @@ cdef class Coffe:
         self._free_corrfunc()
 
 
+    def integral(self, r : float, n : int, l : int):
+        r"""
+        Returns one of the Fourier Bessel integrals (only integer arguments for now).
+        In essence, computes the following integral:
+
+        .. math::
+            \frac{1}{2 \pi^2} \int\limits_0^\infty dk\, k^2\, P(k, z = 0) \frac{j_\ell(k r)}{(k r)^n}
+
+        Note that if n > l, it returns the above multiplied by r^(n - l)
+        instead (see arXiv:1806.11090, section 4.2 for further explanation).
+
+        Parameters
+        ----------
+        r : float
+            the separation (in Mpc/h) for which one wants to compute the integral
+
+        n : int
+
+        l : int
+        """
+        if not self._background.flag:
+            self._background_init()
+
+        if not self._power_spectrum_flag:
+            self._power_spectrum_init()
+
+        if not self._integral.size:
+            self._integrals_init()
+
+        return ccoffe.coffe_interp_spline(
+            &ccoffe.coffe_find_integral(
+                &self._integral,
+                n,
+                l,
+                ccoffe.COFFE_INTEGER,
+                ccoffe.COFFE_INTEGER
+            ).result, r * _COFFE_HUBBLE
+        )
+
+
     def galaxy_bias1(self, z : float):
         """
         Evaluates the galaxy bias of the first population at some redshift.

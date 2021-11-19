@@ -293,8 +293,18 @@ cdef extern from "background.h":
 
 cdef extern from "integrals.h":
 
+    cdef enum coffe_integer_state:
+        COFFE_INTEGER, COFFE_HALF_INTEGER
+
     cdef struct coffe_integral_t:
-        pass
+        coffe_interpolation result
+        coffe_interpolation2d result2d
+        coffe_interpolation2d renormalization
+        coffe_interpolation renormalization_zero_separation
+        int n
+        int l
+        coffe_integer_state state_n
+        coffe_integer_state state_l
 
     cdef struct coffe_integral_array_t:
         coffe_integral_t *array
@@ -309,6 +319,16 @@ cdef extern from "integrals.h":
     int coffe_integrals_free(
         coffe_integral_array_t *
     )
+
+    coffe_integral_t *coffe_find_integral(
+        const coffe_integral_array_t *array,
+        const int n,
+        const int l,
+        const coffe_integer_state state_n,
+        const coffe_integer_state state_l
+    )
+
+
 
 
 cdef extern from "signal.h":
