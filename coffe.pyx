@@ -68,6 +68,11 @@ cdef class Coffe:
     def __cinit__(self, **kwargs):
         """
         Constructor that initializes the structures and sets default parameters.
+
+        Examples
+        -------------
+        >>> import coffe
+        >>> cosmo = coffe.Coffe(omega_cdm=0.27, h=0.7, has_lensing=True)
         """
         # disable paralellization in Cuba, leave in only the OpenMP one
         os.environ['CUBACORES'] = '0'
@@ -198,6 +203,9 @@ cdef class Coffe:
     # TODO how do we update the other omegas here (like omega_m)?
     @property
     def omega_cdm(self):
+        """
+        Fraction of cold dark matter today.
+        """
         return self._parameters.Omega0_cdm
 
     @omega_cdm.setter
@@ -212,6 +220,9 @@ cdef class Coffe:
 
     @property
     def omega_baryon(self):
+        """
+        Fraction of baryonic matter today.
+        """
         return self._parameters.Omega0_baryon
 
     @omega_baryon.setter
@@ -226,6 +237,9 @@ cdef class Coffe:
 
     @property
     def omega_gamma(self):
+        """
+        Fraction of relativistic species today.
+        """
         return self._parameters.Omega0_gamma
 
     @omega_gamma.setter
@@ -239,11 +253,17 @@ cdef class Coffe:
 
     @property
     def omega_de(self):
+        """
+        Dark energy fraction today.
+        """
         return self._parameters.Omega0_de
 
 
     @property
     def h(self):
+        """
+        The 'little h' parameter (reduced Hubble rate).
+        """
         return self._parameters.h
 
     @h.setter
@@ -261,6 +281,13 @@ cdef class Coffe:
 
     @property
     def w0(self):
+        """
+        Dark energy is parametrized by the equation of state:
+
+        .. math::
+            w(z) = w_0 + (1 - a) w_a
+
+        """
         return self._parameters.w0
 
     @w0.setter
@@ -273,6 +300,13 @@ cdef class Coffe:
 
     @property
     def wa(self):
+        """
+        Dark energy is parametrized by the equation of state:
+
+        .. math::
+            w(z) = w_0 + (1 - a) w_a
+
+        """
         return self._parameters.wa
 
     @wa.setter
@@ -285,6 +319,9 @@ cdef class Coffe:
 
     @property
     def n_s(self):
+        """
+        Spectral index (tilt) of the primordial power spectrum.
+        """
         return self._parameters.n_s
 
     @n_s.setter
@@ -301,6 +338,9 @@ cdef class Coffe:
 
     @property
     def sigma8(self):
+        """
+        Windowed density fluctuation at r = 8 Mpc/h
+        """
         return self._parameters.sigma8
 
     @sigma8.setter
@@ -317,6 +357,9 @@ cdef class Coffe:
 
     @property
     def sep(self):
+        """
+        Returns the list of separations (in Mpc/h) for which the 2PCF/multipoles/covariance of multipoles should be computed.
+        """
         return np.array(
             [self._parameters.sep[i] for i in range(self._parameters.sep_len)]
         )
@@ -350,6 +393,14 @@ cdef class Coffe:
 
     @property
     def mu(self):
+        r"""
+        The list of angles mu for which the 2PCF should be computed.
+        it is defined as:
+
+        .. math::
+            \mu = \frac{r_\parallel}{r} = \frac{\chi_2 - \chi_1}{r}
+
+        """
         return np.array(
             [self._parameters.mu[i] for i in range(self._parameters.mu_len)]
         )
@@ -603,6 +654,9 @@ cdef class Coffe:
 
     @property
     def l(self):
+        """
+        Returns the multipole moments for which the multipoles should be computed.
+        """
         return np.array(
             [self._parameters.multipole_values[i] for i in range(self._parameters.multipole_values_len)]
         )
@@ -637,6 +691,10 @@ cdef class Coffe:
 
     @property
     def z_mean(self):
+        """
+        The mean redshift for which the signal (2PCF/multipoles) or covariance
+        should be computed.
+        """
         return np.array(
             [self._parameters.z_mean[i] for i in range(self._parameters.z_mean_len)]
         )
@@ -670,6 +728,9 @@ cdef class Coffe:
 
     @property
     def number_density(self):
+        """
+        Number density of tracers (in Mpc^3/h^3) at z_mean.
+        """
         return np.array(
             [self._parameters.density[i] for i in range(self._parameters.density_len)]
         )
@@ -703,6 +764,9 @@ cdef class Coffe:
 
     @property
     def pixelsize(self):
+        """
+        The pixel size of the covariance (roughly the resolution of the survey).
+        """
         return np.array(
             [self._parameters.pixelsize[i] for i in range(self._parameters.pixelsize_len)]
         )
@@ -736,6 +800,10 @@ cdef class Coffe:
 
     @property
     def fsky(self):
+        """
+        The sky fraction covered by the survey.
+        Must be given as a list.
+        """
         return np.array(
             [self._parameters.fsky[i] for i in range(self._parameters.fsky_len)]
         )
@@ -769,6 +837,9 @@ cdef class Coffe:
 
     @property
     def deltaz(self):
+        """
+        The half width of the redshift bin which is centered at z_mean.
+        """
         return np.array(
             [self._parameters.deltaz[i] for i in range(self._parameters.deltaz_len)]
         )
@@ -903,6 +974,9 @@ cdef class Coffe:
 
     @property
     def has_flatsky_local(self):
+        """
+        Whether the flat-sky approximation should be used for local terms (density, RSD).
+        """
         return bool(self._parameters.flatsky_local)
 
     @has_flatsky_local.setter
@@ -915,6 +989,10 @@ cdef class Coffe:
 
     @property
     def has_flatsky_local_nonlocal(self):
+        """
+        Whether the flat-sky approximation should be used for cross-terms
+        between local and non-local terms (currently density-lensing and RSD-lensing only).
+        """
         return bool(self._parameters.flatsky_local_nonlocal)
 
     @has_flatsky_local_nonlocal.setter
@@ -927,6 +1005,10 @@ cdef class Coffe:
 
     @property
     def has_flatsky_nonlocal(self):
+        """
+        Whether the flat-sky approximation should be used for integrated
+        (non-local) terms (lensing only).
+        """
         return bool(self._parameters.flatsky_nonlocal)
 
     @has_flatsky_nonlocal.setter
@@ -960,6 +1042,7 @@ cdef class Coffe:
         """
         Returns the currently set power spectrum type (COFFE linear, CLASS linear,
         nonlinear halofit, nonlinear HMcode)
+        Possible values: 'linear', 'linear_class', 'halofit', 'hmcode'
         """
         return _allowed_pk_types[self._parameters.pk_type]
 
@@ -978,7 +1061,7 @@ cdef class Coffe:
 
     def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation : str = 'geometric'):
         """
-        Evaluates the (for now linear) matter cross spectrum at some k and z1 and z2.
+        Evaluates the matter cross spectrum at some k and z1 and z2.
         """
         _check_parameter('k', k, (int, float), 1e-5, 1e3)
         _check_parameter('z1', z1, (int, float), 0, 15)
@@ -1018,9 +1101,20 @@ cdef class Coffe:
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
         """
-        Sets the power spectrum, optionally at some redshift (by default it's
+        Sets the linear matter power spectrum, optionally at some redshift (by default it's
         assumed the input is at z = 0).
         The input k must be in units h/Mpc, and P(k) in units Mpc^3/h^3.
+
+        Parameters
+        ----------
+        k : List[float]
+            the list of wavenumbers
+
+        pk : List[float]
+            the list of values of the linear power spectrum
+
+        z : float, default = 0
+            the redshift at which the power spectrum is evaluated
         """
         # value checking
         if not np.allclose(k, np.sort(k)):
@@ -1162,7 +1256,19 @@ cdef class Coffe:
         recompute : bool = False,
     ):
         """
-        Computes the correlation function of the current configuration at the point (z, r, mu)
+        Computes the correlation function of the current configuration at the
+        point (z, r, mu)
+
+        Parameters
+        ----------
+        z : float
+            the mean redshift
+
+        r : float
+            the comoving separation (in Mpc/h) between the two points in the sky
+
+        mu : float
+            the angle mu (see `help(coffe.mu)` for definition)
         """
         if not self._background.flag or recompute:
             self._background_init()
@@ -1207,6 +1313,17 @@ cdef class Coffe:
     ):
         """
         Computes the multipole of the current configuration at the point (z, r, l)
+
+        Parameters
+        ----------
+        z : float
+            the mean redshift
+
+        r : float
+            the comoving separation (in Mpc/h) between the 2 points in the sky
+
+        l : int
+            the multipole moment
         """
         if not self._background.flag or recompute:
             self._background_init()
@@ -1246,7 +1363,19 @@ cdef class Coffe:
 
     def compute_multipoles_bulk(self, recompute : bool = False):
         """
-        Returns whatever `coffe_multipoles_init` returns.
+        Computes the multipoles in bulk for all currently set separations,
+        redshifts, and multipole moments.
+
+        Parameters
+        ----------
+        recompute : bool, default = False
+            if set to True, recomputes all of the other modules first to make
+            sure we haven't forgotten to refresh one of them. Mainly useful for debugging
+            purposes.
+
+        Returns
+        -------
+        an array of instances of `Multipoles`.
         """
         recompute = bool(recompute)
         if not self._background.flag or recompute:
@@ -1273,7 +1402,20 @@ cdef class Coffe:
 
     def compute_corrfunc_bulk(self, recompute : bool = False):
         """
-        Returns whatever `coffe_corrfunc_init` returns.
+        Computes the 2PCF in bulk for all currently set separations,
+        redshifts, and angles.
+
+        Parameters
+        ----------
+        recompute : bool, default = False
+            if set to True, recomputes all of the other modules first to make
+            sure we haven't forgotten to refresh one of them. Mainly useful for debugging
+            purposes.
+
+        Returns
+        -------
+        an array of instances of `Corrfunc`.
+
         """
         recompute = bool(recompute)
         if not self._background.flag or recompute:
@@ -1300,7 +1442,19 @@ cdef class Coffe:
 
     def compute_covariance_bulk(self, recompute : bool = False):
         """
-        Returns whatever `coffe_covariance_init` returns.
+        Computes the covariance of the multipoles in bulk for all currently set
+        separations, redshifts, and multipole moments.
+
+        Parameters
+        ----------
+        recompute : bool, default = False
+            if set to True, recomputes all of the other modules first to make
+            sure we haven't forgotten to refresh one of them. Mainly useful for debugging
+            purposes.
+
+        Returns
+        -------
+        an array of instances of `Covariance`.
         """
         recompute = bool(recompute)
 
