@@ -34,6 +34,43 @@ class TestCoffe:
                         assert np.isclose(d[key][index], getattr(cosmo, key)(zi))
 
 
+    def test_integrals(self):
+        cosmo = coffe.Coffe(
+            # in Mpc/h
+            sep=[10, 20, 40, 100, 150],
+            mu=[0.0, 0.2, 0.5, 0.8, 0.95],
+        )
+
+        k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        # mapping of indices to (n, l) pairs
+        mapping = {
+            0 : {'l' : 0, 'n' : 0},
+            1 : {'l' : 2, 'n' : 0},
+            2 : {'l' : 4, 'n' : 0},
+            3 : {'l' : 1, 'n' : 1},
+            4 : {'l' : 3, 'n' : 1},
+            5 : {'l' : 0, 'n' : 2},
+            6 : {'n' : 2, 'l' : 2},
+            7 : {'n' : 3, 'l' : 1},
+        }
+
+        for index in mapping:
+            data = np.loadtxt(os.path.join(DATA_DIR, f'benchmark_integral{index}.dat'))
+            xarr, yarr = np.transpose(data)
+            for x, y in zip(xarr, yarr):
+                if x / coffe._COFFE_HUBBLE > 20000:
+                    assert np.isclose(
+                        y,
+                        cosmo.integral(
+                            x / coffe._COFFE_HUBBLE,
+                            l=mapping[index]['l'],
+                            n=mapping[index]['n'],
+                        )
+                    )
+
+
     def test_corrfunc(self):
         cosmo = coffe.Coffe(
             # in Mpc/h
