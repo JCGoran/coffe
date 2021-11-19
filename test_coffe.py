@@ -42,12 +42,12 @@ class TestCoffe:
         )
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
-        cosmo.set_power_spectrum_linear(k, pk)
 
         contributions = {'den' : 'density', 'rsd' : 'rsd', 'len' : 'lensing'}
         for prefix in contributions:
             cosmo.reset_contributions()
             setattr(cosmo, f'has_{contributions[prefix]}', True)
+            cosmo.set_power_spectrum_linear(k, pk)
             result = cosmo.compute_corrfunc_bulk()
             df = pd.DataFrame([_.to_dict() for _ in result])
             for index, mu in enumerate(cosmo.mu):
@@ -73,6 +73,7 @@ class TestCoffe:
         for prefix in contributions:
             cosmo.reset_contributions()
             setattr(cosmo, f'has_{contributions[prefix]}', True)
+            cosmo.set_power_spectrum_linear(k, pk)
             result = cosmo.compute_multipoles_bulk()
             df = pd.DataFrame([_.to_dict() for _ in result])
             for mp in cosmo.l:
