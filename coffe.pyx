@@ -906,7 +906,7 @@ cdef class Coffe:
     @has_binned_covariance.setter
     def has_binned_covariance(self, value):
         self._parameters.covariance_window = int(bool(value))
-        self._free_covariance()
+        self._free_covariance_multipoles()
 
 
     @property
