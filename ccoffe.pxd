@@ -89,6 +89,8 @@ cdef extern from "common.h":
 
         int bessel_bins
 
+        double Omega0_m
+
         double Omega0_cdm
 
         double Omega0_baryon

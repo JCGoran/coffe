@@ -71,7 +71,7 @@ cdef class Coffe:
         Examples
         -------------
         >>> import coffe
-        >>> cosmo = coffe.Coffe(omega_cdm=0.27, h=0.7, has_lensing=True)
+        >>> cosmo = coffe.Coffe(omega_m=0.32, h=0.7, has_lensing=True)
         """
         # disable paralellization in Cuba, leave in only the OpenMP one
         os.environ['CUBACORES'] = '0'
@@ -156,8 +156,7 @@ cdef class Coffe:
         Internal function that balances the energy content of dark energy so it all adds up to 1.
         Called automatically when any setter for the various omegas is called.
         """
-        self._parameters.Omega0_de = 1 - self._parameters.Omega0_cdm - \
-            self._parameters.Omega0_baryon - self._parameters.Omega0_gamma
+        self._parameters.Omega0_de = 1 - self._parameters.Omega0_m - self._parameters.Omega0_gamma
 
 
     @property
@@ -201,18 +200,19 @@ cdef class Coffe:
 
     # TODO how do we update the other omegas here (like omega_m)?
     @property
-    def omega_cdm(self):
+    def omega_m(self):
         """
-        Fraction of cold dark matter today.
+        Fraction of total matter (CDM + baryons) today.
         """
-        return self._parameters.Omega0_cdm
+        return self._parameters.Omega0_m
 
-    @omega_cdm.setter
-    def omega_cdm(self, value):
-        _check_parameter('omega_cdm', value, (int, float), 0, 1)
-        if not np.allclose(value, self.omega_cdm):
+    @omega_m.setter
+    def omega_m(self, value):
+        _check_parameter('omega_m', value, (int, float), 0, 1)
+        if not np.allclose(value, self.omega_m):
             # we set the value, rebalance the Omega budget, and free memory
-            self._parameters.Omega0_cdm = value
+            self._parameters.Omega0_m = value
+            self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon
             self._balance_content()
             self._free_except_parameters()
 
