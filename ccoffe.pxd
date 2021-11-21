@@ -209,6 +209,8 @@ cdef extern from "common.h":
 
         double k_pivot
 
+        int only_cross_correlations
+
 
     int coffe_parameters_free(
         coffe_parameters_t *

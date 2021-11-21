@@ -160,6 +160,20 @@ cdef class Coffe:
 
 
     @property
+    def has_only_cross_correlations(self):
+        """
+        Whether or not we consider only cross-correlations.
+        """
+        return bool(self._parameters.only_cross_correlations)
+
+    @has_only_cross_correlations.setter
+    def has_only_cross_correlations(self, value):
+        self._parameters.only_cross_correlations = int(bool(value))
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    @property
     def parameters(self):
         """
         Returns the current writable parameters as a dictionary (can be
