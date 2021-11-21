@@ -495,36 +495,31 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias1, z)
 
 
-    def set_galaxy_bias1(self, value : Callable, **kwargs):
+    def set_galaxy_bias1(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the galaxy bias.
-        The value set must be callable.
         """
-        x_sampling = np.linspace(0, 15, 1000)
+        if not np.allclose(x_sampling, np.sort(x_sampling)):
+            raise ValueError('The input array must be sorted')
+        if len(x_sampling) != len(y_sampling):
+            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
+
         cdef double *x = NULL
         cdef double *y = NULL
 
-        try:
-            [value(_) for _ in x_sampling]
-        except TypeError as err:
-            raise TypeError(f'Unable to sample function {value}') from err
-
-        x = <double *>malloc(sizeof(double) * len(x_sampling))
-        y = <double *>malloc(sizeof(double) * len(x_sampling))
-        for i in range(len(x_sampling)):
+        size = len(x_sampling)
+        x = <double *>malloc(sizeof(double) * size)
+        y = <double *>malloc(sizeof(double) * size)
+        for i in range(size):
             x[i] = x_sampling[i]
-            y[i] = value(x[i], **kwargs)
+            y[i] = y_sampling[i]
         ccoffe.coffe_init_spline(
             &self._parameters.galaxy_bias1,
-            x, y, len(x_sampling), self._parameters.interp_method
+            x, y, size, self._parameters.interp_method
         )
 
-        if (x != NULL):
-            free(x)
-            x = NULL
-        if (y != NULL):
-            free(y)
-            y = NULL
+        free(x)
+        free(y)
 
         self._free_corrfunc()
         self._free_multipoles()
@@ -540,36 +535,31 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias2, z)
 
 
-    def set_galaxy_bias2(self, value : Callable, **kwargs):
+    def set_galaxy_bias2(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the galaxy bias.
-        The value set must be callable.
         """
-        x_sampling = np.linspace(0, 15, 1000)
+        if not np.allclose(x_sampling, np.sort(x_sampling)):
+            raise ValueError('The input array must be sorted')
+        if len(x_sampling) != len(y_sampling):
+            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
+
         cdef double *x = NULL
         cdef double *y = NULL
 
-        try:
-            [value(_) for _ in x_sampling]
-        except TypeError as err:
-            raise TypeError(f'Unable to sample function {value}') from err
-
-        x = <double *>malloc(sizeof(double) * len(x_sampling))
-        y = <double *>malloc(sizeof(double) * len(x_sampling))
-        for i in range(len(x_sampling)):
+        size = len(x_sampling)
+        x = <double *>malloc(sizeof(double) * size)
+        y = <double *>malloc(sizeof(double) * size)
+        for i in range(size):
             x[i] = x_sampling[i]
-            y[i] = value(x[i], **kwargs)
+            y[i] = y_sampling[i]
         ccoffe.coffe_init_spline(
             &self._parameters.galaxy_bias2,
-            x, y, len(x_sampling), self._parameters.interp_method
+            x, y, size, self._parameters.interp_method
         )
 
-        if (x != NULL):
-            free(x)
-            x = NULL
-        if (y != NULL):
-            free(y)
-            y = NULL
+        free(x)
+        free(y)
 
         self._free_corrfunc()
         self._free_multipoles()
@@ -584,37 +574,31 @@ cdef class Coffe:
 
         return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias1, z)
 
-
-    def set_magnification_bias1(self, value : Callable, **kwargs):
+    def set_magnification_bias1(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the magnification bias.
-        The value set must be callable.
         """
-        x_sampling = np.linspace(0, 15, 1000)
+        if not np.allclose(x_sampling, np.sort(x_sampling)):
+            raise ValueError('The input array must be sorted')
+        if len(x_sampling) != len(y_sampling):
+            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
+
         cdef double *x = NULL
         cdef double *y = NULL
 
-        try:
-            [value(_) for _ in x_sampling]
-        except TypeError as err:
-            raise TypeError(f'Unable to sample function {value}') from err
-
-        x = <double *>malloc(sizeof(double) * len(x_sampling))
-        y = <double *>malloc(sizeof(double) * len(x_sampling))
-        for i in range(len(x_sampling)):
+        size = len(x_sampling)
+        x = <double *>malloc(sizeof(double) * size)
+        y = <double *>malloc(sizeof(double) * size)
+        for i in range(size):
             x[i] = x_sampling[i]
-            y[i] = value(x[i], **kwargs)
+            y[i] = y_sampling[i]
         ccoffe.coffe_init_spline(
             &self._parameters.magnification_bias1,
-            x, y, len(x_sampling), self._parameters.interp_method
+            x, y, size, self._parameters.interp_method
         )
 
-        if (x != NULL):
-            free(x)
-            x = NULL
-        if (y != NULL):
-            free(y)
-            y = NULL
+        free(x)
+        free(y)
 
         self._free_corrfunc()
         self._free_multipoles()
@@ -629,37 +613,31 @@ cdef class Coffe:
 
         return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias2, z)
 
-
-    def set_magnification_bias2(self, value : Callable, **kwargs):
+    def set_magnification_bias2(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the magnification bias.
-        The value set must be callable.
         """
-        x_sampling = np.linspace(0, 15, 1000)
+        if not np.allclose(x_sampling, np.sort(x_sampling)):
+            raise ValueError('The input array must be sorted')
+        if len(x_sampling) != len(y_sampling):
+            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
+
         cdef double *x = NULL
         cdef double *y = NULL
 
-        try:
-            [value(_) for _ in x_sampling]
-        except TypeError as err:
-            raise TypeError(f'Unable to sample function {value}') from err
-
-        x = <double *>malloc(sizeof(double) * len(x_sampling))
-        y = <double *>malloc(sizeof(double) * len(x_sampling))
-        for i in range(len(x_sampling)):
+        size = len(x_sampling)
+        x = <double *>malloc(sizeof(double) * size)
+        y = <double *>malloc(sizeof(double) * size)
+        for i in range(size):
             x[i] = x_sampling[i]
-            y[i] = value(x[i], **kwargs)
+            y[i] = y_sampling[i]
         ccoffe.coffe_init_spline(
             &self._parameters.magnification_bias2,
-            x, y, len(x_sampling), self._parameters.interp_method
+            x, y, size, self._parameters.interp_method
         )
 
-        if (x != NULL):
-            free(x)
-            x = NULL
-        if (y != NULL):
-            free(y)
-            y = NULL
+        free(x)
+        free(y)
 
         self._free_corrfunc()
         self._free_multipoles()
