@@ -1090,6 +1090,34 @@ cdef class Coffe:
         return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k)
 
 
+    @property
+    def k_min(self):
+        """
+        The minimum wavenumber (in h/Mpc) for which the power spectrum should be computed.
+        """
+        return self._parameters.k_min
+
+    @k_min.setter
+    def k_min(self, value):
+        _check_parameter('k_min', value, (int, float), 1e-7, 1e-3)
+        self._parameters.k_min = value
+        self._parameters.k_min_norm = value / _COFFE_HUBBLE
+
+
+    @property
+    def k_max(self):
+        """
+        The maximum wavenumber (in h/Mpc) for which the power spectrum should be computed.
+        """
+        return self._parameters.k_max
+
+    @k_max.setter
+    def k_max(self, value):
+        _check_parameter('k_max', value, (int, float), 0.1, 1e3)
+        self._parameters.k_max = value
+        self._parameters.k_max_norm = value / _COFFE_HUBBLE
+
+
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
         """
         Sets the linear matter power spectrum, optionally at some redshift (by default it's
