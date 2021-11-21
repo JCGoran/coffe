@@ -309,7 +309,7 @@ static int covariance_integrate_fftlog(
     const size_t npixels_max,
     const double k_min_norm,
     const double k_max_norm,
-    const int interpolation_method,
+    const enum coffe_interp2d_type interpolation_method,
     double *result
 )
 {
@@ -572,7 +572,7 @@ int coffe_covariance_init(
                 k,
                 temp_spectrum_pk,
                 k_size,
-                5
+                par->interp_method
             );
 
             coffe_init_spline(
@@ -580,7 +580,7 @@ int coffe_covariance_init(
                 k,
                 temp_spectrum_pk2,
                 k_size,
-                5
+                par->interp_method
             );
 
             /* memory cleanup */

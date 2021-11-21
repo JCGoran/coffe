@@ -777,7 +777,7 @@ int coffe_integrals_init(
                     pk_at_z2d,
                     z_size,
                     output_real_len,
-                    2
+                    par->covariance_interpolation_method
                 );
 
                 /* we didn't free it above, so we do it here */
@@ -923,7 +923,7 @@ int coffe_integrals_init(
                 result2d,
                 nbins + 1,
                 nbins + 1,
-                2
+                par->covariance_interpolation_method
             );
 
             free(chi_array);
@@ -1089,7 +1089,7 @@ int coffe_integrals_init(
                     pk_at_z2d,
                     z_size,
                     output_real_len,
-                    2
+                    par->covariance_interpolation_method
                 );
 
                 /* we didn't free it above, so we do it here */
@@ -1253,7 +1253,7 @@ int coffe_integrals_init(
                     pk_at_z2d,
                     z_size,
                     output_real_len,
-                    2
+                    par->covariance_interpolation_method
                 );
 
                 /* we didn't free it above, so we do it here */
@@ -1418,7 +1418,7 @@ int coffe_integrals_init(
                     pk_at_z2d,
                     z_size,
                     output_real_len,
-                    2
+                    par->covariance_interpolation_method
                 );
 
                 /* we didn't free it above, so we do it here */

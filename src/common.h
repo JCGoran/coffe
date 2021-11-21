@@ -443,7 +443,7 @@ typedef struct coffe_parameters_t
 
     int covariance_integration_bins;
 
-    int covariance_interpolation_method;
+    enum coffe_interp2d_type covariance_interpolation_method;
 
     int covariance_window;
 

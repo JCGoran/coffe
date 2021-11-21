@@ -1319,42 +1319,42 @@ int coffe_free_class_struct(
 {
 #ifdef HAVE_CLASS
     if (input->file_content){
-        parser_free(input->file_content);
+        parser_free((struct file_content *)input->file_content);
         free(input->file_content);
     }
 
     if (input->background){
-        background_free(input->background);
+        background_free((struct background *)input->background);
         free(input->background);
     }
 
     if (input->thermodynamics){
-        thermodynamics_free(input->thermodynamics);
+        thermodynamics_free((struct thermo *)input->thermodynamics);
         free(input->thermodynamics);
     }
 
     if (input->perturb){
-        perturb_free(input->perturb);
+        perturb_free((struct perturbs *)input->perturb);
         free(input->perturb);
     }
 
     if (input->primordial){
-        primordial_free(input->primordial);
+        primordial_free((struct primordial *)input->primordial);
         free(input->primordial);
     }
 
     if (input->nonlinear){
-        nonlinear_free(input->nonlinear);
+        nonlinear_free((struct nonlinear *)input->nonlinear);
         free(input->nonlinear);
     }
 
     if (input->transfer){
-        transfer_free(input->transfer);
+        transfer_free((struct transfers *)input->transfer);
         free(input->transfer);
     }
 
     if (input->spectra){
-        spectra_free(input->spectra);
+        spectra_free((struct spectra *)input->spectra);
         free(input->spectra);
     }
 #endif

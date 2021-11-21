@@ -361,7 +361,7 @@ int coffe_background_init(
             z_array[i] = z;
             w_array[i] = coffe_dark_energy_eos(z, par);
         }
-        coffe_init_spline(&ipar.w, z_array, w_array, bins + 1, 1);
+        coffe_init_spline(&ipar.w, z_array, w_array, bins + 1, COFFE_INTERP_LINEAR);
         free(w_array);
 
         double *wint_array = (double *)coffe_malloc(sizeof(double)*(bins + 1));
@@ -377,7 +377,7 @@ int coffe_background_init(
                 )
             );
         }
-        coffe_init_spline(&ipar.wint, z_array, wint_array, bins + 1, 1);
+        coffe_init_spline(&ipar.wint, z_array, wint_array, bins + 1, COFFE_INTERP_LINEAR);
         free(wint_array);
 
         double *xint_array = (double *)coffe_malloc(sizeof(double)*(bins + 1));
@@ -404,7 +404,7 @@ int coffe_background_init(
                    /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon));
             }
         }
-        coffe_init_spline(&ipar.xint, z_array, xint_array, bins + 1, 1);
+        coffe_init_spline(&ipar.xint, z_array, xint_array, bins + 1, COFFE_INTERP_LINEAR);
         free(xint_array);
 
         free(z_array);

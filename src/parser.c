@@ -937,7 +937,11 @@ int coffe_parser_init(
     }
 
     /* the interpolation method for GSL */
-    parse_int(conf, "interpolation", &par->interp_method, COFFE_FALSE);
+    {
+    int temp;
+    parse_int(conf, "interpolation", &temp, COFFE_FALSE);
+    par->interp_method = (enum coffe_interp1d_type)temp;
+    }
 
     /* the cosine of the angle for the full sky correlation function */
     if (par->output_type == CORRFUNC){
@@ -1021,7 +1025,11 @@ int coffe_parser_init(
             print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_bins");
             exit(EXIT_FAILURE);
         }
-        parse_int(conf, "covariance_interpolation_method", &par->covariance_interpolation_method, COFFE_TRUE);
+        {
+        int temp;
+        parse_int(conf, "covariance_interpolation_method", &temp, COFFE_TRUE);
+        par->covariance_interpolation_method = (enum coffe_interp2d_type)temp;
+        }
         if (
             par->covariance_interpolation_method != 1 &&
             par->covariance_interpolation_method != 2
@@ -1346,7 +1354,11 @@ int coffe_parser_init(
 
     parse_int(conf, "have_class", &par->have_class, COFFE_TRUE);
     if (par->have_class){
-        parse_int(conf, "pk_type", &par->pk_type, COFFE_TRUE);
+        {
+        int temp;
+        parse_int(conf, "pk_type", &temp, COFFE_TRUE);
+        par->pk_type = (enum coffe_pk_type)temp;
+        }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
         parse_double(conf, "sigma8", &par->sigma8, COFFE_TRUE);
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
