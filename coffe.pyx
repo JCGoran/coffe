@@ -3,6 +3,8 @@
 # distutils: libraries = m gsl gslcblas fftw3 cuba class
 # distutils: extra_compile_args = ['-fopenmp', '-Ofast', '-DHAVE_CLASS', '-DHAVE_CUBA', '-DCOFFE_CYTHON']
 # distutils: extra_link_args = ['-fopenmp']
+# cython: binding=True
+# cython: language_level=3
 
 # TODO figure out how to use OpenMP
 
