@@ -149,3 +149,13 @@ class TestCoffe:
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r1.values, x)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values, y)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4)
+
+        assert np.allclose(
+            cosmo.covariance_matrix(),
+            np.transpose(cosmo.covariance_matrix())
+        )
+
+        assert np.allclose(
+            cosmo.covariance_matrix_inverse(),
+            np.linalg.inv(cosmo.covariance_matrix())
+        )

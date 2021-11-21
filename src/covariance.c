@@ -785,29 +785,29 @@ int coffe_covariance_init(
             const double coeffbar_array[] = {c0bar, c2bar, c4bar, c6bar, c8bar};
 
             for (size_t i = 0; i<par->multipole_values_len; ++i){
-            for (size_t j = 0; j<par->multipole_values_len; ++j){
-
-                /* the sums c_i wigner3j^2(l1, l2, i) */
-                double coeff_sum = 0;
-                for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeff_array); ++cnt){
-                    coeff_sum +=
-                        coeff_array[cnt]
-                       *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
-                }
-
-                double coeffbar_sum = 0;
-                for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeffbar_array); ++cnt){
-                    coeffbar_sum +=
-                        coeffbar_array[cnt]
-                       *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
-                }
-
-                /* Kronecker delta (l1, l2) */
-                double deltal1l2 =
-                    (par->multipole_values[i] == par->multipole_values[j]) ? 1 : 0;
 
                 for (size_t m = 0; m < par->sep_len; ++m){
+                for (size_t j = 0; j<par->multipole_values_len; ++j){
                 for (size_t n = 0; n < par->sep_len; ++n){
+                    /* the sums c_i wigner3j^2(l1, l2, i) */
+                    double coeff_sum = 0;
+                    for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeff_array); ++cnt){
+                        coeff_sum +=
+                            coeff_array[cnt]
+                           *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
+                    }
+
+                    double coeffbar_sum = 0;
+                    for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeffbar_array); ++cnt){
+                        coeffbar_sum +=
+                            coeffbar_array[cnt]
+                           *pow(gsl_sf_coupling_3j(2*par->multipole_values[i], 2*par->multipole_values[j], 4*cnt, 0, 0, 0), 2);
+                    }
+
+                    /* Kronecker delta (l1, l2) */
+                    double deltal1l2 =
+                        (par->multipole_values[i] == par->multipole_values[j]) ? 1 : 0;
+
                     double deltaij = (m == n) ? 1 : 0;
                     /* flat-sky covariance */
                     const double result_mp_or_ramp =
@@ -880,8 +880,8 @@ int coffe_covariance_init(
         size_t counter = 0;
         for (size_t zi = 0; zi < par->z_mean_len; ++zi){
         for (size_t l1 = 0; l1 < par->multipole_values_len; ++l1){
-        for (size_t l2 = 0; l2 < par->multipole_values_len; ++l2){
         for (size_t r1 = 0; r1 < par->sep_len; ++r1){
+        for (size_t l2 = 0; l2 < par->multipole_values_len; ++l2){
         for (size_t r2 = 0; r2 < par->sep_len; ++r2){
             cov_mp->array[counter].coords.z_mean = par->z_mean[zi];
             cov_mp->array[counter].coords.l1 = par->multipole_values[l1];
