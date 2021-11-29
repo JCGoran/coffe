@@ -123,7 +123,8 @@ class TestCoffe:
 
 
     def test_covariance_multipoles(self):
-        cosmo = coffe.Coffe(
+        cosmo = coffe.Coffe()
+        cosmo.set_parameters(
             has_density=True,
             has_rsd=True,
             number_density=[1e-3],

@@ -100,7 +100,7 @@ cdef class Coffe:
         self._power_spectrum_flag = 0
 
         if kwargs:
-            self.set_parameters(kwargs)
+            self.set_parameters(**kwargs)
 
 
     def _free_background(self):
@@ -197,14 +197,10 @@ cdef class Coffe:
         return writable
 
 
-    def set_parameters(self, value : dict):
+    def set_parameters(self, **value):
         """
         Bulk setter of parameters.
-        The passed object _must_ be a dictionary with strings as keys.
         """
-        if not isinstance(value, dict):
-            raise TypeError
-
         for key in value:
             if not hasattr(self, key):
                 raise AttributeError(
