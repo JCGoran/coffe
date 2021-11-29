@@ -211,7 +211,24 @@ cdef class Coffe:
             setattr(self, key, value[key])
 
 
-    # TODO how do we update the other omegas here (like omega_m)?
+    @property
+    def omega_cdm(self):
+        """
+        Fraction of cold dark matter today.
+        """
+        return self._parameters.Omega0_cdm
+
+    @omega_cdm.setter
+    def omega_cdm(self, value):
+        _check_parameter('omega_cdm', value, (int, float), 0, 1)
+        if not np.allclose(value, self.omega_cdm):
+            # we set the value, rebalance the Omega budget, and free memory
+            self._parameters.Omega0_cdm = value
+            self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
+            self._balance_content()
+            self._free_except_parameters()
+
+
     @property
     def omega_m(self):
         """
@@ -243,6 +260,7 @@ cdef class Coffe:
         if not np.allclose(value, self.omega_baryon):
             # we set the value, rebalance the Omega budget, and free memory
             self._parameters.Omega0_baryon = value
+            self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
             self._free_except_parameters()
 
