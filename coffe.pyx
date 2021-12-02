@@ -109,7 +109,9 @@ _allowed_pk_types = {
     ccoffe.COFFE_PK_NONLINEAR_HMCODE : 'hmcode',
 }
 
-_allowed_pk_types_inverse = {value : key for key, value in _allowed_pk_types.items()}
+_allowed_pk_types_inverse = {
+    value : key for key, value in _allowed_pk_types.items()
+}
 
 
 
