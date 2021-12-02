@@ -36,11 +36,69 @@ def _check_parameter(
     Performs type and value checking for the parameter called `name`.
     """
     if not isinstance(value, kind):
-        raise TypeError
+        raise TypeError(
+            f'Expected {kind}, got {type(value)}'
+        )
+
     if xmin is not None and value < xmin:
-            raise ValueError
+        raise ValueError(
+            f'Value {value} smaller than xmin ({xmin})'
+        )
+
     if xmax is not None and value > xmax:
-            raise ValueError
+        raise ValueError(
+            f'Value {value} larger than xmax ({xmax})'
+        )
+
+
+
+cdef double evaluate_spline(
+    ccoffe.coffe_interpolation *interp,
+    const double x,
+):
+    """
+    Evaluates the spline at some value x
+    """
+    x_min = dereference(interp.spline).x[0]
+    x_max = dereference(interp.spline).x[dereference(interp.spline).size - 1]
+
+    _check_parameter('x', x, (int, float), x_min, x_max)
+
+    return ccoffe.coffe_interp_spline(interp, x)
+
+
+
+cdef void set_spline(
+    ccoffe.coffe_interpolation *interp,
+    x_sampling : List[float],
+    y_sampling : List[float],
+    const ccoffe.coffe_interp1d_type interp1d_type,
+):
+    """
+    Sets the value of the spline according to some x_sampling and y_sampling
+    """
+    if not np.allclose(x_sampling, np.sort(x_sampling)):
+        raise ValueError('The input array must be sorted')
+    if len(x_sampling) != len(y_sampling):
+        raise ValueError(
+            f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})'
+        )
+
+    cdef double *x = NULL
+    cdef double *y = NULL
+
+    size = len(x_sampling)
+    x = <double *>malloc(sizeof(double) * size)
+    y = <double *>malloc(sizeof(double) * size)
+
+    for i in range(size):
+        x[i] = x_sampling[i]
+        y[i] = y_sampling[i]
+
+    ccoffe.coffe_init_spline(interp, x, y, size, interp1d_type)
+
+    free(x)
+    free(y)
 
 
 
@@ -504,40 +562,21 @@ cdef class Coffe:
 
     def galaxy_bias1(self, z : float):
         """
-        Evaluates the galaxy bias of the first population at some redshift.
+        Evaluates the galaxy bias of the first population of tracers at some
+        redshift.
         """
-        # TODO figure out how to dereference an operator
-        _check_parameter('z', z, (int, float), 0, 15)
-
-        return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias1, z)
+        return evaluate_spline(&self._parameters.galaxy_bias1, z)
 
 
     def set_galaxy_bias1(self, x_sampling : List[float], y_sampling : List[float]):
         """
-        Sets the value of the galaxy bias.
+        Sets the value of the galaxy bias for the first population of tracers.
         """
-        if not np.allclose(x_sampling, np.sort(x_sampling)):
-            raise ValueError('The input array must be sorted')
-        if len(x_sampling) != len(y_sampling):
-            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
-
-        cdef double *x = NULL
-        cdef double *y = NULL
-
-        size = len(x_sampling)
-        x = <double *>malloc(sizeof(double) * size)
-        y = <double *>malloc(sizeof(double) * size)
-        for i in range(size):
-            x[i] = x_sampling[i]
-            y[i] = y_sampling[i]
-        ccoffe.coffe_init_spline(
+        set_spline(
             &self._parameters.galaxy_bias1,
-            x, y, size, self._parameters.interp_method
+            x_sampling, y_sampling,
+            self._parameters.interp_method
         )
-
-        free(x)
-        free(y)
-
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -546,38 +585,18 @@ cdef class Coffe:
         """
         Evaluates the galaxy bias of the second population at some redshift.
         """
-        # TODO figure out how to dereference an operator
-        _check_parameter('z', z, (int, float), 0, 15)
-
-        return ccoffe.coffe_interp_spline(&self._parameters.galaxy_bias2, z)
+        return evaluate_spline(&self._parameters.galaxy_bias2, z)
 
 
     def set_galaxy_bias2(self, x_sampling : List[float], y_sampling : List[float]):
         """
-        Sets the value of the galaxy bias.
+        Sets the value of the galaxy bias for the second population of tracers.
         """
-        if not np.allclose(x_sampling, np.sort(x_sampling)):
-            raise ValueError('The input array must be sorted')
-        if len(x_sampling) != len(y_sampling):
-            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
-
-        cdef double *x = NULL
-        cdef double *y = NULL
-
-        size = len(x_sampling)
-        x = <double *>malloc(sizeof(double) * size)
-        y = <double *>malloc(sizeof(double) * size)
-        for i in range(size):
-            x[i] = x_sampling[i]
-            y[i] = y_sampling[i]
-        ccoffe.coffe_init_spline(
+        set_spline(
             &self._parameters.galaxy_bias2,
-            x, y, size, self._parameters.interp_method
+            x_sampling, y_sampling,
+            self._parameters.interp_method
         )
-
-        free(x)
-        free(y)
-
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -586,37 +605,19 @@ cdef class Coffe:
         """
         Evaluates the magnification bias of the first population at some redshift.
         """
-        # TODO figure out how to dereference an operator
-        _check_parameter('z', z, (int, float), 0, 15)
+        return evaluate_spline(&self._parameters.magnification_bias1, z)
 
-        return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias1, z)
 
     def set_magnification_bias1(self, x_sampling : List[float], y_sampling : List[float]):
         """
-        Sets the value of the magnification bias.
+        Sets the value of the magnification bias for the first population of
+        tracers.
         """
-        if not np.allclose(x_sampling, np.sort(x_sampling)):
-            raise ValueError('The input array must be sorted')
-        if len(x_sampling) != len(y_sampling):
-            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
-
-        cdef double *x = NULL
-        cdef double *y = NULL
-
-        size = len(x_sampling)
-        x = <double *>malloc(sizeof(double) * size)
-        y = <double *>malloc(sizeof(double) * size)
-        for i in range(size):
-            x[i] = x_sampling[i]
-            y[i] = y_sampling[i]
-        ccoffe.coffe_init_spline(
+        set_spline(
             &self._parameters.magnification_bias1,
-            x, y, size, self._parameters.interp_method
+            x_sampling, y_sampling,
+            self._parameters.interp_method
         )
-
-        free(x)
-        free(y)
-
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -625,37 +626,19 @@ cdef class Coffe:
         """
         Evaluates the magnification bias of the second population at some redshift.
         """
-        # TODO figure out how to dereference an operator
-        _check_parameter('z', z, (int, float), 0, 15)
+        return evaluate_spline(&self._parameters.magnification_bias2, z)
 
-        return ccoffe.coffe_interp_spline(&self._parameters.magnification_bias2, z)
 
     def set_magnification_bias2(self, x_sampling : List[float], y_sampling : List[float]):
         """
-        Sets the value of the magnification bias.
+        Sets the value of the magnification bias of the second population of
+        tracers.
         """
-        if not np.allclose(x_sampling, np.sort(x_sampling)):
-            raise ValueError('The input array must be sorted')
-        if len(x_sampling) != len(y_sampling):
-            raise ValueError(f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})')
-
-        cdef double *x = NULL
-        cdef double *y = NULL
-
-        size = len(x_sampling)
-        x = <double *>malloc(sizeof(double) * size)
-        y = <double *>malloc(sizeof(double) * size)
-        for i in range(size):
-            x[i] = x_sampling[i]
-            y[i] = y_sampling[i]
-        ccoffe.coffe_init_spline(
+        set_spline(
             &self._parameters.magnification_bias2,
-            x, y, size, self._parameters.interp_method
+            x_sampling, y_sampling,
+            self._parameters.interp_method
         )
-
-        free(x)
-        free(y)
-
         self._free_corrfunc()
         self._free_multipoles()
 
