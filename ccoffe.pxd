@@ -8,7 +8,9 @@
 cdef extern from "<gsl/gsl_spline.h>":
 
     cdef struct gsl_spline:
-        pass
+        double *x
+        double *y
+        size_t size
 
     cdef struct gsl_interp_accel:
         pass
@@ -30,6 +32,15 @@ cdef extern from "common.h":
         COFFE_PK_LINEAR_CLASS = 1,
         COFFE_PK_NONLINEAR_HALOFIT = 2,
         COFFE_PK_NONLINEAR_HMCODE = 3
+
+    cdef enum coffe_interp1d_type:
+        COFFE_INTERP_LINEAR = 1,
+        COFFE_INTERP_POLYNOMIAL = 2,
+        COFFE_INTERP_CSPLINE = 3,
+        COFFE_INTERP_CSPLINE_PERIODIC = 4,
+        COFFE_INTERP_AKIMA = 5,
+        COFFE_INTERP_AKIMA_PERIODIC = 6,
+        COFFE_INTERP_STEFFEN = 7
 
     cdef struct coffe_corrfunc_coords_t:
         double z_mean
@@ -155,7 +166,7 @@ cdef extern from "common.h":
 
         int covariance_window
 
-        int interp_method
+        coffe_interp1d_type interp_method
 
         int *multipole_values
 
