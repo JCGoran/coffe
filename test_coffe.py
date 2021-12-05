@@ -8,6 +8,43 @@ import coffe
 DATA_DIR = 'tests/benchmarks/'
 
 class TestCoffe:
+    def test_bias(self):
+        """
+        Tests for setting and getting the biases.
+        """
+        cosmo = coffe.Coffe()
+
+        with pytest.raises(ValueError):
+            x = np.linspace(-1, 10, 100)
+            y = np.zeros(len(x))
+            cosmo.set_galaxy_bias1(x, y)
+
+        with pytest.raises(ValueError):
+            x = np.linspace(0, 100, 100)
+            y = np.zeros(len(x))
+            cosmo.set_galaxy_bias1(x, y)
+
+        with pytest.raises(ValueError):
+            x = np.linspace(0, 1, 100)
+            y = np.zeros(len(x))
+            cosmo.set_galaxy_bias1(x, y)
+            cosmo.galaxy_bias1(2)
+
+
+    def test_parameters(self):
+        """
+        Tests setting of various cosmological parameters.
+        """
+        cosmo = coffe.Coffe()
+
+        with pytest.raises(ValueError):
+            cosmo.omega_cdm = 1.1
+
+        with pytest.raises(ValueError):
+            cosmo.h = -1
+
+
+
     def test_background(self):
         cosmo = coffe.Coffe()
         # we can't init the background automatically, so this is cheating a bit
