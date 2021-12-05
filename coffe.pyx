@@ -55,7 +55,7 @@ def _check_parameter(
 cdef double evaluate_spline(
     ccoffe.coffe_interpolation *interp,
     const double x,
-):
+) except *:
     """
     Evaluates the spline at some value x
     """
@@ -68,12 +68,14 @@ cdef double evaluate_spline(
 
 
 
-cdef void set_spline(
+cdef int set_spline(
     ccoffe.coffe_interpolation *interp,
     x_sampling : List[float],
     y_sampling : List[float],
     const ccoffe.coffe_interp1d_type interp1d_type,
-):
+    xmin : float = 0,
+    xmax : float = 15,
+) except *:
     """
     Sets the value of the spline according to some x_sampling and y_sampling
     """
@@ -83,6 +85,9 @@ cdef void set_spline(
         raise ValueError(
             f'Mismatching lengths for x ({len(x_sampling)}) and y ({len(y_sampling)})'
         )
+
+    _check_parameter('xmin', x_sampling[0], (int, float), xmin=xmin)
+    _check_parameter('xmax', x_sampling[-1], (int, float), xmax=xmax)
 
     cdef double *x = NULL
     cdef double *y = NULL
