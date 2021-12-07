@@ -18,6 +18,7 @@ _COFFE_HUBBLE = (1./(2997.92458))
 from cython.operator cimport dereference
 from ctypes import CFUNCTYPE
 
+from abc import ABC, abstractmethod
 from typing import Any, Callable, List, Tuple, Union
 from dataclasses import dataclass
 import os
@@ -1561,7 +1562,11 @@ cdef class Coffe:
 
 
 
-class Representation:
+class Representation(ABC):
+    @abstractmethod
+    def __init__(self, *args, **kwargs):
+        pass
+
     def to_dict(self):
         """
         The representation of the class as a dictionary.
