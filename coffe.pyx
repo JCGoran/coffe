@@ -219,6 +219,37 @@ cdef class Coffe:
         return bool(self._parameters.has_class)
 
 
+    @staticmethod
+    def _check_omegas(*omegas):
+        if np.sum(np.array([_ for _ in omegas])) > 1:
+            raise ValueError(
+                f'Cannot satisfy the condition Omega_de >= 0'
+            )
+
+
+    def _check_coords_corrfunc(self):
+        # check there is actually something to compute
+        if not (len(self.mu) and len(self.sep) and len(self.z_mean)):
+            raise ValueError(
+                f'At least one of the following parameters is empty: mu ({self.mu}), sep ({self.sep}), z_mean ({self.z_mean})'
+            )
+
+
+    def _check_coords_multipoles(self):
+        # check there is actually something to compute
+        if not (len(self.l) and len(self.sep) and len(self.z_mean)):
+            raise ValueError(
+                f'At least one of the following parameters is empty: l ({self.l}), sep ({self.sep}), z_mean ({self.z_mean})'
+            )
+
+
+    def _check_contributions(self):
+        if not any([self.has_density, self.has_rsd, self.has_lensing]):
+            raise ValueError(
+                'No contributions specified, you need to specify at least one of \'has_density\', \'has_rsd\', \'has_lensing\''
+            )
+
+
     def _balance_content(self):
         """
         Internal function that balances the energy content of dark energy so it all adds up to 1.
@@ -288,6 +319,7 @@ cdef class Coffe:
         _check_parameter('omega_cdm', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_cdm):
             # we set the value, rebalance the Omega budget, and free memory
+            self._check_omegas(value, self.omega_baryon, self.omega_gamma)
             self._parameters.Omega0_cdm = value
             self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
@@ -306,6 +338,7 @@ cdef class Coffe:
         _check_parameter('omega_m', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_m):
             # we set the value, rebalance the Omega budget, and free memory
+            self._check_omegas(value, self.omega_gamma)
             self._parameters.Omega0_m = value
             self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon
             self._balance_content()
@@ -324,6 +357,7 @@ cdef class Coffe:
         _check_parameter('omega_baryon', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_baryon):
             # we set the value, rebalance the Omega budget, and free memory
+            self._check_omegas(value, self.omega_cdm, self.omega_gamma)
             self._parameters.Omega0_baryon = value
             self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
@@ -341,6 +375,7 @@ cdef class Coffe:
     def omega_gamma(self, value):
         _check_parameter('omega_gamma', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_gamma):
+            self._check_omegas(value, self.omega_m)
             self._parameters.Omega0_gamma = value
             self._balance_content()
             self._free_except_parameters()
@@ -527,7 +562,7 @@ cdef class Coffe:
         self._free_corrfunc()
 
 
-    def integral(self, r : float, n : int, l : int):
+    def integral(self, *, r : float, n : int, l : int):
         r"""
         Returns one of the Fourier Bessel integrals (only integer arguments for now).
         In essence, computes the following integral:
@@ -547,6 +582,10 @@ cdef class Coffe:
 
         l : int
         """
+        _check_parameter('r', r, (int, float), 0, 25000)
+        _check_parameter('n', n, int, -2, 4)
+        _check_parameter('l', l, int, 0, 4)
+
         if not self._background.flag:
             self._background_init()
 
@@ -556,15 +595,20 @@ cdef class Coffe:
         if not self._integral.size:
             self._integrals_init()
 
-        return ccoffe.coffe_interp_spline(
-            &ccoffe.coffe_find_integral(
-                &self._integral,
-                n,
-                l,
-                ccoffe.COFFE_INTEGER,
-                ccoffe.COFFE_INTEGER
-            ).result, r * _COFFE_HUBBLE
+        cdef ccoffe.coffe_integral_t *result = ccoffe.coffe_find_integral(
+            &self._integral,
+            n,
+            l,
+            ccoffe.COFFE_INTEGER,
+            ccoffe.COFFE_INTEGER
         )
+
+        if result == NULL:
+            raise ValueError(
+                f'Cannot find integral with n = {n}, l = {l}'
+            )
+
+        return ccoffe.coffe_interp_spline(&result.result, r * _COFFE_HUBBLE)
 
 
     def galaxy_bias1(self, z : float):
@@ -1296,6 +1340,9 @@ cdef class Coffe:
         mu : float
             the angle mu (see `help(coffe.mu)` for definition)
         """
+        self._check_coords_corrfunc()
+        self._check_contributions()
+
         if not self._background.flag or recompute:
             self._background_init()
 
@@ -1351,6 +1398,8 @@ cdef class Coffe:
         l : int
             the multipole moment
         """
+        self._check_coords_multipoles()
+        self._check_contributions()
         if not self._background.flag or recompute:
             self._background_init()
 
@@ -1403,6 +1452,8 @@ cdef class Coffe:
         -------
         an array of instances of `Multipoles`.
         """
+        self._check_coords_multipoles()
+        self._check_contributions()
         recompute = bool(recompute)
         if not self._background.flag or recompute:
             self._background_init()
@@ -1443,6 +1494,8 @@ cdef class Coffe:
         an array of instances of `Corrfunc`.
 
         """
+        self._check_coords_corrfunc()
+        self._check_contributions()
         recompute = bool(recompute)
         if not self._background.flag or recompute:
             self._background_init()
@@ -1482,6 +1535,8 @@ cdef class Coffe:
         -------
         an array of instances of `Covariance`.
         """
+        self._check_coords_multipoles()
+        self._check_contributions()
         recompute = bool(recompute)
 
         if not all(
