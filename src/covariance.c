@@ -187,6 +187,18 @@ static double integral_power_spherical_bessel1_unit(
         case 4:
             return ((105. / x - 2. * x) * cos(x) + (22. - 105. / pow(x, 2)) * sin(x) + 15. * gsl_sf_Si(x)) / 2.;
             break;
+        case 5:
+            return ((315 * x - 16 * pow(x, 3)) * cos(x) - (315 - 105 * pow(x, 2) + pow(x, 4)) * sin(x)) / pow(x, 3);
+            break;
+        case 6:
+            return (
+                x * (20790 - 1575 * pow(x, 2) + 8 * pow(x, 4)) * cos(x)
+                +
+                (-20790 + 8505 * pow(x, 2) - 176 * pow(x, 4)) * sin(x)
+                +
+                105 * pow(x, 4) * gsl_sf_Si(x)
+            ) / (8. * pow(x, 4));
+            break;
         default:
             fprintf(stderr, "WARNING: l = %d not implemented.\n", l);
             break;
