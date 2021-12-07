@@ -231,3 +231,15 @@ class TestCoffe:
         assert np.allclose(
             0, 0
         )
+
+
+
+class TestRepresentation:
+    """
+    Tests for Corrfunc, Multipoles, and Covariance classes.
+    """
+    def test_representation(self):
+        with pytest.raises(TypeError):
+            coffe.Representation()
+
+        coffe.Multipoles(l=0, r=10, z=1.0, value=1e-3)
