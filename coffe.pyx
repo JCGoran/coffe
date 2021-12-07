@@ -22,7 +22,6 @@ from typing import Any, Callable, List, Tuple, Union
 from dataclasses import dataclass
 import os
 import numpy as np
-from scipy.linalg import block_diag
 
 
 def _check_parameter(
@@ -1517,44 +1516,6 @@ cdef class Coffe:
                 value=self._covariance_multipoles.array[i].value,
             ) for i in range(self._covariance_multipoles.size)
         ])
-
-
-    def covariance_matrix(self, recompute : bool = False):
-        """
-        Convenience function that returns the covariance of multipoles as a
-        numpy matrix.
-        """
-        result = [_.value for _ in self.compute_covariance_bulk(recompute=recompute)]
-
-        z_size = len(self.z_mean)
-
-        rowsize = round(np.sqrt(len(result) // z_size))
-
-        return block_diag(
-            *[np.reshape(
-                result[i * len(result) // z_size : (i + 1) * len(result) // z_size],
-                (rowsize, rowsize)
-            ) for i in range(z_size)]
-        )
-
-
-    def covariance_matrix_inverse(self, recompute : bool = False):
-        """
-        Convenience function that returns the inverse of the covariance of
-        multipoles as a numpy matrix.
-        """
-        result = [_.value for _ in self.compute_covariance_bulk(recompute=recompute)]
-
-        z_size = len(self.z_mean)
-
-        rowsize = round(np.sqrt(len(result) // z_size))
-
-        return block_diag(
-            *[np.linalg.inv(np.reshape(
-                result[i * len(result) // z_size : (i + 1) * len(result) // z_size],
-                (rowsize, rowsize)
-            )) for i in range(z_size)]
-        )
 
 
     def _background_init(self):
