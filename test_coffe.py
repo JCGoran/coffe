@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import coffe
+from coffe_utils import covariance_matrix
 
 DATA_DIR = 'tests/benchmarks/'
 
@@ -227,10 +228,19 @@ class TestCoffe:
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values, y)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4)
 
+        assert covariance_matrix(result).ndim == 2
+        assert np.shape(covariance_matrix(result)) == (18, 18)
 
         assert np.allclose(
-            0, 0
+            covariance_matrix(result),
+            np.transpose(covariance_matrix(result))
         )
+
+        # we don't need to test the trace or the determinant since that follows
+        # automatically if the matrix has all positive eigenvalues
+        assert np.all(np.linalg.eigvalsh(covariance_matrix(result)) > 0)
+
+        assert covariance_matrix(result, rstep=111).size == 0
 
 
 
