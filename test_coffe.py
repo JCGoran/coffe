@@ -243,6 +243,20 @@ class TestCoffe:
         assert covariance_matrix(result, rstep=111).size == 0
 
 
+    def test_error_handler(self):
+        """
+        Checks that the GSL error handler doesn't abort the computation
+        """
+        # initialize COFFE with some cosmology
+        cosmo = coffe.Coffe()
+        cosmo.set_parameters(
+            sep=np.linspace(10, 300, 100),
+            has_rsd=False,
+            omega_m=0.31,
+        )
+        cosmo.compute_multipole(l=4, r=10, z=1.5)
+
+
 
 class TestRepresentation:
     """

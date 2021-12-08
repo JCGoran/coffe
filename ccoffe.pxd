@@ -5,6 +5,16 @@
 # remember to add it inside this cdef.
 
 
+cdef extern from "<gsl/gsl_errno.h>":
+
+    cdef struct gsl_error_handler_t:
+        pass
+
+    cdef gsl_error_handler_t *gsl_set_error_handler_off()
+
+    cdef void gsl_set_error_handler(gsl_error_handler_t *)
+
+
 cdef extern from "<gsl/gsl_spline.h>":
 
     cdef struct gsl_spline:

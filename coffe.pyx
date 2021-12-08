@@ -1356,7 +1356,10 @@ cdef class Coffe:
         _check_parameter('r', r, (int, float), 0, 1500)
         _check_parameter('mu', mu, (int, float), -1, 1)
 
-        return ccoffe.coffe_integrate(
+        cdef ccoffe.gsl_error_handler_t *default_handler = \
+            ccoffe.gsl_set_error_handler_off()
+
+        result = ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
@@ -1377,6 +1380,10 @@ cdef class Coffe:
             z, r * _COFFE_HUBBLE, mu, 0,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.CORRFUNC
         )
+
+        ccoffe.gsl_set_error_handler(default_handler)
+
+        return result
 
 
     def compute_multipole(
@@ -1413,7 +1420,10 @@ cdef class Coffe:
         _check_parameter('r', r, (int, float), 0, 1500)
         _check_parameter('l', l, (int,), 0, 10)
 
-        return ccoffe.coffe_integrate(
+        cdef ccoffe.gsl_error_handler_t *default_handler = \
+            ccoffe.gsl_set_error_handler_off()
+
+        result = ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
@@ -1434,6 +1444,10 @@ cdef class Coffe:
             z, r * _COFFE_HUBBLE, 0, l,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.MULTIPOLES
         )
+
+        ccoffe.gsl_set_error_handler(default_handler)
+
+        return result
 
 
     def compute_multipoles_bulk(self, recompute : bool = False):
