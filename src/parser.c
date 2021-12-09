@@ -487,10 +487,14 @@ int parse_external_power_spectrum(
         pk_norm[i] = pk[i] * pow(COFFE_H0, 3);
     }
 
-    par->k_min = k[0];
-    par->k_max = k[pk_len - 1];
-    par->k_min_norm = k_norm[0];
-    par->k_max_norm = k_norm[pk_len - 1];
+    if (par->k_min < k[0]){
+        par->k_min = k[0];
+        par->k_min_norm = k_norm[0];
+    }
+    if (par->k_max > k[pk_len - 1]){
+        par->k_max = k[pk_len - 1];
+        par->k_max_norm = k_norm[pk_len - 1];
+    }
 
     coffe_init_spline(&par->power_spectrum, k, pk, pk_len, par->interp_method);
     coffe_init_spline(&par->power_spectrum_norm, k_norm, pk_norm, pk_len, par->interp_method);
