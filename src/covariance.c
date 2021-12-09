@@ -236,8 +236,8 @@ static double covariance_windowed_bessel(
         return gsl_sf_bessel_jl(test->ell, s * test->k);
     }
     return 1. / covariance_volume_no_4pi(
-        test->s_mean - test->s_delta / 2,
-        test->s_mean + test->s_delta / 2
+        test->s_mean - test->s_delta / 2.,
+        test->s_mean + test->s_delta / 2.
         )
        *(
             integral_power_spherical_bessel1(
