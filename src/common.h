@@ -470,7 +470,7 @@ typedef struct coffe_parameters_t
 
     double sigma8; /* amplitude of primordial power spectrum sigma8 */
 
-    double T_cmb, N_ur, m_ncdm;
+    double T_cmb, N_ur, m_ncdm, Omega0_nu; /* last one = neutrino energy density fraction */
 
     int N_ncdm;
 

@@ -230,6 +230,14 @@ cdef extern from "common.h":
 
         double k_pivot
 
+        double T_cmb
+
+        double N_ur
+
+        double m_ncdm
+
+        int N_ncdm
+
         int only_cross_correlations
 
 

@@ -626,17 +626,19 @@ int coffe_parse_default_parameters(
     /* cosmological parameters */
     par->Omega0_m = 0.3;
     par->Omega0_baryon = 0.05;
-    par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon;
     par->Omega0_gamma = 9e-5;
-    par->Omega0_de = 1 - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
+    par->h = 0.67;
     par->w0 = -1.0;
     par->wa = 0.0;
     par->have_class = 0;
     par->N_ur = 2.0328;
     par->T_cmb = 2.726;
     par->N_ncdm = 1;
-    par->m_ncdm = 0.06;
-    par->h = 0.67;
+    par->m_ncdm = 0.00;
+    /* see eq. (19) of https://arxiv.org/abs/1212.6154 */
+    par->Omega0_nu = par->m_ncdm / 93.14 / par->h / par->h;
+    par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon - par->Omega0_nu;
+    par->Omega0_de = 1 - (par->Omega0_m + par->Omega0_gamma);
     par->k_pivot = 0.05;
     par->sigma8 = 0.8156;
     par->n_s = 0.96;
@@ -911,10 +913,9 @@ int coffe_parser_init(
     /* cosmological parameters */
     parse_double(conf, "omega_m", &par->Omega0_m, COFFE_TRUE);
     parse_double(conf, "omega_baryon", &par->Omega0_baryon, COFFE_TRUE);
-    par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon;
     parse_double(conf, "omega_gamma", &par->Omega0_gamma, COFFE_TRUE);
 
-    par->Omega0_de = 1. - (par->Omega0_cdm + par->Omega0_baryon + par->Omega0_gamma);
+    par->Omega0_de = 1. - (par->Omega0_m + par->Omega0_gamma);
 
     /* mean redshift */
     if (
@@ -1372,10 +1373,14 @@ int coffe_parser_init(
         parse_double(conf, "N_ur", &par->N_ur, COFFE_FALSE);
         parse_double(conf, "m_ncdm", &par->m_ncdm, COFFE_FALSE);
         parse_int(conf, "N_ncdm", &par->N_ncdm, COFFE_FALSE);
+        par->Omega0_nu = par->m_ncdm / 93.14 / par->h / par->h;
+        par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon - par->Omega0_nu;
         parse_external_power_spectrum(par);
     }
     else{
 #endif
+        par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon - par->Omega0_nu;
+
         /* the power spectrum */
         parse_string(
             conf,

@@ -486,6 +486,83 @@ cdef class Coffe:
 
 
     @property
+    def T_cmb(self):
+        """
+        The average temperature of the CMB.
+        """
+        return self._parameters.T_cmb
+
+    @T_cmb.setter
+    def T_cmb(self, value):
+        _check_parameter('T_cmb', value, (int, float), 0, 10)
+        if not np.allclose(value, self.T_cmb):
+            self._parameters.T_cmb = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
+    def N_ur(self):
+        """
+        The number of ultra-relativistic species.
+        """
+        return self._parameters.N_ur
+
+    @N_ur.setter
+    def N_ur(self, value):
+        _check_parameter('N_ur', value, (int, float), 0, 10)
+        if not np.allclose(value, self.N_ur):
+            self._parameters.N_ur = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
+    def m_ncdm(self):
+        """
+        The sum of masses of non-CDM species (mostly for neutrinos), in units
+        of eV.
+        """
+        return self._parameters.m_ncdm
+
+    @m_ncdm.setter
+    def m_ncdm(self, value):
+        _check_parameter('m_ncdm', value, (int, float), 0, 10)
+        if not np.allclose(value, self.m_ncdm):
+            self._parameters.m_ncdm = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
+    def N_ncdm(self):
+        """
+        The number of (massive!) non-CDM species.
+        """
+        return self._parameters.N_ncdm
+
+    @N_ncdm.setter
+    def N_ncdm(self, value):
+        _check_parameter('N_ncdm', value, int, 0, 10)
+        if not np.allclose(value, self.N_ncdm):
+            self._parameters.N_ncdm = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
     def sep(self):
         """
         Returns the list of separations (in Mpc/h) for which the 2PCF/multipoles/covariance of multipoles should be computed.
