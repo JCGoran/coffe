@@ -319,11 +319,19 @@ cdef class Coffe:
         _check_parameter('omega_cdm', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_cdm):
             # we set the value, rebalance the Omega budget, and free memory
-            self._check_omegas(value, self.omega_baryon, self.omega_gamma)
+            self._check_omegas(value, self.omega_baryon, self.omega_gamma, self.omega_nu)
             self._parameters.Omega0_cdm = value
             self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
             self._free_except_parameters()
+
+
+    @property
+    def omega_nu(self):
+        """
+        Returns the energy density fraction of massive neutrinos.
+        """
+        return self._parameters.Omega0_nu
 
 
     @property
@@ -536,6 +544,8 @@ cdef class Coffe:
         _check_parameter('m_ncdm', value, (int, float), 0, 10)
         if not np.allclose(value, self.m_ncdm):
             self._parameters.m_ncdm = value
+            self._parameters.Omega0_nu = value / 93.14 / self.h / self.h
+            self.omega_cdm = self.omega_m - self.omega_baryon - self.omega_nu
             self._free_power_spectrum()
             self._free_integrals()
             self._free_corrfunc()

@@ -238,6 +238,8 @@ cdef extern from "common.h":
 
         int N_ncdm
 
+        double Omega0_nu
+
         int only_cross_correlations
 
 
