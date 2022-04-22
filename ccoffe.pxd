@@ -240,6 +240,8 @@ cdef extern from "common.h":
 
         double Omega0_nu
 
+        double YHe
+
         int only_cross_correlations
 
 

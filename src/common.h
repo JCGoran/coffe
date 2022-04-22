@@ -472,6 +472,8 @@ typedef struct coffe_parameters_t
 
     double T_cmb, N_ur, m_ncdm, Omega0_nu; /* last one = neutrino energy density fraction */
 
+    double YHe; /* helium fraction */
+
     int N_ncdm;
 
     double h; /* Damn you, little h! */

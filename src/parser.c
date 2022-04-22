@@ -284,6 +284,9 @@ int parse_external_power_spectrum(
     coffe_parameters_t *par
 )
 {
+    /* threshold for comparing with zero */
+    const double EPSILON_ABS = 1e-10;
+
     /* so we don't leak memory */
     coffe_free_spline(&par->power_spectrum);
     coffe_free_spline(&par->power_spectrum_norm);
@@ -308,7 +311,7 @@ int parse_external_power_spectrum(
     class_start = clock();
     struct file_content *fc = (struct file_content *)coffe_malloc(sizeof(struct file_content));
 
-    size_t class_parameters_len = 24, counter = 0;
+    size_t class_parameters_len = 26, counter = 0;
 
     parser_init(fc, class_parameters_len, "", errmsg);
 
@@ -332,6 +335,13 @@ int parse_external_power_spectrum(
     sprintf(fc->name[counter], "N_ur");
     sprintf(fc->value[counter], "%e", par->N_ur);
     ++counter;
+
+    /* set the helium fraction to a constant value (must be different from zero) */
+    if (fabs(par->YHe) > EPSILON_ABS){
+        sprintf(fc->name[counter], "YHe");
+        sprintf(fc->value[counter], "%e", par->YHe);
+        ++counter;
+    }
 
     sprintf(fc->name[counter], "Omega_cdm");
     sprintf(fc->value[counter], "%e", par->Omega0_cdm);
@@ -635,6 +645,7 @@ int coffe_parse_default_parameters(
     par->T_cmb = 2.726;
     par->N_ncdm = 1;
     par->m_ncdm = 0.00;
+    par->YHe = 0; /* this indicates the BBN table should be used instead */
     /* see eq. (19) of https://arxiv.org/abs/1212.6154 */
     par->Omega0_nu = par->m_ncdm / 93.14 / par->h / par->h;
     par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon - par->Omega0_nu;
@@ -1373,6 +1384,7 @@ int coffe_parser_init(
         parse_double(conf, "N_ur", &par->N_ur, COFFE_FALSE);
         parse_double(conf, "m_ncdm", &par->m_ncdm, COFFE_FALSE);
         parse_int(conf, "N_ncdm", &par->N_ncdm, COFFE_FALSE);
+        parse_double(conf, "YHe", &par->YHe, COFFE_FALSE);
         par->Omega0_nu = par->m_ncdm / 93.14 / par->h / par->h;
         par->Omega0_cdm = par->Omega0_m - par->Omega0_baryon - par->Omega0_nu;
         parse_external_power_spectrum(par);

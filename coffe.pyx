@@ -554,6 +554,25 @@ cdef class Coffe:
 
 
     @property
+    def YHe(self):
+        """
+        The primordial helium fraction
+        """
+        return self._parameters.YHe
+
+    @YHe.setter
+    def YHe(self, value):
+        _check_parameter('YHe', value, (int, float), 0, 10)
+        if not np.allclose(value, self.YHe):
+            self._parameters.YHe = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
     def N_ncdm(self):
         """
         The number of (massive!) non-CDM species.
