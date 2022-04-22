@@ -387,9 +387,16 @@ int parse_external_power_spectrum(
     sprintf(fc->value[counter], "%e", par->n_s);
     ++counter;
 
-    sprintf(fc->name[counter], "sigma8");
-    sprintf(fc->value[counter], "%e", par->sigma8);
-    ++counter;
+    if (fabs(par->A_s) > EPSILON_ABS){
+        sprintf(fc->name[counter], "A_s");
+        sprintf(fc->value[counter], "%e", par->A_s);
+        ++counter;
+    }
+    else{
+        sprintf(fc->name[counter], "sigma8");
+        sprintf(fc->value[counter], "%e", par->sigma8);
+        ++counter;
+    }
 
     sprintf(fc->name[counter], "alpha_s");
     sprintf(fc->value[counter], "%e", 0.0);
@@ -652,6 +659,7 @@ int coffe_parse_default_parameters(
     par->Omega0_de = 1 - (par->Omega0_m + par->Omega0_gamma);
     par->k_pivot = 0.05;
     par->sigma8 = 0.8156;
+    par->A_s = 0;
     par->n_s = 0.96;
     par->b_derivative = 0;
     par->f_derivative = 0;
@@ -1376,7 +1384,17 @@ int coffe_parser_init(
         par->pk_type = (enum coffe_pk_type)temp;
         }
         parse_double(conf, "h", &par->h, COFFE_TRUE);
-        parse_double(conf, "sigma8", &par->sigma8, COFFE_TRUE);
+        const int error_sigma8 = parse_double(conf, "sigma8", &par->sigma8, COFFE_FALSE);
+        const int error_A_s = parse_double(conf, "A_s", &par->A_s, COFFE_FALSE);
+
+        if (error_sigma8 == EXIT_SUCCESS && error_A_s == EXIT_SUCCESS){
+            fprintf(
+                stderr,
+                "ERROR: unable to set both sigma8 and A_s simultaneously"
+            );
+            exit(EXIT_FAILURE);
+        }
+
         parse_double(conf, "n_s", &par->n_s, COFFE_TRUE);
         parse_double(conf, "k_pivot", &par->k_pivot, COFFE_TRUE);
         // new stuff for forecast

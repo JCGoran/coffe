@@ -494,6 +494,25 @@ cdef class Coffe:
 
 
     @property
+    def A_s(self):
+        """
+        The amplitude of the primordial power spectrum
+        """
+        return self._parameters.A_s
+
+    @A_s.setter
+    def A_s(self, value):
+        _check_parameter('A_s', value, (int, float), 0, 2)
+        if not np.allclose(value, self.A_s):
+            self._parameters.A_s = value
+            self._free_power_spectrum()
+            self._free_integrals()
+            self._free_corrfunc()
+            self._free_multipoles()
+            self._free_covariance_multipoles()
+
+
+    @property
     def T_cmb(self):
         """
         The average temperature of the CMB.

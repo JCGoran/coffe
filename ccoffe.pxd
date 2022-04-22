@@ -226,6 +226,8 @@ cdef extern from "common.h":
 
         double sigma8
 
+        double A_s
+
         double h
 
         double k_pivot
