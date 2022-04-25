@@ -5,6 +5,5 @@ make
 automake
 autoconf
 autoconf-archive
-libcuba
 cython
 libconfig

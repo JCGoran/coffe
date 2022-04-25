@@ -6,6 +6,30 @@ CLASS_DIR="class_public"
 CLASS_REMOTE_URL="https://github.com/JCGoran/class_public"
 CLASS_BRANCH="feature/conda"
 
+CUBA_DIR="cuba"
+CUBA_REMOTE_URL="https://github.com/JCGoran/libcuba"
+CUBA_BRANCH="master"
+
+install_cuba(){
+    if [ -z "${CONDA_PREFIX}" ]
+    then
+        printf 'You need to activate a conda environment using `conda activate [ENVIRONMENT]` before running this script\n'
+        return 1
+    fi
+
+    if [ ! -d "${CUBA_DIR}" ]
+    then
+        printf 'Attempting to install CUBA in the current environment (%s)...\n' "${CONDA_DEFAULT_ENV}"
+        printf 'Cloning to directory %s...\n' "${CUBA_DIR}"
+        git clone --branch "${CUBA_BRANCH}" "${CUBA_REMOTE_URL}" "${CUBA_DIR}"
+    fi
+
+    cd "${CUBA_DIR}" && autoreconf --install && ./configure --prefix="${CONDA_PREFIX}" && make install && cd -
+    printf 'CUBA successfully installed\n'
+}
+
+
+
 install_class(){
     if [ -z "${CONDA_PREFIX}" ]
     then
@@ -24,5 +48,5 @@ install_class(){
     printf 'CLASS successfully installed\n'
 }
 
-install_class
+install_cuba && install_class
 set +e
