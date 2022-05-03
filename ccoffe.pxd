@@ -198,9 +198,21 @@ cdef extern from "common.h":
 
         int has_cuba
 
-        double *density
+        double *density1
 
-        size_t density_len
+        size_t density1_len
+
+        double *density2
+
+        size_t density2_len
+
+        int covariance_pop1
+
+        int covariance_pop2
+
+        int covariance_pop3
+
+        int covariance_pop4
 
         double *pixelsize
 

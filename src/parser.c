@@ -799,8 +799,10 @@ int coffe_parse_default_parameters(
     par->degree_evolution_bias2 = 1;
 
     par->output_type = MULTIPOLES;
-    par->density = NULL;
-    par->density_len = 0;
+    par->density1 = NULL;
+    par->density1_len = 0;
+    par->density2 = NULL;
+    par->density2_len = 0;
     par->deltaz = NULL;
     par->deltaz_len = 0;
     par->fsky = NULL;
@@ -812,6 +814,10 @@ int coffe_parse_default_parameters(
     par->zmax = NULL;
     par->zmax_len = 0;
     par->covariance_window = 0;
+    par->covariance_pop1 = 1;
+    par->covariance_pop2 = 1;
+    par->covariance_pop3 = 1;
+    par->covariance_pop4 = 1;
 
     par->have_window = 0;
     par->window_size = 0;
@@ -1179,9 +1185,15 @@ int coffe_parser_init(
     ){
         parse_double_array(
             conf,
-            "density",
-            &par->density,
-            &par->density_len
+            "density1",
+            &par->density1,
+            &par->density1_len
+        );
+        parse_double_array(
+            conf,
+            "density2",
+            &par->density2,
+            &par->density2_len
         );
         parse_double_array(
             conf,
@@ -1224,10 +1236,11 @@ int coffe_parser_init(
         );
 
         if (
-            par->density_len != par->fsky_len ||
-            par->density_len != par->z_mean_len ||
-            par->density_len != par->deltaz_len ||
-            par->density_len != par->pixelsize_len
+            par->density1_len != par->fsky_len ||
+            par->density1_len != par->density2_len ||
+            par->density1_len != par->z_mean_len ||
+            par->density1_len != par->deltaz_len ||
+            par->density1_len != par->pixelsize_len
         ){
             fprintf(
                 stderr,
@@ -1251,9 +1264,10 @@ int coffe_parser_init(
             &par->zmax_len
         );
         if (
-            par->density_len != par->fsky_len ||
-            par->density_len != par->zmin_len ||
-            par->density_len != par->zmax_len
+            par->density1_len != par->fsky_len ||
+            par->density1_len != par->density2_len ||
+            par->density1_len != par->zmin_len ||
+            par->density1_len != par->zmax_len
         ){
             fprintf(
                 stderr,

@@ -52,4 +52,12 @@ coffe_covariance_t coffe_covariance_find(
     const double sep1,
     const double sep2
 );
+
+double covariance_coefficient(
+    double bias1,
+    double bias2,
+    double growth_rate,
+    int ell
+);
+
 #endif

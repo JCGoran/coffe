@@ -27,6 +27,7 @@
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_coupling.h>
 
 #ifdef HAVE_CLASS
 #include "class.h"
@@ -770,9 +771,13 @@ int coffe_parameters_free(
             free(par->fsky);
         par->fsky_len = 0;
 
-        if (par->density_len)
-            free(par->density);
-        par->density_len = 0;
+        if (par->density1_len)
+            free(par->density1);
+        par->density1_len = 0;
+
+        if (par->density2_len)
+            free(par->density2);
+        par->density2_len = 0;
 
         if (par->pixelsize_len)
             free(par->pixelsize);
@@ -1368,4 +1373,60 @@ int coffe_free_class_struct(
     input->nonlinear = NULL;
 
     return EXIT_SUCCESS;
+}
+
+
+
+/**
+    computes the integral over 4 Legendre polynomials of degrees n, m, a, and b
+**/
+double coffe_legendre_integral(
+    int n,
+    int m,
+    int a,
+    int b
+)
+{
+    /* shortcut: if n + m + a + b is odd, the integral is identically zero */
+    if ((n + m + a + b) % 2 != 0)
+        return 0;
+
+    const int lower_limit = (abs(n - m) > abs(a - b) ? abs(n - m) : abs(a - b));
+    const int upper_limit = (n + m < a + b ? n + m : a + b);
+
+    double result = 0;
+
+    for (int l = lower_limit; l <= upper_limit; ++l){
+        result +=
+            (2. * l + 1)
+           *pow(gsl_sf_coupling_3j(2 * n, 2 * m, 2 * l, 0, 0, 0), 2)
+           *pow(gsl_sf_coupling_3j(2 * a, 2 * b, 2 * l, 0, 0, 0), 2);
+    }
+
+    return 2 * result;
+}
+
+
+
+/**
+    calculates the Kronecker delta
+**/
+int coffe_kronecker_delta(
+    int i,
+    int j
+)
+{
+    return (i == j ? 1 : 0);
+}
+
+
+
+/**
+    calculates (-1)^m
+**/
+int coffe_sign(
+    int m
+)
+{
+    return (abs(m) % 2 == 0 ? 1 : -1);
 }

@@ -894,16 +894,16 @@ cdef class Coffe:
 
 
     @property
-    def number_density(self):
+    def number_density1(self):
         """
-        Number density of tracers (in Mpc^3/h^3) at z_mean.
+        Number density of first tracers (in Mpc^3/h^3) at z_mean.
         """
         return np.array(
-            [self._parameters.density[i] for i in range(self._parameters.density_len)]
+            [self._parameters.density1[i] for i in range(self._parameters.density1_len)]
         )
 
-    @number_density.setter
-    def number_density(self, value):
+    @number_density1.setter
+    def number_density1(self, value):
         try:
             _ = iter(value)
         except TypeError as err:
@@ -917,16 +917,79 @@ cdef class Coffe:
         if not all(_>= 0 and _ < 10 for _ in temp):
             raise ValueError
 
-        if self._parameters.density_len:
-            free(self._parameters.density)
+        if self._parameters.density1_len:
+            free(self._parameters.density1)
 
-        self._parameters.density_len = len(temp)
-        self._parameters.density = <double *> malloc(sizeof(double) * len(temp))
-        for i in range(self._parameters.density_len):
-            self._parameters.density[i] = temp[i]
+        self._parameters.density1_len = len(temp)
+        self._parameters.density1 = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.density1_len):
+            self._parameters.density1[i] = temp[i]
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+
+
+    @property
+    def number_density2(self):
+        """
+        Number density of second tracers (in Mpc^3/h^3) at z_mean.
+        """
+        return np.array(
+            [self._parameters.density2[i] for i in range(self._parameters.density2_len)]
+        )
+
+    @number_density2.setter
+    def number_density2(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_>= 0 and _ < 10 for _ in temp):
+            raise ValueError
+
+        if self._parameters.density2_len:
+            free(self._parameters.density2)
+
+        self._parameters.density2_len = len(temp)
+        self._parameters.density2 = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.density2_len):
+            self._parameters.density2[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+
+
+    @property
+    def covariance_populations(self):
+        """
+        Returns the populations used for the covariance matrix.
+        """
+        return np.array([
+            self._parameters.covariance_pop1,
+            self._parameters.covariance_pop2,
+            self._parameters.covariance_pop3,
+            self._parameters.covariance_pop4,
+        ])
+
+    @covariance_populations.setter
+    def covariance_populations(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [int(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to integers') from err
+
+        self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
 
 
     @property
@@ -1680,7 +1743,7 @@ cdef class Coffe:
 
         if not all(
             len(self.z_mean) == len(_) \
-            for _ in (self.deltaz, self.number_density, self.pixelsize, self.fsky)
+            for _ in (self.deltaz, self.number_density1, self.number_density2, self.pixelsize, self.fsky)
         ):
             raise ValueError('Mismatching lengths for covariance parameters')
 
