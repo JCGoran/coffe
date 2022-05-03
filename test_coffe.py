@@ -204,7 +204,8 @@ class TestCoffe:
         cosmo.set_parameters(
             has_density=True,
             has_rsd=True,
-            number_density=[1e-3],
+            number_density1=[1e-3],
+            number_density2=[1e-3],
             z_mean=[1.0],
             deltaz=[0.1],
             fsky=[0.2],

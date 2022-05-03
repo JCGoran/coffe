@@ -431,13 +431,17 @@ typedef struct coffe_parameters_t
 
     size_t fsky_len;
 
-    double *density;
+    double *density1, *density2;
 
-    size_t density_len;
+    size_t density1_len, density2_len;
 
     double *pixelsize;
 
     size_t pixelsize_len;
+
+    /* the covariance is a 4-point function, hence we can in general
+    specify 4 different populations */
+    int covariance_pop1, covariance_pop2, covariance_pop3, covariance_pop4;
 
     int covariance_integration_method;
 
@@ -800,6 +804,23 @@ int coffe_new_fit_coefficients_array(
 int coffe_free_fit_coefficients_array(
     coffe_fit_coefficients_array_t *input
 );
+
+
+double coffe_legendre_integral(
+    int n,
+    int m,
+    int a,
+    int b
+);
+
+
+int coffe_kronecker_delta(
+    int i,
+    int j
+);
+
+
+int coffe_sign(int m);
 
 
 #endif
