@@ -896,7 +896,7 @@ cdef class Coffe:
     @property
     def number_density1(self):
         """
-        Number density of first tracers (in Mpc^3/h^3) at z_mean.
+        Number density of first tracers (in h^3/Mpc^3) at z_mean.
         """
         return np.array(
             [self._parameters.density1[i] for i in range(self._parameters.density1_len)]
@@ -932,7 +932,7 @@ cdef class Coffe:
     @property
     def number_density2(self):
         """
-        Number density of second tracers (in Mpc^3/h^3) at z_mean.
+        Number density of second tracers (in h^3/Mpc^3) at z_mean.
         """
         return np.array(
             [self._parameters.density2[i] for i in range(self._parameters.density2_len)]
@@ -988,6 +988,9 @@ cdef class Coffe:
             temp = [int(_) for _ in value]
         except TypeError as err:
             raise TypeError('Cannot convert all values to integers') from err
+
+        if len(value) != 4:
+            raise ValueError('The array for setting `covariance_populations` must have length 4')
 
         self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
         self._free_covariance_multipoles()
@@ -1746,7 +1749,7 @@ cdef class Coffe:
             len(self.z_mean) == len(_) \
             for _ in (self.deltaz, self.number_density1, self.number_density2, self.pixelsize, self.fsky)
         ):
-            raise ValueError('Mismatching lengths for covariance parameters')
+            raise ValueError('Mismatching lengths for covariance parameters (`z_mean`, `deltaz`, `number_density1`, `number_density2`, `pixelsize`, `fsky`')
 
         if not self._power_spectrum_flag or recompute:
             self._power_spectrum_init()
