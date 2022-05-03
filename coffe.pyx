@@ -990,6 +990,7 @@ cdef class Coffe:
             raise TypeError('Cannot convert all values to integers') from err
 
         self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
+        self._free_covariance_multipoles()
 
 
     @property
