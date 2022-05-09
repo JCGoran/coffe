@@ -997,6 +997,47 @@ cdef class Coffe:
 
 
     @property
+    def covariance_cosmic(self):
+        """
+        Whether the CV-CV term should be taken into account when computing the
+        covariance of multipoles
+        """
+        return bool(self._parameters.covariance_cosmic)
+
+    @covariance_cosmic.setter
+    def covariance_cosmic(self, value):
+        self._parameters.covariance_cosmic = int(bool(value))
+        self._free_covariance_multipoles()
+
+
+    @property
+    def covariance_mixed(self):
+        """
+        Whether the mixed (CV-Poisson + Poisson-CV) term should be taken into account when computing the
+        covariance of multipoles
+        """
+        return bool(self._parameters.covariance_mixed)
+
+    @covariance_mixed.setter
+    def covariance_mixed(self, value):
+        self._parameters.covariance_mixed = int(bool(value))
+        self._free_covariance_multipoles()
+
+    @property
+    def covariance_poisson(self):
+        """
+        Whether the Poisson-Poisson term should be taken into account when computing the
+        covariance of multipoles
+        """
+        return bool(self._parameters.covariance_poisson)
+
+    @covariance_poisson.setter
+    def covariance_poisson(self, value):
+        self._parameters.covariance_poisson = int(bool(value))
+        self._free_covariance_multipoles()
+
+
+    @property
     def pixelsize(self):
         """
         The pixel size of the covariance (roughly the resolution of the survey).

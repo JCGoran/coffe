@@ -622,6 +622,7 @@ int coffe_covariance_init(
                     #pragma omp parallel for num_threads(par->nthreads) collapse(2)
                     for (size_t m = 0; m < par->sep_len; ++m){
                     for (size_t n = 0; n < par->sep_len; ++n){
+                        if (par->covariance_mixed){
                         integral_pk[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] =
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
@@ -639,10 +640,11 @@ int coffe_covariance_init(
                                 k_max
                             )
                            /M_PI;
-                    }}
+                    }}}
                     #pragma omp parallel for num_threads(par->nthreads) collapse(2)
                     for (size_t m = 0; m < par->sep_len; ++m){
                     for (size_t n = 0; n < par->sep_len; ++n){
+                        if (par->covariance_cosmic){
                         integral_pk2[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] =
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
@@ -661,7 +663,7 @@ int coffe_covariance_init(
                             )
                            /2.
                            /M_PI;
-                    }}
+                    }}}
                 }}
             }
             else if (par->covariance_integration_method == 2){
@@ -921,10 +923,10 @@ int coffe_covariance_init(
                         coeff_pop2_pop3[1] = alpha2_22;
                     }
 
-                    double coeff_cosmic_cosmic_sum = 0;
+                    double coeff_cosmic_sum = 0;
                     for (size_t cnt1 = 0; cnt1 < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt1){
                     for (size_t cnt2 = 0; cnt2 < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt2){
-                        coeff_cosmic_cosmic_sum += (
+                        coeff_cosmic_sum += (
                             coeff_pop1_pop3[cnt1]
                            *coeff_pop2_pop4[cnt2]
                             +
@@ -934,11 +936,11 @@ int coffe_covariance_init(
                         )
                        *coffe_legendre_integral(l1, l2, 2 * cnt1, 2 * cnt2);
                     }}
-                    coeff_cosmic_cosmic_sum /= 4.;
+                    coeff_cosmic_sum /= 4.;
 
-                    double coeff_cosmic_poisson_sum = 0;
+                    double coeff_mixed_sum = 0;
                     for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt){
-                        coeff_cosmic_poisson_sum +=
+                        coeff_mixed_sum +=
                             (
                             coeff_pop1_pop3[cnt]
                            *coffe_kronecker_delta(
@@ -970,7 +972,7 @@ int coffe_covariance_init(
                         )
                        *coffe_legendre_integral(l1, l2, 2 * cnt, 0);
                     }
-                    coeff_cosmic_poisson_sum /= 8.;
+                    coeff_mixed_sum /= 8.;
 
                     /* Kronecker delta (l1, l2) */
                     const int deltal1l2 = coffe_kronecker_delta(l1, l2);
@@ -978,7 +980,8 @@ int coffe_covariance_init(
                     /* Kronecker delta of the separations */
                     const int deltaij = coffe_kronecker_delta(m, n);
 
-                    const double cov_poisson_poisson =
+                    const double cov_poisson = (
+                        par->covariance_poisson ?
                         (2 * l1 + 1)
                        / 4. / M_PI
                        *deltal1l2
@@ -1020,9 +1023,10 @@ int coffe_covariance_init(
                         )
                         /par->density1[k]
                         /par->density2[k]
-                        /volume[k];
+                        /volume[k] : 0);
 
-                    const double cov_cosmic_poisson =
+                    const double cov_mixed = (
+                        par->covariance_mixed ?
                         coffe_sign((l2 - l1) / 2)
                        *coffe_sign(l1 + l2)
                         /* trigraph */
@@ -1035,10 +1039,11 @@ int coffe_covariance_init(
                             :
                             integral_pk[0][i*par->multipole_values_len + j][par->sep_len*n + m]
                         )
-                       *coeff_cosmic_poisson_sum
-                       /volume[k];
+                       *coeff_mixed_sum
+                       /volume[k] : 0);
 
-                    const double cov_cosmic_cosmic =
+                    const double cov_cosmic = (
+                        par->covariance_cosmic ?
                         coffe_sign((l2 - l1) / 2) *
                         /* trigraph */
                         (par->pk_type ? 1 : D1z * D1z * D1z * D1z)
@@ -1051,16 +1056,16 @@ int coffe_covariance_init(
                             :
                             integral_pk2[0][i*par->multipole_values_len + j][par->sep_len*n + m]
                         )
-                       *coeff_cosmic_cosmic_sum
-                       /volume[k];
+                       *coeff_cosmic_sum
+                       /volume[k] : 0);
 
                     /* flat-sky covariance */
                     const double result_mp_or_ramp =
-                        cov_poisson_poisson
+                        cov_poisson
                         +
-                        cov_cosmic_poisson
+                        cov_mixed
                         +
-                        cov_cosmic_cosmic;
+                        cov_cosmic;
 
                     if (par->output_type == COVARIANCE_MULTIPOLES){
                         cov_mp->array[index].value = result_mp_or_ramp;

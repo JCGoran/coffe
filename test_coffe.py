@@ -258,6 +258,59 @@ class TestCoffe:
         cosmo.compute_multipole(l=4, r=10, z=1.5)
 
 
+    def test_multiple_populations(self):
+        """
+        Tests for 2 populations of galaxies
+        """
+        # no covariance contributions
+        cosmo = coffe.Coffe(
+            has_density=True,
+            has_rsd=True,
+            number_density1=[1e-5],
+            number_density2=[1e-5],
+            z_mean=[1.0],
+            deltaz=[0.1],
+            fsky=[0.2],
+            pixelsize=[50],
+            sep=np.arange(50, 350, 50),
+            l=[0, 2, 4],
+            covariance_cosmic=False,
+            covariance_mixed=False,
+            covariance_poisson=False,
+        )
+
+        k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        cov = covariance_matrix(cosmo.compute_covariance_bulk())
+
+        assert np.allclose(cov, 0)
+
+        # only Poisson contribution
+        cosmo.covariance_poisson = True
+
+        k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        cov = covariance_matrix(cosmo.compute_covariance_bulk())
+
+        # the diagonal should not be zero
+        assert not np.allclose(np.diag(cov), 0)
+
+        # for 4 different poulations, covariance with mixed and Poisson
+        # contributions only should be zero
+        cosmo.set_parameters(
+            covariance_populations=[1, 2, 3, 4],
+            covariance_poisson=True,
+            covariance_mixed=True,
+            covariance_cosmic=False,
+        )
+
+        cov = covariance_matrix(cosmo.compute_covariance_bulk())
+
+        assert np.allclose(cov, 0)
+
+
 
 class TestRepresentation:
     """

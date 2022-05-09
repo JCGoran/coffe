@@ -443,6 +443,9 @@ typedef struct coffe_parameters_t
     specify 4 different populations */
     int covariance_pop1, covariance_pop2, covariance_pop3, covariance_pop4;
 
+    /* which contributions should be considered for the covariance (CV-CV, CV-Poisson, and Poisson-Poisson */
+    int covariance_cosmic, covariance_mixed, covariance_poisson;
+
     int covariance_integration_method;
 
     int covariance_integration_bins;
