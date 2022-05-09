@@ -214,6 +214,12 @@ cdef extern from "common.h":
 
         int covariance_pop4
 
+        int covariance_cosmic
+
+        int covariance_mixed
+
+        int covariance_poisson
+
         double *pixelsize
 
         size_t pixelsize_len

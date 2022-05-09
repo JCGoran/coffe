@@ -818,6 +818,9 @@ int coffe_parse_default_parameters(
     par->covariance_pop2 = 1;
     par->covariance_pop3 = 1;
     par->covariance_pop4 = 1;
+    par->covariance_cosmic = 1;
+    par->covariance_mixed = 1;
+    par->covariance_poisson = 1;
 
     par->have_window = 0;
     par->window_size = 0;
