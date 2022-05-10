@@ -13,13 +13,13 @@ from coffe import Covariance
 
 
 def covariance_matrix(
-    cov : List[Covariance],
-    l : Optional[List[int]] = None,
-    z_mean : Optional[List[float]] = None,
-    deltaz : Optional[List[float]] = None,
-    rmin : Optional[Union[Callable, float, int]] = None,
-    rmax : Optional[Union[Callable, float, int]] = None,
-    rstep : Optional[Union[float, int]] = None,
+    cov: List[Covariance],
+    l: Optional[List[int]] = None,
+    z_mean: Optional[List[float]] = None,
+    deltaz: Optional[List[float]] = None,
+    rmin: Optional[Union[Callable, float, int]] = None,
+    rmax: Optional[Union[Callable, float, int]] = None,
+    rstep: Optional[Union[float, int]] = None,
 ) -> np.array:
     """
     Converts an array of covariances into a numpy matrix for easy matrix
@@ -56,16 +56,13 @@ def covariance_matrix(
     --------
     >>> covariance_matrix(coffe.Coffe(has_density=True).compute_corrfunc_bulk())
     """
-    def convert_array_to_matrix(
-        arr
-    ):
+
+    def convert_array_to_matrix(arr):
         size = round(np.sqrt(len(arr)))
         return np.reshape(arr, (size, size))
 
     if not all(isinstance(_, Covariance) for _ in cov):
-        raise ValueError(
-            f'{cov} is not an array of covariances'
-        )
+        raise ValueError(f"{cov} is not an array of covariances")
 
     df = pd.DataFrame([_.to_dict() for _ in cov])
 
@@ -87,7 +84,9 @@ def covariance_matrix(
             for z, dz in zip(z_mean, deltaz):
                 df_rmin = df_rmin.append(
                     df.loc[
-                        (df.r1 >= func_rmin(z, dz)) & (df.r2 >= func_rmin(z, dz)) & (df.z == z)
+                        (df.r1 >= func_rmin(z, dz))
+                        & (df.r2 >= func_rmin(z, dz))
+                        & (df.z == z)
                     ]
                 )
             df = df_rmin
@@ -101,7 +100,9 @@ def covariance_matrix(
             for z, dz in zip(z_mean, deltaz):
                 df_rmax = df_rmax.append(
                     df.loc[
-                        (df.r1 <= func_rmax(z, dz)) & (df.r2 <= func_rmax(z, dz)) & (df.z == z)
+                        (df.r1 <= func_rmax(z, dz))
+                        & (df.r2 <= func_rmax(z, dz))
+                        & (df.z == z)
                     ]
                 )
             df = df_rmax
@@ -111,8 +112,7 @@ def covariance_matrix(
 
     return block_diag(
         *[
-            convert_array_to_matrix(
-                df.loc[df.z == z].value.to_numpy(dtype=float)
-            ) for z in z_mean
+            convert_array_to_matrix(df.loc[df.z == z].value.to_numpy(dtype=float))
+            for z in z_mean
         ]
     )
