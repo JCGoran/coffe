@@ -9,16 +9,20 @@
 # TODO figure out how to use OpenMP
 
 from libc.stdlib cimport malloc, free
-cimport ccoffe
+from coffe cimport ccoffe
+from coffe.representation import (
+    Corrfunc,
+    Multipoles,
+    Covariance,
+)
 
 
-_COFFE_HUBBLE = (1./(2997.92458))
+COFFE_HUBBLE = (1./(2997.92458))
 
 
 from cython.operator cimport dereference
 from ctypes import CFUNCTYPE
 
-from abc import ABC, abstractmethod
 from typing import Any, Callable, List, Tuple, Union
 from dataclasses import dataclass
 import os
@@ -733,7 +737,7 @@ cdef class Coffe:
                 f'Cannot find integral with n = {n}, l = {l}'
             )
 
-        return ccoffe.coffe_interp_spline(&result.result, r * _COFFE_HUBBLE)
+        return ccoffe.coffe_interp_spline(&result.result, r * COFFE_HUBBLE)
 
 
     def galaxy_bias1(self, z : float):
@@ -1309,7 +1313,7 @@ cdef class Coffe:
             ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean + deltaz) \
             - \
             ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean)
-        ) / _COFFE_HUBBLE
+        ) / COFFE_HUBBLE
 
 
     @property
@@ -1385,7 +1389,7 @@ cdef class Coffe:
     def k_min(self, value):
         _check_parameter('k_min', value, (int, float), 1e-7, 1e-3)
         self._parameters.k_min = value
-        self._parameters.k_min_norm = value / _COFFE_HUBBLE
+        self._parameters.k_min_norm = value / COFFE_HUBBLE
 
 
     @property
@@ -1399,7 +1403,7 @@ cdef class Coffe:
     def k_max(self, value):
         _check_parameter('k_max', value, (int, float), 0.1, 1e3)
         self._parameters.k_max = value
-        self._parameters.k_max_norm = value / _COFFE_HUBBLE
+        self._parameters.k_max_norm = value / COFFE_HUBBLE
 
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
@@ -1431,8 +1435,8 @@ cdef class Coffe:
         self._free_power_spectrum()
         self._parameters.k_min = k[0]
         self._parameters.k_max = k[-1]
-        self._parameters.k_min_norm = k[0] / _COFFE_HUBBLE
-        self._parameters.k_max_norm = k[-1] / _COFFE_HUBBLE
+        self._parameters.k_min_norm = k[0] / COFFE_HUBBLE
+        self._parameters.k_max_norm = k[-1] / COFFE_HUBBLE
         size = len(k)
 
         cdef double *x = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
@@ -1443,8 +1447,8 @@ cdef class Coffe:
         for (i, ki), pki in zip(enumerate(k), pk):
             x[i] = ki
             y[i] = pki
-            x_norm[i] = ki / _COFFE_HUBBLE
-            y_norm[i] = pki * _COFFE_HUBBLE**3
+            x_norm[i] = ki / COFFE_HUBBLE
+            y_norm[i] = pki * COFFE_HUBBLE**3
 
         ccoffe.coffe_init_spline(
             &self._parameters.power_spectrum,
@@ -1476,7 +1480,7 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / _COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / COFFE_HUBBLE
 
 
     def hubble_rate(self, z : float):
@@ -1488,7 +1492,7 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.Hz, z) * _COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.Hz, z) * COFFE_HUBBLE
 
 
     def scale_factor(self, z : float):
@@ -1512,7 +1516,7 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz, z) * _COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz, z) * COFFE_HUBBLE
 
 
     def hubble_rate_conformal_derivative(self, z : float):
@@ -1525,7 +1529,7 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz_prime, z) * _COFFE_HUBBLE**2
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz_prime, z) * COFFE_HUBBLE**2
 
 
     def growth_factor(self, z : float):
@@ -1596,21 +1600,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE, mu, 0,
             ccoffe.NONINTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE, mu, 0,
             ccoffe.SINGLE_INTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE, mu, 0,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.CORRFUNC
         )
 
@@ -1660,21 +1664,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE, 0, l,
             ccoffe.NONINTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE, 0, l,
             ccoffe.SINGLE_INTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * _COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE, 0, l,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.MULTIPOLES
         )
 
@@ -1717,7 +1721,7 @@ cdef class Coffe:
         return np.array([
             Multipoles(
                 z=self._multipoles.array[i].coords.z_mean,
-                r=self._multipoles.array[i].coords.separation / _COFFE_HUBBLE,
+                r=self._multipoles.array[i].coords.separation / COFFE_HUBBLE,
                 l=self._multipoles.array[i].coords.l,
                 value=self._multipoles.array[i].value,
             ) for i in range(self._multipoles.size)
@@ -1759,7 +1763,7 @@ cdef class Coffe:
         return np.array([
             Corrfunc(
                 z=self._corrfunc.array[i].coords.z_mean,
-                r=self._corrfunc.array[i].coords.separation / _COFFE_HUBBLE,
+                r=self._corrfunc.array[i].coords.separation / COFFE_HUBBLE,
                 mu=self._corrfunc.array[i].coords.mu,
                 value=self._corrfunc.array[i].value,
             ) for i in range(self._corrfunc.size)
@@ -1861,142 +1865,3 @@ cdef class Coffe:
             &self._covariance_multipoles,
             &self.__dummy 
         )
-
-
-
-class Representation(ABC):
-    @abstractmethod
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def to_dict(self):
-        """
-        The representation of the class as a dictionary.
-        """
-        return {
-            key : getattr(self, key) \
-            for key in dir(self.__class__) \
-            if hasattr(getattr(self.__class__, key), '__set__') \
-            and not key.startswith('__')
-        }
-
-
-    def __repr__(self):
-        """
-        User-friendly representation of the class
-        """
-        return f'{self.__class__}({self.to_dict()})'
-
-
-    def _repr_html_(self):
-        names = self.to_dict().keys()
-        values = self.to_dict().values()
-        temp = (
-            '<tr>' + ('<th>{}</th>' * len(names)).format(*names) + '</tr>'
-        ) if names else ''
-        header = f'<thead>{temp}</thead>'
-
-        body = '<tbody>' + (
-            '<td>{}</td>' * len(values)
-        ).format(*values) + '</tbody>'
-
-        return f'<table>{header}{body}</table>'
-
-
-
-class Covariance(Representation):
-    def __init__(
-        self, *,
-        r1 : float, r2 : float,
-        l1 : int, l2 : int,
-        z : float,
-        value : float,
-    ):
-        self._r1 = r1
-        self._r2 = r2
-        self._l1 = l1
-        self._l2 = l2
-        self._z = z
-        self._value = value
-
-    @property
-    def r1(self):
-        return self._r1
-
-    @property
-    def r2(self):
-        return self._r2
-
-    @property
-    def l1(self):
-        return self._l1
-
-    @property
-    def l2(self):
-        return self._l2
-
-    @property
-    def z(self):
-        return self._z
-
-    @property
-    def value(self):
-        return self._value
-
-
-
-class Corrfunc(Representation):
-    def __init__(
-        self, *,
-        r : float, mu : float, z : float,
-        value : float,
-    ):
-        self._r = r
-        self._mu = mu
-        self._z = z
-        self._value = value
-
-    @property
-    def mu(self):
-        return self._mu
-
-    @property
-    def r(self):
-        return self._r
-
-    @property
-    def z(self):
-        return self._z
-
-    @property
-    def value(self):
-        return self._value
-
-
-
-class Multipoles(Representation):
-    def __init__(
-        self, *,
-        l : int, r : float, z : float,
-        value : float,
-    ):
-        self._l = l
-        self._r = r
-        self._z = z
-        self._value = value
-
-    @property
-    def l(self):
-        return self._l
-
-    @property
-    def r(self):
-        return self._r
-
-    @property
-    def z(self):
-        return self._z
-
-    @property
-    def value(self):
-        return self._value

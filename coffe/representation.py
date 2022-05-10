@@ -1,46 +1,53 @@
-class Representation:
+from abc import ABC, abstractmethod
+
+
+class Representation(ABC):
+    @abstractmethod
+    def __init__(self, *args, **kwargs):
+        pass
+
     def to_dict(self):
         """
         The representation of the class as a dictionary.
         """
         return {
-            key : getattr(self, key) \
-            for key in dir(self.__class__) \
-            if hasattr(getattr(self.__class__, key), '__set__') \
-            and not key.startswith('__')
+            key: getattr(self, key)
+            for key in dir(self.__class__)
+            if hasattr(getattr(self.__class__, key), "__set__")
+            and not key.startswith("__")
         }
-
 
     def __repr__(self):
         """
         User-friendly representation of the class
         """
-        return f'{self.__class__}({self.to_dict()})'
-
+        return f"{self.__class__}({self.to_dict()})"
 
     def _repr_html_(self):
         names = self.to_dict().keys()
         values = self.to_dict().values()
         temp = (
-            '<tr>' + ('<th>{}</th>' * len(names)).format(*names) + '</tr>'
-        ) if names else ''
-        header = f'<thead>{temp}</thead>'
+            ("<tr>" + ("<th>{}</th>" * len(names)).format(*names) + "</tr>")
+            if names
+            else ""
+        )
+        header = f"<thead>{temp}</thead>"
 
-        body = '<tbody>' + (
-            '<td>{}</td>' * len(values)
-        ).format(*values) + '</tbody>'
+        body = "<tbody>" + ("<td>{}</td>" * len(values)).format(*values) + "</tbody>"
 
-        return f'<table>{header}{body}</table>'
-
+        return f"<table>{header}{body}</table>"
 
 
 class Covariance(Representation):
     def __init__(
-        self, *,
-        r1 : float, r2 : float,
-        l1 : int, l2 : int,
-        z : float,
-        value : float,
+        self,
+        *,
+        r1: float,
+        r2: float,
+        l1: int,
+        l2: int,
+        z: float,
+        value: float,
     ):
         self._r1 = r1
         self._r2 = r2
@@ -74,12 +81,14 @@ class Covariance(Representation):
         return self._value
 
 
-
 class Corrfunc(Representation):
     def __init__(
-        self, *,
-        r : float, mu : float, z : float,
-        value : float,
+        self,
+        *,
+        r: float,
+        mu: float,
+        z: float,
+        value: float,
     ):
         self._r = r
         self._mu = mu
@@ -103,12 +112,14 @@ class Corrfunc(Representation):
         return self._value
 
 
-
 class Multipoles(Representation):
     def __init__(
-        self, *,
-        l : int, r : float, z : float,
-        value : float,
+        self,
+        *,
+        l: int,
+        r: float,
+        z: float,
+        value: float,
     ):
         self._l = l
         self._r = r
@@ -130,5 +141,3 @@ class Multipoles(Representation):
     @property
     def value(self):
         return self._value
-
-

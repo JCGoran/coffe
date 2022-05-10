@@ -136,12 +136,12 @@ class TestCoffe:
             data = np.loadtxt(os.path.join(DATA_DIR, f'benchmark_integral{index}.dat'))
             xarr, yarr = np.transpose(data)
             for x, y in zip(xarr, yarr):
-                if x / coffe._COFFE_HUBBLE > 1 \
-                and x / coffe._COFFE_HUBBLE < 20000:
+                if x / coffe.COFFE_HUBBLE > 1 \
+                and x / coffe.COFFE_HUBBLE < 20000:
                     assert np.isclose(
                         y,
                         cosmo.integral(
-                            r=x / coffe._COFFE_HUBBLE,
+                            r=x / coffe.COFFE_HUBBLE,
                             l=mapping[index]['l'],
                             n=mapping[index]['n'],
                         )
@@ -317,7 +317,7 @@ class TestRepresentation:
     Tests for Corrfunc, Multipoles, and Covariance classes.
     """
     def test_representation(self):
-        with pytest.raises(TypeError):
-            coffe.Representation()
+        with pytest.raises(ImportError):
+            from coffe import Representation
 
         coffe.Multipoles(l=0, r=10, z=1.0, value=1e-3)

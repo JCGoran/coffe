@@ -1,5 +1,5 @@
 # The main product
-bin_PROGRAMS = coffe # make all
+bin_PROGRAMS = coffe-cli # make all
 
 lib_LIBRARIES = libcoffe.a
 
@@ -195,7 +195,7 @@ libcoffe_a_SOURCES = \
     src/average_multipoles.c
 
 #include .c and .h in SOURCES so that both appear in dist
-coffe_SOURCES = \
+coffe_cli_SOURCES = \
     $(libcoffe_a_HEADERS) \
     src/utils.h \
     src/twobessel.h \
@@ -283,4 +283,3 @@ test_covariance_SOURCES = \
     src/twobessel.c \
     src/utils.c \
     src/covariance.c
-

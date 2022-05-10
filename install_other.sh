@@ -24,7 +24,7 @@ install_cuba(){
         git clone --branch "${CUBA_BRANCH}" "${CUBA_REMOTE_URL}" "${CUBA_DIR}"
     fi
 
-    cd "${CUBA_DIR}" && autoreconf --install && ./configure --prefix="${CONDA_PREFIX}" && make install && cd -
+    cd "${CUBA_DIR}" && autoreconf --install && ./configure --prefix="${CONDA_PREFIX}" CFLAGS=-fPIC && make install && cd -
     printf 'CUBA successfully installed\n'
 }
 
