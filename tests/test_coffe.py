@@ -7,6 +7,7 @@ import coffe
 from coffe_utils import covariance_matrix
 
 DATA_DIR = 'tests/benchmarks/'
+h = 0.67
 
 class TestCoffe:
     def test_bias(self):
@@ -105,19 +106,22 @@ class TestCoffe:
                 if key == 'growth_factor':
                     for index, zi in enumerate(d['z']):
                         assert np.isclose(d[key][index] / d[key][0], getattr(cosmo, key)(zi))
-                else:
+                elif key in ['hubble_rate', 'hubble_rate_conformal']:
                     for index, zi in enumerate(d['z']):
-                        assert np.isclose(d[key][index], getattr(cosmo, key)(zi))
+                        assert np.isclose(d[key][index], getattr(cosmo, key)(zi) / h)
+                elif key == 'hubble_rate_conformal_prime':
+                    for index, zi in enumerate(d['z']):
+                        assert np.isclose(d[key][index], getattr(cosmo, key)(zi) / h**2)
+                elif key == 'comoving_distance':
+                    for index, zi in enumerate(d['z']):
+                        assert np.isclose(d[key][index], getattr(cosmo, key)(zi) * h)
 
 
     def test_integrals(self):
-        cosmo = coffe.Coffe(
-            # in Mpc/h
-            sep=[10, 20, 40, 100, 150],
-            mu=[0.0, 0.2, 0.5, 0.8, 0.95],
-        )
+        cosmo = coffe.Coffe()
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
         # mapping of indices to (n, l) pairs
@@ -141,21 +145,23 @@ class TestCoffe:
                     assert np.isclose(
                         y,
                         cosmo.integral(
-                            r=x / coffe.COFFE_HUBBLE,
+                            r=x / coffe.COFFE_HUBBLE / h,
                             l=mapping[index]['l'],
                             n=mapping[index]['n'],
-                        )
+                        ),
+                        rtol=1e-4,
                     )
 
 
     def test_corrfunc(self):
         cosmo = coffe.Coffe(
-            # in Mpc/h
-            sep=[10, 20, 40, 100, 150],
+            # in Mpc
+            sep=np.array([10, 20, 40, 100, 150]) / h,
             mu=[0.0, 0.2, 0.5, 0.8, 0.95],
         )
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
 
         contributions = {'den' : 'density', 'rsd' : 'rsd', 'len' : 'lensing'}
         for prefix in contributions:
@@ -169,18 +175,19 @@ class TestCoffe:
                     os.path.join(DATA_DIR, f'benchmark_{prefix}_corrfunc{index}.dat')
                 )
                 x, y = np.transpose(data)
-                assert np.allclose(df.loc[df.mu == mu].r.values, x)
+                assert np.allclose(df.loc[df.mu == mu].r.values * h, x)
                 assert np.allclose(df.loc[df.mu == mu].value.values, y, rtol=5e-4)
 
 
     def test_multipoles(self):
         cosmo = coffe.Coffe(
-            # in Mpc/h
-            sep=[10, 20, 40, 100, 150],
+            # in Mpc
+            sep=np.array([10, 20, 40, 100, 150]) / h,
             l=[0, 2, 4],
         )
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
         contributions = {'den' : 'density', 'rsd' : 'rsd', 'len' : 'lensing'}
@@ -195,7 +202,7 @@ class TestCoffe:
                     os.path.join(DATA_DIR, f'benchmark_{prefix}_multipoles{mp}.dat')
                 )
                 x, y = np.transpose(data)
-                assert np.allclose(df.loc[df.l == mp].r.values, x)
+                assert np.allclose(df.loc[df.l == mp].r.values * h, x)
                 assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
 
@@ -204,17 +211,18 @@ class TestCoffe:
         cosmo.set_parameters(
             has_density=True,
             has_rsd=True,
-            number_density1=[1e-3],
-            number_density2=[1e-3],
+            number_density1=[1e-3 * h**3],
+            number_density2=[1e-3 * h**3],
             z_mean=[1.0],
             deltaz=[0.1],
             fsky=[0.2],
-            pixelsize=[50],
-            sep=np.arange(50, 350, 50),
+            pixelsize=[50 / h],
+            sep=np.arange(50, 350, 50) / h,
             l=[0, 2, 4],
         )
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
         result = cosmo.compute_covariance_bulk()
@@ -225,8 +233,8 @@ class TestCoffe:
                     os.path.join(DATA_DIR, f'benchmark_multipoles_covariance_{mp1}{mp2}.dat')
                 )
                 x, y, z = np.transpose(data)
-                assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r1.values, x)
-                assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values, y)
+                assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r1.values * h, x)
+                assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values * h, y)
                 assert np.allclose(df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4)
 
         assert covariance_matrix(result).ndim == 2
@@ -251,7 +259,7 @@ class TestCoffe:
         # initialize COFFE with some cosmology
         cosmo = coffe.Coffe()
         cosmo.set_parameters(
-            sep=np.linspace(10, 300, 100),
+            sep=np.linspace(10, 300, 100) / h,
             has_rsd=False,
             omega_m=0.31,
         )
@@ -266,13 +274,13 @@ class TestCoffe:
         cosmo = coffe.Coffe(
             has_density=True,
             has_rsd=True,
-            number_density1=[1e-5],
-            number_density2=[1e-5],
+            number_density1=[1e-5 * h**3],
+            number_density2=[1e-5 * h**3],
             z_mean=[1.0],
             deltaz=[0.1],
             fsky=[0.2],
-            pixelsize=[50],
-            sep=np.arange(50, 350, 50),
+            pixelsize=[50 / h],
+            sep=np.arange(50, 350, 50) / h,
             l=[0, 2, 4],
             covariance_cosmic=False,
             covariance_mixed=False,
@@ -280,6 +288,7 @@ class TestCoffe:
         )
 
         k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
         cov = covariance_matrix(cosmo.compute_covariance_bulk())

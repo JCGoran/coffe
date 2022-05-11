@@ -617,10 +617,11 @@ cdef class Coffe:
     @property
     def sep(self):
         """
-        Returns the list of separations (in Mpc/h) for which the 2PCF/multipoles/covariance of multipoles should be computed.
+        Returns the list of separations (in Mpc) for which the
+        2PCF/multipoles/covariance of multipoles should be computed.
         """
         return np.array(
-            [self._parameters.sep[i] for i in range(self._parameters.sep_len)]
+            [self._parameters.sep[i] / self.h for i in range(self._parameters.sep_len)]
         )
 
 
@@ -645,7 +646,7 @@ cdef class Coffe:
         self._parameters.sep_len = len(temp)
         self._parameters.sep = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.sep_len):
-            self._parameters.sep[i] = temp[i]
+            self._parameters.sep[i] = temp[i] * self.h
         self._free_corrfunc()
         self._free_multipoles()
 
@@ -705,13 +706,13 @@ cdef class Coffe:
         Parameters
         ----------
         r : float
-            the separation (in Mpc/h) for which one wants to compute the integral
+            the separation (in Mpc) for which one wants to compute the integral
 
         n : int
 
         l : int
         """
-        _check_parameter('r', r, (int, float), 0, 25000)
+        _check_parameter('r', r, (int, float), 0, 25000 / self.h)
         _check_parameter('n', n, int, -2, 4)
         _check_parameter('l', l, int, 0, 4)
 
@@ -737,7 +738,7 @@ cdef class Coffe:
                 f'Cannot find integral with n = {n}, l = {l}'
             )
 
-        return ccoffe.coffe_interp_spline(&result.result, r * COFFE_HUBBLE)
+        return ccoffe.coffe_interp_spline(&result.result, r * COFFE_HUBBLE * self.h)
 
 
     def galaxy_bias1(self, z : float):
@@ -900,10 +901,10 @@ cdef class Coffe:
     @property
     def number_density1(self):
         """
-        Number density of first tracers (in h^3/Mpc^3) at z_mean.
+        Number density of first tracers (in 1/Mpc^3) at z_mean.
         """
         return np.array(
-            [self._parameters.density1[i] for i in range(self._parameters.density1_len)]
+            [self._parameters.density1[i] * self.h**3 for i in range(self._parameters.density1_len)]
         )
 
     @number_density1.setter
@@ -927,7 +928,7 @@ cdef class Coffe:
         self._parameters.density1_len = len(temp)
         self._parameters.density1 = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.density1_len):
-            self._parameters.density1[i] = temp[i]
+            self._parameters.density1[i] = temp[i] / self.h**3
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
@@ -936,10 +937,10 @@ cdef class Coffe:
     @property
     def number_density2(self):
         """
-        Number density of second tracers (in h^3/Mpc^3) at z_mean.
+        Number density of second tracers (in 1/Mpc^3) at z_mean.
         """
         return np.array(
-            [self._parameters.density2[i] for i in range(self._parameters.density2_len)]
+            [self._parameters.density2[i] * self.h**3 for i in range(self._parameters.density2_len)]
         )
 
     @number_density2.setter
@@ -963,7 +964,7 @@ cdef class Coffe:
         self._parameters.density2_len = len(temp)
         self._parameters.density2 = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.density2_len):
-            self._parameters.density2[i] = temp[i]
+            self._parameters.density2[i] = temp[i] / self.h**3
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
@@ -1044,10 +1045,10 @@ cdef class Coffe:
     @property
     def pixelsize(self):
         """
-        The pixel size of the covariance (roughly the resolution of the survey).
+        The pixel size of the covariance (roughly the resolution of the survey) in Mpc.
         """
         return np.array(
-            [self._parameters.pixelsize[i] for i in range(self._parameters.pixelsize_len)]
+            [self._parameters.pixelsize[i] / self.h for i in range(self._parameters.pixelsize_len)]
         )
 
     @pixelsize.setter
@@ -1071,7 +1072,7 @@ cdef class Coffe:
         self._parameters.pixelsize_len = len(temp)
         self._parameters.pixelsize = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.pixelsize_len):
-            self._parameters.pixelsize[i] = temp[i]
+            self._parameters.pixelsize[i] = temp[i] * self.h
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
@@ -1185,7 +1186,7 @@ cdef class Coffe:
     def has_binned_covariance(self):
         """
         Returns whether or not the covariance should be bin averaged (see eq. (A18) of arXiv:1509.04293).
-        Note that the parameter `pixelsize` controls the bin width (in Mpc/h) in each redshift bin.
+        Note that the parameter `pixelsize` controls the bin width (in Mpc) in each redshift bin.
         If set to False, the covariance will not be bin averaged, and eq. (2.52)
         from arXiv:1806.11090 will be used.
         """
@@ -1340,9 +1341,10 @@ cdef class Coffe:
 
     def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation : str = 'geometric'):
         """
-        Evaluates the matter cross spectrum at some k and z1 and z2.
+        Evaluates the matter cross spectrum (in Mpc^3) at some k and z1 and z2.
+        Input k must be in 1/Mpc.
         """
-        _check_parameter('k', k, (int, float), 1e-5, 1e3)
+        _check_parameter('k', k, (int, float), 1e-5 * self.h, 1e3 * self.h)
         _check_parameter('z1', z1, (int, float), 0, 15)
         _check_parameter('z2', z2, (int, float), 0, 15)
 
@@ -1353,7 +1355,7 @@ cdef class Coffe:
             self._background_init()
 
         return \
-            ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
+            ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k / self.h) \
            *ccoffe.coffe_interp_spline(&self._background.D1, z1) \
            *ccoffe.coffe_interp_spline(&self._background.D1, z2)
 
@@ -1361,8 +1363,9 @@ cdef class Coffe:
     def power_spectrum(self, k : float, z : float):
         """
         Evaluates the matter power spectrum at some k and z.
+        Input k must be in 1/Mpc.
         """
-        _check_parameter('k', k, (int, float), 1e-5, 1e3)
+        _check_parameter('k', k, (int, float), 1e-5 * self.h, 1e3 * self.h)
         _check_parameter('z', z, (int, float), 0, 15)
 
         if not self._power_spectrum_flag:
@@ -1373,44 +1376,44 @@ cdef class Coffe:
 
         if self._parameters.pk_type == ccoffe.COFFE_PK_LINEAR:
             return \
-                ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
+                ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k / self.h) \
                *ccoffe.coffe_interp_spline(&self._background.D1, z)**2
-        return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k)
+        return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k / self.h)
 
 
     @property
     def k_min(self):
         """
-        The minimum wavenumber (in h/Mpc) for which the power spectrum should be computed.
+        The minimum wavenumber (in 1/Mpc) for which the power spectrum should be computed.
         """
-        return self._parameters.k_min
+        return self._parameters.k_min * self.h
 
     @k_min.setter
     def k_min(self, value):
-        _check_parameter('k_min', value, (int, float), 1e-7, 1e-3)
-        self._parameters.k_min = value
-        self._parameters.k_min_norm = value / COFFE_HUBBLE
+        _check_parameter('k_min', value, (int, float), 1e-7 * self.h, 1e-3 * self.h)
+        self._parameters.k_min = value / self.h
+        self._parameters.k_min_norm = value / COFFE_HUBBLE / self.h
 
 
     @property
     def k_max(self):
         """
-        The maximum wavenumber (in h/Mpc) for which the power spectrum should be computed.
+        The maximum wavenumber (in 1/Mpc) for which the power spectrum should be computed.
         """
-        return self._parameters.k_max
+        return self._parameters.k_max * self.h
 
     @k_max.setter
     def k_max(self, value):
-        _check_parameter('k_max', value, (int, float), 0.1, 1e3)
-        self._parameters.k_max = value
-        self._parameters.k_max_norm = value / COFFE_HUBBLE
+        _check_parameter('k_max', value, (int, float), 0.1 * self.h, 1e3 * self.h)
+        self._parameters.k_max = value / self.h
+        self._parameters.k_max_norm = value / COFFE_HUBBLE / self.h
 
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
         """
         Sets the linear matter power spectrum, optionally at some redshift (by default it's
         assumed the input is at z = 0).
-        The input k must be in units h/Mpc, and P(k) in units Mpc^3/h^3.
+        The input k must be in units 1/Mpc, and P(k) in units Mpc^3.
 
         Parameters
         ----------
@@ -1433,10 +1436,10 @@ cdef class Coffe:
         # TODO error checking for z and rescaling if z > 0
 
         self._free_power_spectrum()
-        self._parameters.k_min = k[0]
-        self._parameters.k_max = k[-1]
-        self._parameters.k_min_norm = k[0] / COFFE_HUBBLE
-        self._parameters.k_max_norm = k[-1] / COFFE_HUBBLE
+        self._parameters.k_min = k[0] / self.h
+        self._parameters.k_max = k[-1] / self.h
+        self._parameters.k_min_norm = k[0] / COFFE_HUBBLE / self.h
+        self._parameters.k_max_norm = k[-1] / COFFE_HUBBLE / self.h
         size = len(k)
 
         cdef double *x = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
@@ -1445,10 +1448,10 @@ cdef class Coffe:
         cdef double *y_norm = <double *>ccoffe.coffe_malloc(sizeof(double) * size)
 
         for (i, ki), pki in zip(enumerate(k), pk):
-            x[i] = ki
-            y[i] = pki
-            x_norm[i] = ki / COFFE_HUBBLE
-            y_norm[i] = pki * COFFE_HUBBLE**3
+            x[i] = ki / self.h
+            y[i] = pki * self.h**3
+            x_norm[i] = ki / COFFE_HUBBLE / self.h
+            y_norm[i] = pki * COFFE_HUBBLE**3 * self.h**3
 
         ccoffe.coffe_init_spline(
             &self._parameters.power_spectrum,
@@ -1472,7 +1475,7 @@ cdef class Coffe:
 
     def comoving_distance(self, z : float):
         """
-        Evaluates the comoving distance at some redshift (in Mpc/h).
+        Evaluates the comoving distance at some redshift (in Mpc).
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1480,19 +1483,19 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.comoving_distance, z) / COFFE_HUBBLE / self.h
 
 
     def hubble_rate(self, z : float):
         """
-        Evaluates the Hubble rate (H(z)) at some redshift (in h/Mpc).
+        Evaluates the Hubble rate (H(z)) at some redshift (in 1/Mpc).
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.Hz, z) * COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.Hz, z) * COFFE_HUBBLE * self.h
 
 
     def scale_factor(self, z : float):
@@ -1509,27 +1512,27 @@ cdef class Coffe:
 
     def hubble_rate_conformal(self, z : float):
         """
-        Evaluates the conformal Hubble rate (𝓗(z)) at some redshift (in h/Mpc).
+        Evaluates the conformal Hubble rate (𝓗(z)) at some redshift (in 1/Mpc).
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz, z) * COFFE_HUBBLE
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz, z) * COFFE_HUBBLE * self.h
 
 
     def hubble_rate_conformal_derivative(self, z : float):
         """
         Evaluates the first derivative of the conformal Hubble rate w.r.t.
-        conformal time (d𝓗(z)/dτ) at some redshift (in h^/Mpc^2).
+        conformal time (d𝓗(z)/dτ) at some redshift (in 1/Mpc^2).
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
         if not self._background.flag:
             self._background_init()
 
-        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz_prime, z) * COFFE_HUBBLE**2
+        return ccoffe.coffe_interp_spline(&self._background.conformal_Hz_prime, z) * COFFE_HUBBLE**2 * self.h**2
 
 
     def growth_factor(self, z : float):
@@ -1572,7 +1575,7 @@ cdef class Coffe:
             the mean redshift
 
         r : float
-            the comoving separation (in Mpc/h) between the two points in the sky
+            the comoving separation (in Mpc) between the two points in the sky
 
         mu : float
             the angle mu (see `help(coffe.mu)` for definition)
@@ -1590,7 +1593,7 @@ cdef class Coffe:
             self._integrals_init()
 
         _check_parameter('z', z, (int, float), 0, 15)
-        _check_parameter('r', r, (int, float), 0, 1500)
+        _check_parameter('r', r, (int, float), 0, 1500 / self.h)
         _check_parameter('mu', mu, (int, float), -1, 1)
 
         cdef ccoffe.gsl_error_handler_t *default_handler = \
@@ -1600,21 +1603,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE * self.h, mu, 0,
             ccoffe.NONINTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE * self.h, mu, 0,
             ccoffe.SINGLE_INTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, mu, 0,
+            z, r * COFFE_HUBBLE * self.h, mu, 0,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.CORRFUNC
         )
 
@@ -1637,7 +1640,7 @@ cdef class Coffe:
             the mean redshift
 
         r : float
-            the comoving separation (in Mpc/h) between the 2 points in the sky
+            the comoving separation (in Mpc) between the 2 points in the sky
 
         l : int
             the multipole moment
@@ -1654,7 +1657,7 @@ cdef class Coffe:
             self._integrals_init()
 
         _check_parameter('z', z, (int, float), 0, 15)
-        _check_parameter('r', r, (int, float), 0, 1500)
+        _check_parameter('r', r, (int, float), 0, 1500 / self.h)
         _check_parameter('l', l, (int,), 0, 10)
 
         cdef ccoffe.gsl_error_handler_t *default_handler = \
@@ -1664,21 +1667,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE * self.h, 0, l,
             ccoffe.NONINTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE * self.h, 0, l,
             ccoffe.SINGLE_INTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r * COFFE_HUBBLE, 0, l,
+            z, r * COFFE_HUBBLE * self.h, 0, l,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.MULTIPOLES
         )
 
@@ -1721,7 +1724,7 @@ cdef class Coffe:
         return np.array([
             Multipoles(
                 z=self._multipoles.array[i].coords.z_mean,
-                r=self._multipoles.array[i].coords.separation / COFFE_HUBBLE,
+                r=self._multipoles.array[i].coords.separation / COFFE_HUBBLE / self.h,
                 l=self._multipoles.array[i].coords.l,
                 value=self._multipoles.array[i].value,
             ) for i in range(self._multipoles.size)
@@ -1763,7 +1766,7 @@ cdef class Coffe:
         return np.array([
             Corrfunc(
                 z=self._corrfunc.array[i].coords.z_mean,
-                r=self._corrfunc.array[i].coords.separation / COFFE_HUBBLE,
+                r=self._corrfunc.array[i].coords.separation / COFFE_HUBBLE / self.h,
                 mu=self._corrfunc.array[i].coords.mu,
                 value=self._corrfunc.array[i].value,
             ) for i in range(self._corrfunc.size)
@@ -1816,8 +1819,8 @@ cdef class Coffe:
         return np.array([
             Covariance(
                 z=self._covariance_multipoles.array[i].coords.z_mean,
-                r1=self._covariance_multipoles.array[i].coords.separation1,
-                r2=self._covariance_multipoles.array[i].coords.separation2,
+                r1=self._covariance_multipoles.array[i].coords.separation1 / self.h,
+                r2=self._covariance_multipoles.array[i].coords.separation2 / self.h,
                 l1=self._covariance_multipoles.array[i].coords.l1,
                 l2=self._covariance_multipoles.array[i].coords.l2,
                 value=self._covariance_multipoles.array[i].value,
