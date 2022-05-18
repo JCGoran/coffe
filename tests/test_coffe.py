@@ -97,6 +97,18 @@ class TestCoffe:
         )
 
 
+    def test_cross_spectrum(self):
+        cosmo = coffe.Coffe()
+        k, pk = np.transpose(np.loadtxt('PkL_CLASS.dat'))
+        k, pk = k * h, pk / h**3
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        assert np.allclose(
+            pk,
+            np.array([cosmo.cross_spectrum(_, 0, 0) for _ in k]),
+        )
+
+
     def test_background(self):
         cosmo = coffe.Coffe()
         # we can't init the background automatically, so this is cheating a bit
