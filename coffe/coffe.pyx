@@ -1301,7 +1301,7 @@ cdef class Coffe:
 
     def maximum_separation(self, z_mean : float, deltaz : float):
         """
-        Returns the maximum allowed comoving separation (in Mpc/h) to compute the
+        Returns the maximum allowed comoving separation (in Mpc) to compute the
         multipoles for a given redshift bin, assuming the current cosmology.
         """
         _check_parameter('z_mean', z_mean, (int, float), 0, 15)
@@ -1314,7 +1314,7 @@ cdef class Coffe:
             ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean + deltaz) \
             - \
             ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean)
-        ) / COFFE_HUBBLE
+        ) / COFFE_HUBBLE / self.h
 
 
     @property
