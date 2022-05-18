@@ -1344,7 +1344,7 @@ cdef class Coffe:
         Evaluates the matter cross spectrum (in Mpc^3) at some k and z1 and z2.
         Input k must be in 1/Mpc.
         """
-        _check_parameter('k', k, (int, float), 1e-5 * self.h, 1e3 * self.h)
+        _check_parameter('k', k, (int, float), self.k_min, self.k_max)
         _check_parameter('z1', z1, (int, float), 0, 15)
         _check_parameter('z2', z2, (int, float), 0, 15)
 
@@ -1357,7 +1357,7 @@ cdef class Coffe:
         return \
             ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k / self.h) \
            *ccoffe.coffe_interp_spline(&self._background.D1, z1) \
-           *ccoffe.coffe_interp_spline(&self._background.D1, z2)
+           *ccoffe.coffe_interp_spline(&self._background.D1, z2) / self.h**3
 
 
     def power_spectrum(self, k : float, z : float):
@@ -1365,7 +1365,7 @@ cdef class Coffe:
         Evaluates the matter power spectrum at some k and z.
         Input k must be in 1/Mpc.
         """
-        _check_parameter('k', k, (int, float), 1e-5 * self.h, 1e3 * self.h)
+        _check_parameter('k', k, (int, float), self.k_min, self.k_max)
         _check_parameter('z', z, (int, float), 0, 15)
 
         if not self._power_spectrum_flag:
@@ -1377,8 +1377,8 @@ cdef class Coffe:
         if self._parameters.pk_type == ccoffe.COFFE_PK_LINEAR:
             return \
                 ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k / self.h) \
-               *ccoffe.coffe_interp_spline(&self._background.D1, z)**2
-        return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k / self.h)
+               *ccoffe.coffe_interp_spline(&self._background.D1, z)**2 / self.h**3
+        return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k / self.h) / self.h**3
 
 
     @property
