@@ -311,7 +311,7 @@ int parse_external_power_spectrum(
     class_start = clock();
     struct file_content *fc = (struct file_content *)coffe_malloc(sizeof(struct file_content));
 
-    size_t class_parameters_len = 26, counter = 0;
+    size_t class_parameters_len = 35, counter = 0;
 
     parser_init(fc, class_parameters_len, "", errmsg);
 
@@ -412,6 +412,38 @@ int parse_external_power_spectrum(
 
     sprintf(fc->name[counter], "tau_reio");
     sprintf(fc->value[counter], "%e", 0.0925);
+    ++counter;
+
+    sprintf(fc->name[counter], "k_per_decade_for_bao");
+    sprintf(fc->value[counter], "%e", par->class_precision.k_per_decade_for_bao);
+    ++counter;
+
+    sprintf(fc->name[counter], "k_per_decade_for_pk");
+    sprintf(fc->value[counter], "%e", par->class_precision.k_per_decade_for_pk);
+    ++counter;
+
+    sprintf(fc->name[counter], "start_large_k_at_tau_h_over_tau_k");
+    sprintf(fc->value[counter], "%e", par->class_precision.start_large_k_at_tau_h_over_tau_k);
+    ++counter;
+
+    sprintf(fc->name[counter], "l_max_g");
+    sprintf(fc->value[counter], "%d", par->class_precision.l_max_g);
+    ++counter;
+
+    sprintf(fc->name[counter], "l_max_ur");
+    sprintf(fc->value[counter], "%d", par->class_precision.l_max_ur);
+    ++counter;
+
+    sprintf(fc->name[counter], "tol_perturb_integration");
+    sprintf(fc->value[counter], "%e", par->class_precision.tol_perturb_integration);
+    ++counter;
+
+    sprintf(fc->name[counter], "radiation_streaming_trigger_tau_over_tau_k");
+    sprintf(fc->value[counter], "%e", par->class_precision.radiation_streaming_trigger_tau_over_tau_k);
+    ++counter;
+
+    sprintf(fc->name[counter], "ur_fluid_trigger_tau_over_tau_k");
+    sprintf(fc->value[counter], "%e", par->class_precision.ur_fluid_trigger_tau_over_tau_k);
     ++counter;
 
     sprintf(fc->name[counter], "z_pk");
@@ -686,6 +718,15 @@ int coffe_parse_default_parameters(
     #endif
 
     coffe_new_class_struct(&par->class_struct);
+
+    par->class_precision.k_per_decade_for_bao = 280.;
+    par->class_precision.k_per_decade_for_pk = 40.;
+    par->class_precision.start_large_k_at_tau_h_over_tau_k = 0.05;
+    par->class_precision.l_max_g = 50;
+    par->class_precision.l_max_ur = 150;
+    par->class_precision.tol_perturb_integration = 1e-8;
+    par->class_precision.radiation_streaming_trigger_tau_over_tau_k = 240.;
+    par->class_precision.ur_fluid_trigger_tau_over_tau_k = 50.;
 
     par->only_cross_correlations = 0;
 

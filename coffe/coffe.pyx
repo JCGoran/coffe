@@ -441,6 +441,86 @@ cdef class Coffe:
 
 
     @property
+    def k_per_decade_for_bao(self):
+        return self._parameters.class_precision.k_per_decade_for_bao
+
+    @k_per_decade_for_bao.setter
+    def k_per_decade_for_bao(self, value):
+        self._parameters.class_precision.k_per_decade_for_bao = value
+        self._free_except_parameters()
+
+
+    @property
+    def k_per_decade_for_pk(self):
+        return self._parameters.class_precision.k_per_decade_for_pk
+
+    @k_per_decade_for_pk.setter
+    def k_per_decade_for_pk(self, value):
+        self._parameters.class_precision.k_per_decade_for_pk = value
+        self._free_except_parameters()
+
+
+    @property
+    def start_large_k_at_tau_h_over_tau_k(self):
+        return self._parameters.class_precision.start_large_k_at_tau_h_over_tau_k
+
+    @start_large_k_at_tau_h_over_tau_k.setter
+    def start_large_k_at_tau_h_over_tau_k(self, value):
+        self._parameters.class_precision.start_large_k_at_tau_h_over_tau_k = value
+        self._free_except_parameters()
+
+
+    @property
+    def l_max_g(self):
+        return self._parameters.class_precision.l_max_g
+
+    @l_max_g.setter
+    def l_max_g(self, value):
+        self._parameters.class_precision.l_max_g = value
+        self._free_except_parameters()
+
+
+    @property
+    def l_max_ur(self):
+        return self._parameters.class_precision.l_max_ur
+
+    @l_max_ur.setter
+    def l_max_ur(self, value):
+        self._parameters.class_precision.l_max_ur = value
+        self._free_except_parameters()
+
+
+    @property
+    def tol_perturb_integration(self):
+        return self._parameters.class_precision.tol_perturb_integration
+
+    @tol_perturb_integration.setter
+    def tol_perturb_integration(self, value):
+        self._parameters.class_precision.tol_perturb_integration = value
+        self._free_except_parameters()
+
+
+    @property
+    def radiation_streaming_trigger_tau_over_tau_k(self):
+        return self._parameters.class_precision.radiation_streaming_trigger_tau_over_tau_k
+
+    @radiation_streaming_trigger_tau_over_tau_k.setter
+    def radiation_streaming_trigger_tau_over_tau_k(self, value):
+        self._parameters.class_precision.radiation_streaming_trigger_tau_over_tau_k = value
+        self._free_except_parameters()
+
+
+    @property
+    def ur_fluid_trigger_tau_over_tau_k(self):
+        return self._parameters.class_precision.ur_fluid_trigger_tau_over_tau_k
+
+    @ur_fluid_trigger_tau_over_tau_k.setter
+    def ur_fluid_trigger_tau_over_tau_k(self, value):
+        self._parameters.class_precision.ur_fluid_trigger_tau_over_tau_k = value
+        self._free_except_parameters()
+
+
+    @property
     def wa(self):
         """
         Dark energy is parametrized by the equation of state:

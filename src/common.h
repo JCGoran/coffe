@@ -106,6 +106,18 @@ int coffe_free_class_struct(
     coffe_class_struct_t *
 );
 
+typedef struct coffe_class_precision_parameters_t
+{
+    double k_per_decade_for_bao;
+    double k_per_decade_for_pk;
+    double start_large_k_at_tau_h_over_tau_k;
+    int l_max_g;
+    int l_max_ur;
+    double tol_perturb_integration;
+    double radiation_streaming_trigger_tau_over_tau_k;
+    double ur_fluid_trigger_tau_over_tau_k;
+} coffe_class_precision_parameters_t;
+
 
 /**
     finds the max of an array of doubles
@@ -491,6 +503,8 @@ typedef struct coffe_parameters_t
 
     /* in C we can use void for anything that's a pointer */
     coffe_class_struct_t class_struct;
+
+    coffe_class_precision_parameters_t class_precision;
 
     int flag;
 
