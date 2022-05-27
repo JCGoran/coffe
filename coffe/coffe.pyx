@@ -419,6 +419,18 @@ cdef class Coffe:
             self._parameters.Omega0_baryon *= (self._parameters.h / value)**2
             self._parameters.Omega0_gamma *= (self._parameters.h / value)**2
             self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon
+            # in order to keep things consistent in units of Mpc, we need to
+            # rescale the separations when we change h
+            for i in range(self._parameters.sep_len):
+                self._parameters.sep[i] *= value / self._parameters.h
+
+            # just to be on the safe side, we also need to alter the parameters
+            # for the covariance
+            for i in range(self._parameters.density1_len):
+                self._parameters.density1[i] *= (self._parameters.h / value)**3
+                self._parameters.density2[i] *= (self._parameters.h / value)**3
+                self._parameters.pixelsize[i] *= value / self._parameters.h
+
             # setting the old value equal to the new value of h
             self._parameters.h = value
             self._balance_content()
