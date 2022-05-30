@@ -211,7 +211,10 @@ cdef class Coffe:
 
     @property
     def use_little_omega(self):
-        return bool(ccoffe.coffe_use_little_omega())
+        try:
+            return bool(int(os.environ.get('COFFE_USE_LITTLE_OMEGA')))
+        except:
+            return False
 
 
     @property

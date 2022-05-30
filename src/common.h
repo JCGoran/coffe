@@ -839,6 +839,4 @@ int coffe_kronecker_delta(
 
 int coffe_sign(int m);
 
-int coffe_use_little_omega(void);
-
 #endif

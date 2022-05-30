@@ -13,13 +13,6 @@ extra_compile_args = [
     "-DCOFFE_CYTHON",
 ]
 
-if os.environ.get("COFFE_USE_LITTLE_OMEGA"):
-    extra_compile_args.extend(
-        [f"-DCOFFE_USE_LITTLE_OMEGA={os.environ['COFFE_USE_LITTLE_OMEGA']}"]
-    )
-else:
-    extra_compile_args.extend(["-DCOFFE_USE_LITTLE_OMEGA=0"])
-
 setup(
     name="Coffe",
     version="3.0",
