@@ -320,6 +320,8 @@ cdef extern from "common.h":
 
     void *coffe_malloc(size_t)
 
+    int coffe_use_little_omega()
+
 
 cdef extern from "parser.h":
 

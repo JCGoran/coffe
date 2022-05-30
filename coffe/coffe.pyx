@@ -1,8 +1,3 @@
-# distutils: sources = src/errors.c src/common.c src/parser.c src/background.c src/twofast.c src/integrals.c src/signal.c src/functions.c src/corrfunc.c src/multipoles.c src/utils.c src/twobessel.c src/covariance.c
-# distutils: include_dirs = src/ ./
-# distutils: libraries = m gsl gslcblas fftw3 cuba class
-# distutils: extra_compile_args = ['-fopenmp', '-Ofast', '-DHAVE_CLASS', '-DHAVE_CUBA', '-DCOFFE_CYTHON']
-# distutils: extra_link_args = ['-fopenmp']
 # cython: binding=True
 # cython: language_level=3
 
@@ -215,6 +210,16 @@ cdef class Coffe:
 
 
     @property
+    def use_little_omega(self):
+        return bool(ccoffe.coffe_use_little_omega())
+
+
+    @property
+    def _coeff(self):
+        return self.h**2 if self.use_little_omega else 1
+
+
+    @property
     def has_cuba(self):
         return bool(self._parameters.has_cuba)
 
@@ -316,7 +321,7 @@ cdef class Coffe:
         """
         Fraction of cold dark matter today.
         """
-        return self._parameters.Omega0_cdm * self.h**2
+        return self._parameters.Omega0_cdm * self._coeff
 
     @omega_cdm.setter
     def omega_cdm(self, value):
@@ -324,7 +329,7 @@ cdef class Coffe:
         if not np.allclose(value, self.omega_cdm):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_baryon, self.omega_gamma, self.omega_nu)
-            self._parameters.Omega0_cdm = value / self.h**2
+            self._parameters.Omega0_cdm = value / self._coeff
             self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
             self._free_except_parameters()
@@ -335,7 +340,7 @@ cdef class Coffe:
         """
         Returns the energy density fraction of massive neutrinos.
         """
-        return self._parameters.Omega0_nu * self.h**2
+        return self._parameters.Omega0_nu * self._coeff
 
 
     @property
@@ -343,7 +348,7 @@ cdef class Coffe:
         """
         Fraction of total matter (CDM + baryons) today.
         """
-        return self._parameters.Omega0_m * self.h**2
+        return self._parameters.Omega0_m * self._coeff
 
     @omega_m.setter
     def omega_m(self, value):
@@ -351,7 +356,7 @@ cdef class Coffe:
         if not np.allclose(value, self.omega_m):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_gamma)
-            self._parameters.Omega0_m = value / self.h**2
+            self._parameters.Omega0_m = value / self._coeff
             # for consistency with TotallySAF
             self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon - self._parameters.Omega0_nu
             self._balance_content()
@@ -363,7 +368,7 @@ cdef class Coffe:
         """
         Fraction of baryonic matter today.
         """
-        return self._parameters.Omega0_baryon * self.h**2
+        return self._parameters.Omega0_baryon * self._coeff
 
     @omega_baryon.setter
     def omega_baryon(self, value):
@@ -371,7 +376,7 @@ cdef class Coffe:
         if not np.allclose(value, self.omega_baryon):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_cdm, self.omega_gamma)
-            self._parameters.Omega0_baryon = value / self.h**2
+            self._parameters.Omega0_baryon = value / self._coeff
             self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
             self._balance_content()
             self._free_except_parameters()
@@ -382,14 +387,14 @@ cdef class Coffe:
         """
         Fraction of relativistic species today.
         """
-        return self._parameters.Omega0_gamma * self.h**2
+        return self._parameters.Omega0_gamma * self._coeff
 
     @omega_gamma.setter
     def omega_gamma(self, value):
         _check_parameter('omega_gamma', value, (int, float), 0, 1)
         if not np.allclose(value, self.omega_gamma):
             self._check_omegas(value, self.omega_m)
-            self._parameters.Omega0_gamma = value / self.h**2
+            self._parameters.Omega0_gamma = value / self._coeff
             self._balance_content()
             self._free_except_parameters()
 
@@ -399,7 +404,7 @@ cdef class Coffe:
         """
         Dark energy fraction today.
         """
-        return self._parameters.Omega0_de * self.h**2
+        return self._parameters.Omega0_de * self._coeff
 
 
     @property
@@ -415,9 +420,10 @@ cdef class Coffe:
         if not np.allclose(value, self.h):
             # we change the big omegas first so that the product Omega * h^2 is
             # constant when we change h
-            self._parameters.Omega0_m *= (self._parameters.h / value)**2
-            self._parameters.Omega0_baryon *= (self._parameters.h / value)**2
-            self._parameters.Omega0_gamma *= (self._parameters.h / value)**2
+            coeff = (self._parameters.h / value)**2 if self.use_little_omega else 1
+            self._parameters.Omega0_m *= coeff
+            self._parameters.Omega0_baryon *= coeff
+            self._parameters.Omega0_gamma *= coeff
             self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon
             # in order to keep things consistent in units of Mpc, we need to
             # rescale the separations when we change h

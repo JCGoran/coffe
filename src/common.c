@@ -1430,3 +1430,16 @@ int coffe_sign(
 {
     return (abs(m) % 2 == 0 ? 1 : -1);
 }
+
+
+int coffe_use_little_omega(void){
+#ifdef COFFE_USE_LITTLE_OMEGA
+#if COFFE_USE_LITTLE_OMEGA != 0
+    return 1;
+#else
+    return 0;
+#endif
+#else
+    return 0;
+#endif
+}
