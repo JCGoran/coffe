@@ -242,6 +242,18 @@ cdef class Coffe:
     def big_omega_baryon(self):
         return self._parameters.Omega0_baryon
 
+    @property
+    def big_omega_cdm(self):
+        return self._parameters.Omega0_cdm
+
+    @property
+    def big_omega_nu(self):
+        return self._parameters.Omega0_nu
+
+    @property
+    def big_omega_gamma(self):
+        return self._parameters.Omega0_gamma
+
 
     @staticmethod
     def _check_omegas(*omegas):
