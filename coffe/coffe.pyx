@@ -230,6 +230,18 @@ cdef class Coffe:
     def has_class(self):
         return bool(self._parameters.has_class)
 
+    @property
+    def big_omega_m(self):
+        return self._parameters.Omega0_m
+
+    @property
+    def big_omega_de(self):
+        return self._parameters.Omega0_de
+
+    @property
+    def big_omega_baryon(self):
+        return self._parameters.Omega0_baryon
+
 
     @staticmethod
     def _check_omegas(*omegas):
