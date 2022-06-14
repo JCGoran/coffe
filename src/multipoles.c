@@ -62,6 +62,8 @@ int coffe_multipoles_init(
     if (par->verbose)
         printf("Calculating multipoles...\n");
 
+    print_parameters(par);
+
     gsl_error_handler_t *default_handler =
         gsl_set_error_handler_off();
 

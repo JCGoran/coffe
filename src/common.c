@@ -1430,3 +1430,44 @@ int coffe_sign(
 {
     return (abs(m) % 2 == 0 ? 1 : -1);
 }
+
+
+/** prints all parameters in coffe **/
+void print_parameters(
+    coffe_parameters_t *par
+)
+{
+    fprintf(stderr, "COFFE IS NOW USING THE FOLLOWING PARAMETERS:\n");
+    fprintf(stderr, "Omega0_cdm = %e\n", par->Omega0_cdm);
+    fprintf(stderr, "Omega0_m = %e\n", par->Omega0_m);
+    fprintf(stderr, "Omega0_baryon = %e\n", par->Omega0_baryon);
+    fprintf(stderr, "Omega0_gamma = %e\n", par->Omega0_gamma);
+    fprintf(stderr, "w0 = %e\n", par->w0);
+    fprintf(stderr, "wa = %e\n", par->wa);
+    fprintf(stderr, "Omega0_de = %e\n", par->Omega0_de);
+    fprintf(stderr, "n_s = %e\n", par->n_s);
+    fprintf(stderr, "sigma8 = %e\n", par->sigma8);
+    fprintf(stderr, "T_cmb = %e\n", par->T_cmb);
+    fprintf(stderr, "N_ur = %e\n", par->N_ur);
+    fprintf(stderr, "m_ncdm = %e\n", par->m_ncdm);
+    fprintf(stderr, "Omega0_nu = %e\n", par->Omega0_nu);
+    fprintf(stderr, "YHe = %e\n", par->YHe);
+    fprintf(stderr, "N_ncdm = %d\n", par->N_ncdm);
+    fprintf(stderr, "h = %e\n", par->h);
+
+    for (size_t i = 0; i < par->sep_len; ++i){
+        fprintf(stderr, "sep [Mpc/h] = %e\n", par->sep[i]);
+    }
+    for (size_t i = 0; i < par->z_mean_len; ++i){
+        fprintf(stderr, "z_mean = %e\n", par->z_mean[i]);
+    }
+    for (size_t i = 0; i < par->multipole_values_len; ++i){
+        fprintf(stderr, "l = %d\n", par->multipole_values[i]);
+    }
+
+    /* power spectrum stuff */
+    for (size_t i = 0; i < par->power_spectrum.spline->size; ++i){
+        fprintf(stderr, "k [h/Mpc] = %e\n", par->power_spectrum.spline->x[i]);
+        fprintf(stderr, "P(k) [Mpc^3/h^3] = %e\n", par->power_spectrum.spline->x[i]);
+    }
+}

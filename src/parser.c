@@ -322,144 +322,180 @@ int parse_external_power_spectrum(
 
     sprintf(fc->name[counter], "h");
     sprintf(fc->value[counter], "%e", par->h);
+    fprintf(stderr, "%e\n", par->h);
     ++counter;
 
     sprintf(fc->name[counter], "T_cmb");
     sprintf(fc->value[counter], "%e", par->T_cmb);
+    fprintf(stderr, "%e\n", par->T_cmb);
     ++counter;
 
     sprintf(fc->name[counter], "Omega_b");
     sprintf(fc->value[counter], "%e", par->Omega0_baryon);
+    fprintf(stderr, "%e\n", par->Omega0_baryon);
     ++counter;
 
     sprintf(fc->name[counter], "N_ur");
     sprintf(fc->value[counter], "%e", par->N_ur);
+    fprintf(stderr, "%e\n", par->N_ur);
     ++counter;
 
     /* set the helium fraction to a constant value (must be different from zero) */
     if (fabs(par->YHe) > EPSILON_ABS){
         sprintf(fc->name[counter], "YHe");
         sprintf(fc->value[counter], "%e", par->YHe);
+        fprintf(stderr, "%e\n", par->YHe);
         ++counter;
     }
 
     sprintf(fc->name[counter], "Omega_cdm");
     sprintf(fc->value[counter], "%e", par->Omega0_cdm);
+    fprintf(stderr, "%e\n", par->Omega0_cdm);
     ++counter;
 
     sprintf(fc->name[counter], "Omega_k");
     sprintf(fc->value[counter], "%e", 0.0);
+    fprintf(stderr, "%e\n", 0.0);
     ++counter;
 
     sprintf(fc->name[counter], "w0_fld");
     sprintf(fc->value[counter], "%e", par->w0);
+    fprintf(stderr, "%e\n", par->w0);
     ++counter;
 
     sprintf(fc->name[counter], "wa_fld");
     sprintf(fc->value[counter], "%e", par->wa);
+    fprintf(stderr, "%e\n", par->wa);
     ++counter;
 
     sprintf(fc->name[counter], "output");
     sprintf(fc->value[counter], "mPk");
+    fprintf(stderr, "mPk\n");
     ++counter;
 
     sprintf(fc->name[counter], "gauge");
     sprintf(fc->value[counter], "synchronous");
+    fprintf(stderr, "synchronous\n");
     ++counter;
 
     sprintf(fc->name[counter], "P_k_ini type");
     sprintf(fc->value[counter], "analytic_Pk");
+    fprintf(stderr, "analytic_Pk\n");
     ++counter;
 
     sprintf(fc->name[counter], "N_ncdm");
     sprintf(fc->value[counter], "%d", par->N_ncdm);
+    fprintf(stderr, "%d\n", par->N_ncdm);
     ++counter;
 
     sprintf(fc->name[counter], "m_ncdm");
     sprintf(fc->value[counter], "%e", par->m_ncdm);
+    fprintf(stderr, "%e\n", par->m_ncdm);
     ++counter;
 
     sprintf(fc->name[counter], "k_pivot");
     sprintf(fc->value[counter], "%e", par->k_pivot);
+    fprintf(stderr, "%e\n", par->k_pivot);
     ++counter;
 
     sprintf(fc->name[counter], "n_s");
     sprintf(fc->value[counter], "%e", par->n_s);
+    fprintf(stderr, "%e\n", par->n_s);
     ++counter;
 
     if (fabs(par->A_s) > EPSILON_ABS){
         sprintf(fc->name[counter], "A_s");
         sprintf(fc->value[counter], "%e", par->A_s);
+        fprintf(stderr, "%e\n", par->A_s);
         ++counter;
     }
     else{
         sprintf(fc->name[counter], "sigma8");
         sprintf(fc->value[counter], "%e", par->sigma8);
+        fprintf(stderr, "%e\n", par->sigma8);
         ++counter;
     }
 
     sprintf(fc->name[counter], "alpha_s");
     sprintf(fc->value[counter], "%e", 0.0);
+    fprintf(stderr, "%e\n", 0.0);
     ++counter;
 
     sprintf(fc->name[counter], "k_min_tau0");
     sprintf(fc->value[counter], "%e", 0.002);
+    fprintf(stderr, "%e\n", 0.002);
     ++counter;
 
     sprintf(fc->name[counter], "P_k_max_h/Mpc");
     sprintf(fc->value[counter], "%e", par->k_max);
+    fprintf(stderr, "%e\n", par->k_max);
     ++counter;
 
     sprintf(fc->name[counter], "tau_reio");
     sprintf(fc->value[counter], "%e", 0.0925);
+    fprintf(stderr, "%e\n", 0.0925);
     ++counter;
 
     sprintf(fc->name[counter], "k_per_decade_for_bao");
     sprintf(fc->value[counter], "%e", par->class_precision.k_per_decade_for_bao);
+    fprintf(stderr, "%e\n", par->class_precision.k_per_decade_for_bao);
     ++counter;
 
     sprintf(fc->name[counter], "k_per_decade_for_pk");
     sprintf(fc->value[counter], "%e", par->class_precision.k_per_decade_for_pk);
+    fprintf(stderr, "%e\n", par->class_precision.k_per_decade_for_pk);
     ++counter;
 
     sprintf(fc->name[counter], "start_large_k_at_tau_h_over_tau_k");
     sprintf(fc->value[counter], "%e", par->class_precision.start_large_k_at_tau_h_over_tau_k);
+    fprintf(stderr, "%e\n", par->class_precision.start_large_k_at_tau_h_over_tau_k);
     ++counter;
 
     sprintf(fc->name[counter], "l_max_g");
     sprintf(fc->value[counter], "%d", par->class_precision.l_max_g);
+    fprintf(stderr, "%d\n", par->class_precision.l_max_g);
     ++counter;
 
     sprintf(fc->name[counter], "l_max_ur");
     sprintf(fc->value[counter], "%d", par->class_precision.l_max_ur);
+    fprintf(stderr, "%d\n", par->class_precision.l_max_ur);
     ++counter;
 
     sprintf(fc->name[counter], "tol_perturb_integration");
     sprintf(fc->value[counter], "%e", par->class_precision.tol_perturb_integration);
+    fprintf(stderr, "%e\n", par->class_precision.tol_perturb_integration);
     ++counter;
 
     sprintf(fc->name[counter], "radiation_streaming_trigger_tau_over_tau_k");
     sprintf(fc->value[counter], "%e", par->class_precision.radiation_streaming_trigger_tau_over_tau_k);
+    fprintf(stderr, "%e\n", par->class_precision.radiation_streaming_trigger_tau_over_tau_k);
     ++counter;
 
     sprintf(fc->name[counter], "ur_fluid_trigger_tau_over_tau_k");
     sprintf(fc->value[counter], "%e", par->class_precision.ur_fluid_trigger_tau_over_tau_k);
+    fprintf(stderr, "%e\n", par->class_precision.ur_fluid_trigger_tau_over_tau_k);
     ++counter;
 
     sprintf(fc->name[counter], "z_pk");
     sprintf(fc->value[counter], "%e", 0.0);
+    fprintf(stderr, "%e\n", 0.0);
     ++counter;
 
     sprintf(fc->name[counter], "z_max_pk");
     sprintf(fc->value[counter], "%e", 3.0);
+    fprintf(stderr, "%e\n", 3.0);
     ++counter;
 
     sprintf(fc->name[counter], "non linear");
 
-    if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT)
+    if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT){
         sprintf(fc->value[counter], "%s", "halofit");
-    else if (par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+        fprintf(stderr, "%s\n", "halofit");
+    }
+    else if (par->pk_type == COFFE_PK_NONLINEAR_HMCODE){
         sprintf(fc->value[counter], "%s", "hmcode");
+        fprintf(stderr, "%s\n", "hmcode");
+    }
     ++counter;
 
     if (
