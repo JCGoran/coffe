@@ -906,14 +906,14 @@ int coffe_covariance_init(
                     }
 
                     double coeff_pop2_pop3[] = {0, 0, alpha4};
-                    if (par->covariance_pop2 == 1 && par->covariance_pop4 == 1){
+                    if (par->covariance_pop2 == 1 && par->covariance_pop3 == 1){
                         coeff_pop2_pop3[0] = alpha0_11;
                         coeff_pop2_pop3[1] = alpha2_11;
                     }
                     else if (
-                        (par->covariance_pop2 == 1 && par->covariance_pop4 == 2)
+                        (par->covariance_pop2 == 1 && par->covariance_pop3 == 2)
                         ||
-                        (par->covariance_pop2 == 2 && par->covariance_pop4 == 1)
+                        (par->covariance_pop2 == 2 && par->covariance_pop3 == 1)
                     ){
                         coeff_pop2_pop3[0] = alpha0_cross;
                         coeff_pop2_pop3[1] = alpha2_cross;
