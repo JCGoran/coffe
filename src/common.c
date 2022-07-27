@@ -1442,6 +1442,7 @@ void print_parameters(
     fprintf(stderr, "Omega0_m = %e\n", par->Omega0_m);
     fprintf(stderr, "Omega0_baryon = %e\n", par->Omega0_baryon);
     fprintf(stderr, "Omega0_gamma = %e\n", par->Omega0_gamma);
+    fprintf(stderr, "Omega0_de = %e\n", par->Omega0_de);
     fprintf(stderr, "w0 = %e\n", par->w0);
     fprintf(stderr, "wa = %e\n", par->wa);
     fprintf(stderr, "Omega0_de = %e\n", par->Omega0_de);
