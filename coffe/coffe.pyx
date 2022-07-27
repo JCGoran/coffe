@@ -1489,6 +1489,20 @@ cdef class Coffe:
                *ccoffe.coffe_interp_spline(&self._background.D1, z)**2 / self.h**3
         return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k / self.h) / self.h**3
 
+    @property
+    def inv_k_window(self):
+        """
+        The (inverse) wavenumber (in Mpc) at which the power spectrum should be
+        windowed (default: 0, i.e. no window).
+        """
+        return self._parameters.inv_k_window
+
+    @inv_k_window.setter
+    def inv_k_window(self, value):
+        _check_parameter('inv_k_window', value, (int, float), 0, 1e5)
+        self._parameters.inv_k_window = value
+        self._free_power_spectrum()
+
 
     @property
     def k_min(self):

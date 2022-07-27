@@ -252,6 +252,8 @@ cdef extern from "common.h":
 
         int flatsky_nonlocal
 
+        double inv_k_window
+
         double n_s
 
         double sigma8

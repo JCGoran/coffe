@@ -553,7 +553,7 @@ int parse_external_power_spectrum(
     /* rescaling as CLASS internally uses units of 1/Mpc */
     for (size_t i = 0; i < pk_len; ++i){
         k[i] = pnl->k[i] / par->h;
-        pk[i] = exp(pk[i]) * pow(par->h, 3);
+        pk[i] = exp(pk[i]) * pow(par->h, 3) * exp(-pnl->k[i] * par->inv_k_window);
     }
     if (par->have_window){
         for (size_t i = 0; i < pk_len; ++i)
@@ -733,6 +733,7 @@ int coffe_parse_default_parameters(
     par->f_derivative = 0;
     par->b_tilde_derivative = 0;
     par->f_tilde_derivative = 0;
+    par->inv_k_window = 0;
 
     coffe_new_fit_coefficients_array(&par->galaxy_bias1_coefficients);
     coffe_new_fit_coefficients_array(&par->galaxy_bias2_coefficients);

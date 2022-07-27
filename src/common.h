@@ -336,6 +336,8 @@ typedef struct coffe_parameters_t
 
     int bessel_bins; /* number of bins for the bessel integrals */
 
+    double inv_k_window; /* inverse of the exponential scale for the power spectrum */
+
     double Omega0_cdm; /* omega parameter for cold dark matter */
 
     double Omega0_m;
