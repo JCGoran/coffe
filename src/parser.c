@@ -751,6 +751,8 @@ int coffe_parse_default_parameters(
 
     coffe_new_spline(&par->galaxy_bias1);
     coffe_new_spline(&par->galaxy_bias2);
+    coffe_new_spline(&par->galaxy_bias3);
+    coffe_new_spline(&par->galaxy_bias4);
     coffe_new_spline(&par->magnification_bias1);
     coffe_new_spline(&par->magnification_bias2);
     coffe_new_spline(&par->evolution_bias1);
@@ -769,6 +771,14 @@ int coffe_parse_default_parameters(
     par->read_galaxy_bias2 = 0;
     par->file_galaxy_bias2[0] = 0;
     par->degree_galaxy_bias2 = 1;
+
+    parse_bias_default(
+        1.0, &par->galaxy_bias3, par->interp_method
+    );
+
+    parse_bias_default(
+        1.0, &par->galaxy_bias4, par->interp_method
+    );
 
     parse_bias_default(
         0.0, &par->magnification_bias1, par->interp_method
@@ -1123,6 +1133,18 @@ int coffe_parser_init(
 
         coffe_init_spline(
             &par->galaxy_bias2,
+            x, y, bins,
+            par->interp_method
+        );
+
+        coffe_init_spline(
+            &par->galaxy_bias3,
+            x, y, bins,
+            par->interp_method
+        );
+
+        coffe_init_spline(
+            &par->galaxy_bias4,
             x, y, bins,
             par->interp_method
         );

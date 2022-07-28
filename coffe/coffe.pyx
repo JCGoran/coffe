@@ -781,6 +781,50 @@ cdef class Coffe:
         self._free_multipoles()
 
 
+    def galaxy_bias3(self, z : float):
+        """
+        Evaluates the galaxy bias of the first population of tracers at some
+        redshift.
+        """
+        return evaluate_spline(&self._parameters.galaxy_bias3, z)
+
+
+    def set_galaxy_bias3(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the galaxy bias for the third population of tracers
+        (only relevant for covariance).
+        """
+        set_spline(
+            &self._parameters.galaxy_bias3,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    def galaxy_bias4(self, z : float):
+        """
+        Evaluates the galaxy bias of the first population of tracers at some
+        redshift.
+        """
+        return evaluate_spline(&self._parameters.galaxy_bias4, z)
+
+
+    def set_galaxy_bias4(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the galaxy bias for the fourth population of tracers
+        (only relevant for covariance).
+        """
+        set_spline(
+            &self._parameters.galaxy_bias4,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
     def magnification_bias1(self, z : float):
         """
         Evaluates the magnification bias of the first population at some redshift.
@@ -995,6 +1039,9 @@ cdef class Coffe:
 
         if len(value) != 4:
             raise ValueError('The array for setting `covariance_populations` must have length 4')
+
+        if any(_ not in [1, 2, 3, 4] for _ in value):
+            raise ValueError('The values for `covariance_populations` must be one of: [1, 2, 3, 4]')
 
         self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
         self._free_covariance_multipoles()

@@ -57,6 +57,23 @@ double covariance_coefficient(
 }
 
 
+double covariance_coefficient_pair(
+    int population1,
+    int population2,
+    const double *bias,
+    double growth_rate,
+    int ell
+)
+{
+    return covariance_coefficient(
+        bias[population1 - 1],
+        bias[population2 - 1],
+        growth_rate,
+        ell
+    );
+}
+
+
 /**
     find the element in the array which corresponds to some values of the parameters (z_mean, l1, l2, sep1, sep2)
     TODO what if we can't find anything?
@@ -781,66 +798,24 @@ int coffe_covariance_init(
 
             double galaxy_bias1 = 0;
             double galaxy_bias2 = 0;
+            double galaxy_bias3 = 0;
+            double galaxy_bias4 = 0;
+
             double growth_rate = 0;
 
             /* set bias to nonzero only if there is a density contribution */
             if (par->correlation_contrib.den){
                 galaxy_bias1 = coffe_interp_spline(&par->galaxy_bias1, z_mean);
                 galaxy_bias2 = coffe_interp_spline(&par->galaxy_bias2, z_mean);
+                galaxy_bias3 = coffe_interp_spline(&par->galaxy_bias3, z_mean);
+                galaxy_bias4 = coffe_interp_spline(&par->galaxy_bias4, z_mean);
             }
+
+            const double galaxy_bias[] = {galaxy_bias1, galaxy_bias2, galaxy_bias3, galaxy_bias4};
 
             /* set growth rate to nonzero only if there's an rsd contribution */
             if (par->correlation_contrib.rsd)
                 growth_rate = coffe_interp_spline(&bg->f, z_mean);
-
-            const double alpha0_11 = covariance_coefficient(
-                galaxy_bias1,
-                galaxy_bias1,
-                growth_rate,
-                0
-            );
-
-            const double alpha0_22 = covariance_coefficient(
-                galaxy_bias2,
-                galaxy_bias2,
-                growth_rate,
-                0
-            );
-
-            const double alpha0_cross = covariance_coefficient(
-                galaxy_bias1,
-                galaxy_bias2,
-                growth_rate,
-                0
-            );
-
-            const double alpha2_11 = covariance_coefficient(
-                galaxy_bias1,
-                galaxy_bias1,
-                growth_rate,
-                2
-            );
-
-            const double alpha2_22 = covariance_coefficient(
-                galaxy_bias2,
-                galaxy_bias2,
-                growth_rate,
-                2
-            );
-
-            const double alpha2_cross = covariance_coefficient(
-                galaxy_bias1,
-                galaxy_bias2,
-                growth_rate,
-                2
-            );
-
-            const double alpha4 = covariance_coefficient(
-                galaxy_bias1,
-                galaxy_bias2,
-                growth_rate,
-                4
-            );
 
             const double D1z = coffe_interp_spline(&bg->D1, z_mean);
 
@@ -851,126 +826,70 @@ int coffe_covariance_init(
                     const int l1 = par->multipole_values[i];
                     const int l2 = par->multipole_values[j];
 
-                    double coeff_pop1_pop3[] = {0, 0, alpha4};
-                    if (par->covariance_pop1 == 1 && par->covariance_pop3 == 1){
-                        coeff_pop1_pop3[0] = alpha0_11;
-                        coeff_pop1_pop3[1] = alpha2_11;
-                    }
-                    else if (
-                        (par->covariance_pop1 == 1 && par->covariance_pop3 == 2)
-                        ||
-                        (par->covariance_pop1 == 2 && par->covariance_pop3 == 1)
-                    ){
-                        coeff_pop1_pop3[0] = alpha0_cross;
-                        coeff_pop1_pop3[1] = alpha2_cross;
-                    }
-                    else{
-                        coeff_pop1_pop3[0] = alpha0_22;
-                        coeff_pop1_pop3[1] = alpha2_22;
-                    }
-
-                    double coeff_pop2_pop4[] = {0, 0, alpha4};
-                    if (par->covariance_pop2 == 1 && par->covariance_pop4 == 1){
-                        coeff_pop2_pop4[0] = alpha0_11;
-                        coeff_pop2_pop4[1] = alpha2_11;
-                    }
-                    else if (
-                        (par->covariance_pop2 == 1 && par->covariance_pop4 == 2)
-                        ||
-                        (par->covariance_pop2 == 2 && par->covariance_pop4 == 1)
-                    ){
-                        coeff_pop2_pop4[0] = alpha0_cross;
-                        coeff_pop2_pop4[1] = alpha2_cross;
-                    }
-                    else{
-                        coeff_pop2_pop4[0] = alpha0_22;
-                        coeff_pop2_pop4[1] = alpha2_22;
-                    }
-
-                    double coeff_pop1_pop4[] = {0, 0, alpha4};
-                    if (par->covariance_pop1 == 1 && par->covariance_pop4 == 1){
-                        coeff_pop1_pop4[0] = alpha0_11;
-                        coeff_pop1_pop4[1] = alpha2_11;
-                    }
-                    else if (
-                        (par->covariance_pop1 == 1 && par->covariance_pop4 == 2)
-                        ||
-                        (par->covariance_pop1 == 2 && par->covariance_pop4 == 1)
-                    ){
-                        coeff_pop1_pop4[0] = alpha0_cross;
-                        coeff_pop1_pop4[1] = alpha2_cross;
-                    }
-                    else{
-                        coeff_pop1_pop4[0] = alpha0_22;
-                        coeff_pop1_pop4[1] = alpha2_22;
-                    }
-
-                    double coeff_pop2_pop3[] = {0, 0, alpha4};
-                    if (par->covariance_pop2 == 1 && par->covariance_pop3 == 1){
-                        coeff_pop2_pop3[0] = alpha0_11;
-                        coeff_pop2_pop3[1] = alpha2_11;
-                    }
-                    else if (
-                        (par->covariance_pop2 == 1 && par->covariance_pop3 == 2)
-                        ||
-                        (par->covariance_pop2 == 2 && par->covariance_pop3 == 1)
-                    ){
-                        coeff_pop2_pop3[0] = alpha0_cross;
-                        coeff_pop2_pop3[1] = alpha2_cross;
-                    }
-                    else{
-                        coeff_pop2_pop3[0] = alpha0_22;
-                        coeff_pop2_pop3[1] = alpha2_22;
-                    }
-
                     double coeff_cosmic_sum = 0;
-                    for (size_t cnt1 = 0; cnt1 < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt1){
-                    for (size_t cnt2 = 0; cnt2 < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt2){
+                    for (size_t cnt_l1 = 0; cnt_l1 <= 4; cnt_l1 += 2){
+                    for (size_t cnt_l2 = 0; cnt_l2 <= 4; cnt_l2 += 2){
                         coeff_cosmic_sum += (
-                            coeff_pop1_pop3[cnt1]
-                           *coeff_pop2_pop4[cnt2]
+                            covariance_coefficient_pair(par->covariance_pop1,
+                                par->covariance_pop3, galaxy_bias, growth_rate,
+                                cnt_l1)
+                           *covariance_coefficient_pair(par->covariance_pop2,
+                               par->covariance_pop4, galaxy_bias, growth_rate,
+                               cnt_l2)
                             +
-                            coffe_sign(l2)
-                           *coeff_pop1_pop4[cnt1]
-                           *coeff_pop2_pop3[cnt2]
+                            coffe_sign(cnt_l2)
+                           *covariance_coefficient_pair(par->covariance_pop1,
+                               par->covariance_pop4, galaxy_bias, growth_rate,
+                               cnt_l1)
+                           *covariance_coefficient_pair(par->covariance_pop2,
+                               par->covariance_pop3, galaxy_bias, growth_rate,
+                               cnt_l2)
                         )
-                       *coffe_legendre_integral(l1, l2, 2 * cnt1, 2 * cnt2);
+                       *coffe_legendre_integral(l1, l2, cnt_l1, cnt_l2);
                     }}
                     coeff_cosmic_sum /= 4.;
 
                     double coeff_mixed_sum = 0;
-                    for (size_t cnt = 0; cnt < COFFE_ARRAY_SIZE(coeff_pop1_pop3); ++cnt){
+                    for (size_t cnt = 0; cnt <= 4; cnt += 2){
                         coeff_mixed_sum +=
                             (
-                            coeff_pop1_pop3[cnt]
+                            covariance_coefficient_pair(par->covariance_pop1,
+                                par->covariance_pop3, galaxy_bias, growth_rate,
+                                cnt)
                            *coffe_kronecker_delta(
                                 par->covariance_pop2,
                                 par->covariance_pop4
                             )
                            /par->density2[k]
                             +
-                            coeff_pop2_pop4[cnt]
+                            covariance_coefficient_pair(par->covariance_pop2,
+                                par->covariance_pop4, galaxy_bias, growth_rate,
+                                cnt)
                            *coffe_kronecker_delta(
                                 par->covariance_pop1,
                                 par->covariance_pop3
                             )
                            /par->density1[k]
                             +
-                            coeff_pop1_pop4[cnt]
+                            covariance_coefficient_pair(par->covariance_pop1,
+                                par->covariance_pop4, galaxy_bias, growth_rate,
+                                cnt)
                            *coffe_kronecker_delta(
                                 par->covariance_pop2,
                                 par->covariance_pop3
                             )
                            /par->density2[k]
                             +
-                            coeff_pop2_pop3[cnt]
+                            covariance_coefficient_pair(par->covariance_pop2,
+                                par->covariance_pop3, galaxy_bias, growth_rate,
+                                cnt)
                            *coffe_kronecker_delta(
                                 par->covariance_pop1,
                                 par->covariance_pop4
                             )
                            /par->density1[k]
                         )
-                       *coffe_legendre_integral(l1, l2, 2 * cnt, 0);
+                       *coffe_legendre_integral(l1, l2, cnt, 0);
                     }
                     coeff_mixed_sum /= 8.;
 

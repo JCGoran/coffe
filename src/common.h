@@ -381,7 +381,7 @@ typedef struct coffe_parameters_t
 
     char file_galaxy_bias1[COFFE_MAX_STRLEN], file_galaxy_bias2[COFFE_MAX_STRLEN];
 
-    coffe_interpolation galaxy_bias1, galaxy_bias2;
+    coffe_interpolation galaxy_bias1, galaxy_bias2, galaxy_bias3, galaxy_bias4;
 
     int read_magnification_bias1, read_magnification_bias2;
 
