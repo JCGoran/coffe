@@ -106,13 +106,13 @@ int coffe_get_bias_coefficients(
             z_as_chi,
             coffe_interp_spline(comoving_distance, z_mean[i])
             -
-            sep[sep_size - 1] * COFFE_H0
+            sep[sep_size - 1]
         );
         const double z_max = coffe_interp_spline(
             z_as_chi,
             coffe_interp_spline(comoving_distance, z_mean[i])
             +
-            sep[sep_size - 1] * COFFE_H0
+            sep[sep_size - 1]
         );
         const double z_mean = (z_min + z_max) / 2;
 
@@ -163,23 +163,6 @@ struct integration_params
     coffe_interpolation xint; /* result of Omega0_m/(1 - Omega0_m)*exp(-3*int(w(a)/a)) */
 };
 
-int coffe_check_range(
-    const double separation,
-    const double z_mean,
-    const double deltaz,
-    coffe_background_t *bg
-)
-{
-    const double upper_limit =
-        2*(
-            coffe_interp_spline(&bg->comoving_distance, z_mean + deltaz)
-           -coffe_interp_spline(&bg->comoving_distance, z_mean)
-        ) / COFFE_H0;
-
-    return separation < upper_limit;
-}
-
-
 
 /* only needed here */
 
@@ -187,13 +170,13 @@ struct temp_background
 {
     double *z; /* redshift */
 
-    double *a; /* scale factor (normalized so that now a=1 */
+    double *a; /* scale factor (normalized so that today a=1) */
 
-    double *Hz; /* hubble parameter H(z) */
+    double *Hz; /* hubble parameter H(z) (in 1 / Mpc) */
 
-    double *conformal_Hz; /* conformal hubble parameter */
+    double *conformal_Hz; /* conformal hubble parameter (in 1 / Mpc) */
 
-    double *conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time */
+    double *conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time (in 1 / Mpc^2) */
 
     double *D1; /* growth rate D_1(a) */
 
@@ -201,7 +184,7 @@ struct temp_background
 
     double *G1, *G2;
 
-    double *comoving_distance; /* comoving distance (dimensionless) */
+    double *comoving_distance; /* comoving distance (in Mpc) */
 
 };
 
@@ -444,8 +427,8 @@ int coffe_background_init(
         (temp_bg->Hz)[i] = sqrt(
              (par->Omega0_cdm + par->Omega0_baryon)*pow(1 + z, 3)
             +par->Omega0_gamma*pow(1 + z, 4)
-            +par->Omega0_de*wint); // in units H0
-        (temp_bg->conformal_Hz)[i] = (temp_bg->a)[i]*(temp_bg->Hz)[i]; // in units H0
+            +par->Omega0_de*wint) * par->h * COFFE_H0; // in units 1 / Mpc
+        (temp_bg->conformal_Hz)[i] = (temp_bg->a)[i]*(temp_bg->Hz)[i]; // in units 1 / Mpc
         (temp_bg->conformal_Hz_prime)[i] = -(
             pow(1 + z, 3)
            *(
@@ -455,7 +438,7 @@ int coffe_background_init(
             )
             +
             (1 + 3 * w) * par->Omega0_de * wint
-        )/pow(1 + z, 2)/2.; // in units H0^2
+        )/pow(1 + z, 2)/2. * pow(par->h * COFFE_H0, 2); // in units 1 / Mpc^2
 
         while (a_initial < (temp_bg->a)[i]){
             gsl_odeiv2_evolve_apply(
@@ -473,7 +456,7 @@ int coffe_background_init(
             &ipar,
             0.,
             z
-        ); // dimensionless
+        ) / (par->h * COFFE_H0); // in units Mpc
 
         if (z > 1E-10){
             (temp_bg->G1)[i] =

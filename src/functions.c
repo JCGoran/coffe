@@ -3490,7 +3490,7 @@ double functions_double_integrated(
 
     double ren = 0;
     if (par->divergent){
-        if (r2 <= pow(0.000001*COFFE_H0, 2)){
+        if (r2 <= pow(0.000001, 2)){
             ren = coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->renormalization_zero_separation, lambda1);
         }
         else{
@@ -3985,7 +3985,7 @@ double functions_double_integrated(
     }
     if (gsl_finite(result)){
     return
-        result;
+        result * pow(COFFE_H0 * par->h, 4);
     }
     else{
         fprintf(stderr,

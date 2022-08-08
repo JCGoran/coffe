@@ -9,6 +9,8 @@
 #include "background.h"
 #include "tools.h"
 
+static const double h = 0.67;
+
 static int coffe_test_background(
     const coffe_background_t *bg
 )
@@ -30,7 +32,7 @@ static int coffe_test_background(
         /* test H(z) */
         weak_assert(
             approx_equal_const_epsilon(
-                Hz[i] / COFFE_H0,
+                Hz[i] * h,
                 coffe_interp_spline(&bg->Hz, z[i])
             ),
             &error_flag
@@ -39,7 +41,7 @@ static int coffe_test_background(
         /* test conformal H(z) */
         weak_assert(
             approx_equal_const_epsilon(
-                conformal_Hz[i] / COFFE_H0,
+                conformal_Hz[i] * h,
                 coffe_interp_spline(&bg->conformal_Hz, z[i])
             ),
             &error_flag
@@ -48,7 +50,7 @@ static int coffe_test_background(
         /* test conformal_Hz_prime */
         weak_assert(
             approx_equal_const_epsilon(
-                conformal_Hz_prime[i] / COFFE_H0 / COFFE_H0,
+                conformal_Hz_prime[i] * pow(h, 2),
                 coffe_interp_spline(&bg->conformal_Hz_prime, z[i])
             ),
             &error_flag
@@ -75,7 +77,7 @@ static int coffe_test_background(
         /* test comoving_distance */
         weak_assert(
             approx_equal_const_epsilon(
-                comoving_distance[i] * COFFE_H0,
+                comoving_distance[i] / h,
                 coffe_interp_spline(&bg->comoving_distance, z[i])
             ),
             &error_flag

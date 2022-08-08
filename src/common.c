@@ -1457,7 +1457,7 @@ void print_parameters(
     fprintf(stderr, "h = %e\n", par->h);
 
     for (size_t i = 0; i < par->sep_len; ++i){
-        fprintf(stderr, "sep [Mpc/h] = %e\n", par->sep[i]);
+        fprintf(stderr, "sep [Mpc] = %e\n", par->sep[i]);
     }
     for (size_t i = 0; i < par->z_mean_len; ++i){
         fprintf(stderr, "z_mean = %e\n", par->z_mean[i]);
@@ -1468,7 +1468,7 @@ void print_parameters(
 
     /* power spectrum stuff */
     for (size_t i = 0; i < par->power_spectrum.spline->size; ++i){
-        fprintf(stderr, "k [h/Mpc] = %e\n", par->power_spectrum.spline->x[i]);
-        fprintf(stderr, "P(k) [Mpc^3/h^3] = %e\n", par->power_spectrum.spline->x[i]);
+        fprintf(stderr, "k [1/Mpc] = %e\n", par->power_spectrum.spline->x[i]);
+        fprintf(stderr, "P(k) [Mpc^3] = %e\n", par->power_spectrum.spline->x[i]);
     }
 }

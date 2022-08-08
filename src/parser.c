@@ -550,10 +550,9 @@ int parse_external_power_spectrum(
         NULL
     );
 
-    /* rescaling as CLASS internally uses units of 1/Mpc */
     for (size_t i = 0; i < pk_len; ++i){
-        k[i] = pnl->k[i] / par->h;
-        pk[i] = exp(pk[i]) * pow(par->h, 3) * exp(-pnl->k[i] * par->inv_k_window);
+        k[i] = pnl->k[i];
+        pk[i] = exp(pk[i]) * exp(-pnl->k[i] * par->inv_k_window);
     }
     if (par->have_window){
         for (size_t i = 0; i < pk_len; ++i)
@@ -568,8 +567,8 @@ int parse_external_power_spectrum(
 
     /* rescaling to the normalized one */
     for (size_t i = 0; i < pk_len; ++i){
-        k_norm[i] = k[i] / COFFE_H0;
-        pk_norm[i] = pk[i] * pow(COFFE_H0, 3);
+        k_norm[i] = k[i];
+        pk_norm[i] = pk[i];
     }
 
     if (par->k_min < k[0]){
@@ -636,8 +635,8 @@ int parse_external_power_spectrum(
         double *pk = (double *)coffe_malloc(sizeof(double) * k_size);
 
         for (size_t j = 0; j < k_size; ++j){
-            k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h;
-            k_norm[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
+            k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+            k_norm[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
         }
 
         /* alloc memory for 2D interpolation */
@@ -658,11 +657,9 @@ int parse_external_power_spectrum(
                 NULL
             );
 
-            /* need to rescale since CLASS internally works in units of 1/Mpc */
-            /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
             for (size_t j = 0; j < k_size; ++j){
-                pk_at_z2d[j * z_size + i] = exp(pk[j]) * pow(par->h, 3);
-                pk_at_z2d_norm[j * z_size + i] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                pk_at_z2d[j * z_size + i] = exp(pk[j]);
+                pk_at_z2d_norm[j * z_size + i] = exp(pk[j]);
             }
         }
 
@@ -811,16 +808,16 @@ int coffe_parse_default_parameters(
         double *pk_norm =
             (double *)coffe_malloc(sizeof(double)*len);
         for (size_t i = 0; i < len; ++i){
-            k_norm[i] = par->power_spectrum.spline->x[i] / COFFE_H0;
-            pk_norm[i] = par->power_spectrum.spline->y[i] * pow(COFFE_H0, 3);
+            k_norm[i] = par->power_spectrum.spline->x[i];
+            pk_norm[i] = par->power_spectrum.spline->y[i];
         }
         coffe_init_spline(
             &par->power_spectrum_norm,
             k_norm, pk_norm, len,
             par->interp_method
         );
-        par->k_min_norm = par->k_min / COFFE_H0;
-        par->k_max_norm = par->k_max / COFFE_H0;
+        par->k_min_norm = par->k_min;
+        par->k_max_norm = par->k_max;
         free(k_norm);
         free(pk_norm);
     }
@@ -1587,16 +1584,16 @@ int coffe_parser_init(
         double *pk_norm =
             (double *)coffe_malloc(sizeof(double)*len);
         for (size_t i = 0; i < len; ++i){
-            k_norm[i] = par->power_spectrum.spline->x[i]/COFFE_H0;
-            pk_norm[i] = par->power_spectrum.spline->y[i]*pow(COFFE_H0, 3);
+            k_norm[i] = par->power_spectrum.spline->x[i];
+            pk_norm[i] = par->power_spectrum.spline->y[i];
         }
         coffe_init_spline(
             &par->power_spectrum_norm,
             k_norm, pk_norm, len,
             par->interp_method
         );
-        par->k_min_norm = par->k_min/COFFE_H0;
-        par->k_max_norm = par->k_max/COFFE_H0;
+        par->k_min_norm = par->k_min;
+        par->k_max_norm = par->k_max;
         free(k_norm);
         free(pk_norm);
     }

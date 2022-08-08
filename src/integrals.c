@@ -41,7 +41,7 @@
 
 
 #ifndef NORM
-#define NORM(X) (X*COFFE_H0)
+#define NORM(X) (X)
 #endif
 
 /**
@@ -71,7 +71,7 @@ typedef struct integrals_divergent_params_t
 
 
 /**
-    list of separations (in Mpc/h!) for the integral I^4_0 so it doesn't need to rely
+    list of separations (in Mpc) for the integral I^4_0 so it doesn't need to rely
     on user input
 **/
 
@@ -106,7 +106,7 @@ static const size_t coffe_sep_len = sizeof(coffe_sep)/sizeof(coffe_sep[0]);
 
 
 /**
-    list of separations below 1 Mpc/h for which we need to evaluate
+    list of separations below 1 Mpc for which we need to evaluate
     the convergent integrals
 **/
 
@@ -522,7 +522,7 @@ int coffe_integrals_renormalizable(
         spectrum->spline->size,
         local_l,
         local_n,
-        COFFE_H0,
+        1,
         x_min,
         x_min,
         x_max,
@@ -723,10 +723,9 @@ int coffe_integrals_init(
                     );
 
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
-                    /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
-                        pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+                        pk[j] = exp(pk[j]);
                     }
 
                     /* setup the interpolation of the power spectrum */
@@ -1035,10 +1034,9 @@ int coffe_integrals_init(
                     );
 
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
-                    /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
-                        pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+                        pk[j] = exp(pk[j]);
                     }
 
                     /* setup the interpolation of the power spectrum */
@@ -1199,10 +1197,9 @@ int coffe_integrals_init(
                     );
 
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
-                    /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
-                        pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+                        pk[j] = exp(pk[j]);
                     }
 
                     /* setup the interpolation of the power spectrum */
@@ -1364,10 +1361,9 @@ int coffe_integrals_init(
                     );
 
                     /* need to rescale since CLASS internally works in units of 1/Mpc */
-                    /* NOTE k and pk are the DIMENSIONLESS spectra (i.e. in units COFFE_H0) */
                     for (size_t j = 0; j < k_size; ++j){
-                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h / COFFE_H0;
-                        pk[j] = exp(pk[j]) * pow(par->h, 3) * pow(COFFE_H0, 3);
+                        k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+                        pk[j] = exp(pk[j]);
                     }
 
                     /* setup the interpolation of the power spectrum */

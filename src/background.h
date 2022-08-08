@@ -22,15 +22,15 @@
 
 typedef struct coffe_background_t
 {
-    coffe_interpolation z_as_chi; /* redshift as function of comoving distance */
+    coffe_interpolation z_as_chi; /* redshift as function of comoving distance (in Mpc) */
 
     coffe_interpolation a; /* scale factor (normalized so that now a=1) */
 
-    coffe_interpolation Hz; /* hubble parameter H(z) */
+    coffe_interpolation Hz; /* hubble parameter H(z) (in 1 / Mpc) */
 
-    coffe_interpolation conformal_Hz; /* conformal hubble parameter */
+    coffe_interpolation conformal_Hz; /* conformal hubble parameter (in 1 / Mpc) */
 
-    coffe_interpolation conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time */
+    coffe_interpolation conformal_Hz_prime; /* derivative of conformal hubble parameter wrt conformal time (in 1 / Mpc^2) */
 
     coffe_interpolation D1; /* growth rate D_1(a) */
 
@@ -38,7 +38,7 @@ typedef struct coffe_background_t
 
     coffe_interpolation G1, G2;
 
-    coffe_interpolation comoving_distance; /* comoving distance, dimensionless */
+    coffe_interpolation comoving_distance; /* comoving distance (in Mpc) */
 
     int flag;
 
@@ -51,18 +51,6 @@ int coffe_background_init(
 );
 
 int coffe_background_free(
-    coffe_background_t *bg
-);
-
-/**
-    checks whether `separation` fits inside a bin of half-with `deltaz`
-    centered around a mean redshift `z_mean`, using cosmology `bg`
-    Returns 1 if yes, 0 if no
-**/
-int coffe_check_range(
-    const double separation,
-    const double z_mean,
-    const double deltaz,
     coffe_background_t *bg
 );
 

@@ -82,7 +82,7 @@ int coffe_multipoles_init(
     for (size_t k = 0; k < par->sep_len; ++k){
         mp->array[counter].coords.z_mean = par->z_mean[i];
         mp->array[counter].coords.l = par->multipole_values[j];
-        mp->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+        mp->array[counter].coords.separation = par->sep[k];
         ++counter;
     }}}
     }

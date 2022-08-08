@@ -124,7 +124,7 @@ static int output_corrfunc(
             data,
             "%.10e %.10e %.10e %.10e\n",
             cf->array[i].coords.z_mean,
-            cf->array[i].coords.separation / COFFE_H0,
+            cf->array[i].coords.separation,
             cf->array[i].coords.mu,
             cf->array[i].value
         );
@@ -158,7 +158,7 @@ static int output_multipoles(
             "%.10e %d %.10e %.10e\n",
             mp->array[i].coords.z_mean,
             mp->array[i].coords.l,
-            mp->array[i].coords.separation / COFFE_H0,
+            mp->array[i].coords.separation,
             mp->array[i].value
         );
     }
@@ -239,25 +239,25 @@ static int output_background(
         else if (strcmp(par->type_bg[i], "H") == 0){
             outputs[i] = (double *)coffe_malloc(sizeof(double)*bg->Hz.spline->size);
             for (size_t n = 0; n<bg->Hz.spline->size; ++n){
-                outputs[i][n] = bg->Hz.spline->y[n]*COFFE_H0;
+                outputs[i][n] = bg->Hz.spline->y[n];
             }
-            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[h/Mpc]%s", i + 1, par->type_bg[i], sep);
+            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[1/Mpc]%s", i + 1, par->type_bg[i], sep);
             strncat(header, temp_header, COFFE_MAX_STRLEN);
         }
         else if (strcmp(par->type_bg[i], "conformal_H") == 0){
             outputs[i] = (double *)coffe_malloc(sizeof(double)*bg->conformal_Hz.spline->size);
             for (size_t n = 0; n<bg->conformal_Hz.spline->size; ++n){
-                outputs[i][n] = bg->conformal_Hz.spline->y[n]*COFFE_H0;
+                outputs[i][n] = bg->conformal_Hz.spline->y[n];
             }
-            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[h/Mpc]%s", i + 1, par->type_bg[i], sep);
+            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[1/Mpc]%s", i + 1, par->type_bg[i], sep);
             strncat(header, temp_header, COFFE_MAX_STRLEN);
         }
         else if (strcmp(par->type_bg[i], "conformal_H_prime") == 0){
             outputs[i] = (double *)coffe_malloc(sizeof(double)*bg->conformal_Hz_prime.spline->size);
             for (size_t n = 0; n<bg->conformal_Hz_prime.spline->size; ++n){
-                outputs[i][n] = bg->conformal_Hz_prime.spline->y[n]*COFFE_H0*COFFE_H0;
+                outputs[i][n] = bg->conformal_Hz_prime.spline->y[n];
             }
-            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[h^2/Mpc^2]%s", i + 1, par->type_bg[i], sep);
+            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[1/Mpc^2]%s", i + 1, par->type_bg[i], sep);
             strncat(header, temp_header, COFFE_MAX_STRLEN);
         }
         else if (strcmp(par->type_bg[i], "D1") == 0){
@@ -279,9 +279,9 @@ static int output_background(
         else if (strcmp(par->type_bg[i], "comoving_distance") == 0){
             outputs[i] = (double *)coffe_malloc(sizeof(double)*bg->comoving_distance.spline->size);
             for (size_t n = 0; n<bg->comoving_distance.spline->size; ++n){
-                outputs[i][n] = bg->comoving_distance.spline->y[n]/COFFE_H0;
+                outputs[i][n] = bg->comoving_distance.spline->y[n];
             }
-            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[Mpc/h]%s", i + 1, par->type_bg[i], sep);
+            snprintf(temp_header, COFFE_MAX_STRLEN, "%zu)%s[Mpc]%s", i + 1, par->type_bg[i], sep);
             strncat(header, temp_header, COFFE_MAX_STRLEN);
         }
     }

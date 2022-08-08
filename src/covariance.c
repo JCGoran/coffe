@@ -429,8 +429,8 @@ static int covariance_integrate_fftlog(
         result[npixels_max * n + m] =
             coffe_interp_spline2d(
                 &pk,
-                COFFE_H0 * separations[m],
-                COFFE_H0 * separations[n]
+                separations[m],
+                separations[n]
             );
     }}
 
@@ -544,10 +544,9 @@ int coffe_covariance_init(
                     NULL
                 );
 
-                /* need to rescale since CLASS internally works in units of 1/Mpc */
                 for (size_t j = 0; j < k_size; ++j){
-                    k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j] / par->h;
-                    pk[j] = exp(pk[j]) * pow(par->h, 3);
+                    k[j] = ((struct nonlinear *)par->class_struct.nonlinear)->k[j];
+                    pk[j] = exp(pk[j]);
                 }
 
                 k_min = k[0];
@@ -706,16 +705,14 @@ int coffe_covariance_init(
 
                     for (size_t m = 0; m < par->sep_len; ++m){
                     for (size_t n = 0; n < par->sep_len; ++n){
-                        /* this one is dimensionless */
                         integral_pk[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] *=
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
                            * 2. / M_PI / M_PI;
-                        /* this one is not so we need to put a conversion factor */
                         integral_pk2[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] *=
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
-                           / M_PI / M_PI / pow(COFFE_H0, 3);
+                           / M_PI / M_PI;
                     }}
                 }}
             }
@@ -757,8 +754,7 @@ int coffe_covariance_init(
                             &bg->comoving_distance,
                             par->z_mean[k] + par->deltaz[k]
                         )
-                    )
-                   /pow(COFFE_H0, 3);
+                    );
             }
             else{
 /*
@@ -774,8 +770,7 @@ int coffe_covariance_init(
                         &test,
                         cov_ramp->zmin[k],
                         cov_ramp->zmax[k]
-                    )
-                   /pow(COFFE_H0, 3);
+                    );
 */
             }
 

@@ -87,7 +87,7 @@ int coffe_corrfunc_init(
     for (size_t k = 0; k < par->sep_len; ++k){
         corrfunc->array[counter].coords.z_mean = par->z_mean[i];
         corrfunc->array[counter].coords.mu = par->mu[j];
-        corrfunc->array[counter].coords.separation = par->sep[k] * COFFE_H0;
+        corrfunc->array[counter].coords.separation = par->sep[k];
         ++counter;
     }}}
     }

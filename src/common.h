@@ -47,7 +47,7 @@
 #define COFFE_MAX_ALLOCABLE 1024 // largest allowed number of columns
 #endif
 
-#ifndef COFFE_MAX_STRLEN 
+#ifndef COFFE_MAX_STRLEN
 #define COFFE_MAX_STRLEN 256 // largest allowed length of the filename
 #endif
 
