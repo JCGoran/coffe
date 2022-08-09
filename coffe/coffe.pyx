@@ -207,6 +207,15 @@ cdef class Coffe:
 
 
     @property
+    def verbose(self):
+        return bool(self._parameters.verbose)
+
+    @verbose.setter
+    def verbose(self, value):
+        self._parameters.verbose = int(bool(value))
+
+
+    @property
     def use_little_omega(self):
         try:
             return bool(int(os.environ.get('COFFE_USE_LITTLE_OMEGA')))

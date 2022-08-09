@@ -110,6 +110,8 @@ cdef extern from "common.h":
 
         coffe_class_precision_parameters_t class_precision
 
+        int verbose
+
         int output_type
 
         double *mu
