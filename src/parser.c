@@ -753,14 +753,14 @@ int coffe_parse_default_parameters(
 
     coffe_new_class_struct(&par->class_struct);
 
-    par->class_precision.k_per_decade_for_bao = 280.;
-    par->class_precision.k_per_decade_for_pk = 40.;
-    par->class_precision.start_large_k_at_tau_h_over_tau_k = 0.05;
-    par->class_precision.l_max_g = 50;
-    par->class_precision.l_max_ur = 150;
-    par->class_precision.tol_perturb_integration = 1e-8;
-    par->class_precision.radiation_streaming_trigger_tau_over_tau_k = 240.;
-    par->class_precision.ur_fluid_trigger_tau_over_tau_k = 50.;
+    par->class_precision.k_per_decade_for_bao = 70.;
+    par->class_precision.k_per_decade_for_pk = 10.;
+    par->class_precision.start_large_k_at_tau_h_over_tau_k = 0.07;
+    par->class_precision.l_max_g = 12;
+    par->class_precision.l_max_ur = 17;
+    par->class_precision.tol_perturb_integration = 1e-5;
+    par->class_precision.radiation_streaming_trigger_tau_over_tau_k = 45.;
+    par->class_precision.ur_fluid_trigger_tau_over_tau_k = 30.;
 
     par->only_cross_correlations = 0;
 
