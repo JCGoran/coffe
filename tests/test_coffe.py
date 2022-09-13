@@ -241,7 +241,7 @@ class TestCoffe:
                 assert np.allclose(df.loc[df.l == mp].r.values * h, x)
                 assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
-    def test_multipoles_flat_lensing(self):
+    def test_multipoles_flat_lensing_lensing(self):
         cosmo = coffe.Coffe(
             # in Mpc
             sep=np.array([20, 40, 100, 150]) / h,
@@ -263,6 +263,36 @@ class TestCoffe:
             data = np.loadtxt(
                 os.path.join(
                     DATA_DIR, f"benchmark_flatsky_lensing_lensing_multipoles{mp}.dat"
+                )
+            )
+            x, y = np.transpose(data)
+            assert np.allclose(df.loc[df.l == mp].r.values * h, x)
+            assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
+
+    def test_multipoles_flat_density_lensing(self):
+        cosmo = coffe.Coffe(
+            # in Mpc
+            sep=np.array([20, 40, 100, 150]) / h,
+            l=[0, 2, 4],
+        )
+
+        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = k * h, pk / h**3
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        cosmo.has_lensing = True
+        cosmo.has_density = True
+        cosmo.has_rsd = False
+        cosmo.has_flatsky_nonlocal = True
+        cosmo.has_flatsky_local_nonlocal = True
+        cosmo.has_only_cross_correlations = True
+
+        result = cosmo.compute_multipoles_bulk()
+        df = pd.DataFrame([_.to_dict() for _ in result])
+        for mp in cosmo.l:
+            data = np.loadtxt(
+                os.path.join(
+                    DATA_DIR, f"benchmark_flatsky_density_lensing_multipoles{mp}.dat"
                 )
             )
             x, y = np.transpose(data)

@@ -4245,5 +4245,5 @@ double functions_flatsky_density_lensing_multipoles(
     }
 #endif
 
-    return result / sqrt(2 * M_PI);
+    return result / sqrt(2 * M_PI) * pow(COFFE_H0 * par->h, 2);
 }
