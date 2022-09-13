@@ -4122,9 +4122,9 @@ double functions_flatsky_lensing_lensing_multipoles(
 #endif
 
     if (l > 0)
-        return result * x * sep;
+        return result * x * sep * pow(COFFE_H0 * par->h, 4);
     else
-        return result;
+        return result * pow(COFFE_H0 * par->h, 4);
 }
 
 
