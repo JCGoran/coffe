@@ -248,10 +248,13 @@ cdef class Coffe:
 
 
     def _check_contributions(self):
-        if not any([self.has_density, self.has_rsd, self.has_lensing]):
+        if not any([self.has_density, self.has_rsd, self.has_lensing, self.has_d1, self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
             raise ValueError(
-                'No contributions specified, you need to specify at least one of \'has_density\', \'has_rsd\', \'has_lensing\''
+                "No contributions specified, you need to specify at least one of: "
+                "'has_density', 'has_rsd', 'has_lensing, 'has_d1', 'has_d2', 'has_g1', 'has_g2', 'has_g3'"
             )
+        if any([self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
+            self._parameters.divergent = 1
 
 
     def _balance_content(self):
@@ -1289,6 +1292,74 @@ cdef class Coffe:
         self._free_multipoles()
 
 
+    @property
+    def has_d1(self):
+        """
+        Returns whether the Doppler 1 contribution is taken into account.
+        """
+        return bool(self._parameters.correlation_contrib.d1)
+
+    @has_d1.setter
+    def has_d1(self, value : bool):
+        self._parameters.correlation_contrib.d1 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_d2(self):
+        """
+        Returns whether the Doppler 2 contribution is taken into account.
+        """
+        return bool(self._parameters.correlation_contrib.d2)
+
+    @has_d2.setter
+    def has_d2(self, value : bool):
+        self._parameters.correlation_contrib.d2 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g1(self):
+        """
+        Returns whether the relativistic non-integrated contribution 1 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g1)
+
+    @has_g1.setter
+    def has_g1(self, value : bool):
+        self._parameters.correlation_contrib.g1 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g2(self):
+        """
+        Returns whether the relativistic non-integrated contribution 2 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g2)
+
+    @has_g2.setter
+    def has_g2(self, value : bool):
+        self._parameters.correlation_contrib.g2 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g3(self):
+        """
+        Returns whether the relativistic non-integrated contribution 3 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g3)
+
+    @has_g3.setter
+    def has_g3(self, value : bool):
+        self._parameters.correlation_contrib.g3 = int(bool(value))
+        self._free_except_parameters()
+
+
     def reset_contributions(self):
         """
         Helper function that resets all writable `has_*` attributes to False.
@@ -1910,5 +1981,5 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._covariance_multipoles,
-            &self.__dummy 
+            &self.__dummy
         )
