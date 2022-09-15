@@ -870,6 +870,48 @@ cdef class Coffe:
         self._free_multipoles()
 
 
+    def evolution_bias1(self, z : float):
+        """
+        Evaluates the evolution bias of the first population at some redshift.
+        """
+        return evaluate_spline(&self._parameters.evolution_bias1, z)
+
+
+    def set_evolution_bias1(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the evolution bias for the first population of
+        tracers.
+        """
+        set_spline(
+            &self._parameters.evolution_bias1,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    def evolution_bias2(self, z : float):
+        """
+        Evaluates the evolution bias of the second population at some redshift.
+        """
+        return evaluate_spline(&self._parameters.evolution_bias2, z)
+
+
+    def set_evolution_bias2(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the evolution bias of the second population of
+        tracers.
+        """
+        set_spline(
+            &self._parameters.evolution_bias2,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
     @property
     def l(self):
         """
