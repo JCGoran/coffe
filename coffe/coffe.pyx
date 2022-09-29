@@ -358,7 +358,7 @@ cdef class Coffe:
 
     @omega_cdm.setter
     def omega_cdm(self, value):
-        _check_parameter('omega_cdm', value, (int, float), 0, 1)
+        _check_parameter('omega_cdm', value, (int, float), -100, 100)
         if not np.allclose(value, self.omega_cdm):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_baryon, self.omega_gamma, self.omega_nu)
@@ -385,7 +385,7 @@ cdef class Coffe:
 
     @omega_m.setter
     def omega_m(self, value):
-        _check_parameter('omega_m', value, (int, float), 0, 1)
+        _check_parameter('omega_m', value, (int, float), -100, 100)
         if not np.allclose(value, self.omega_m):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_gamma)
@@ -405,7 +405,7 @@ cdef class Coffe:
 
     @omega_baryon.setter
     def omega_baryon(self, value):
-        _check_parameter('omega_baryon', value, (int, float), 0, 1)
+        _check_parameter('omega_baryon', value, (int, float), -100, 100)
         if not np.allclose(value, self.omega_baryon):
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_cdm, self.omega_gamma)
@@ -424,7 +424,7 @@ cdef class Coffe:
 
     @omega_gamma.setter
     def omega_gamma(self, value):
-        _check_parameter('omega_gamma', value, (int, float), 0, 1)
+        _check_parameter('omega_gamma', value, (int, float), -100, 100)
         if not np.allclose(value, self.omega_gamma):
             self._check_omegas(value, self.omega_m)
             self._parameters.Omega0_gamma = value / self._coeff
@@ -449,7 +449,7 @@ cdef class Coffe:
 
     @h.setter
     def h(self, value):
-        _check_parameter('h', value, (int, float), 0, 1)
+        _check_parameter('h', value, (int, float), -100, 100)
         if not np.allclose(value, self.h):
             # we change the big omegas first so that the product Omega * h^2 is
             # constant when we change h
@@ -478,7 +478,7 @@ cdef class Coffe:
 
     @w0.setter
     def w0(self, value):
-        _check_parameter('w0', value, (int, float), -2, 0)
+        _check_parameter('w0', value, (int, float), -100, 100)
         if not np.allclose(value, self.w0):
             self._parameters.w0 = value
             self._free_except_parameters()
@@ -577,7 +577,7 @@ cdef class Coffe:
 
     @wa.setter
     def wa(self, value):
-        _check_parameter('wa', value, (int, float), -1, 1)
+        _check_parameter('wa', value, (int, float), -100, 100)
         if not np.allclose(value, self.wa):
             self._parameters.wa = value
             self._free_except_parameters()
@@ -592,7 +592,7 @@ cdef class Coffe:
 
     @n_s.setter
     def n_s(self, value):
-        _check_parameter('n_s', value, (int, float), 0.5, 1.5)
+        _check_parameter('n_s', value, (int, float), -100, 100)
         if not np.allclose(value, self.n_s):
             self._parameters.n_s = value
             self._free_except_parameters()
@@ -607,7 +607,7 @@ cdef class Coffe:
 
     @sigma8.setter
     def sigma8(self, value):
-        _check_parameter('sigma8', value, (int, float), 0, 2)
+        _check_parameter('sigma8', value, (int, float), -100, 100)
         if not np.allclose(value, self.sigma8):
             self._parameters.sigma8 = value
             self._free_power_spectrum()
@@ -626,7 +626,7 @@ cdef class Coffe:
 
     @A_s.setter
     def A_s(self, value):
-        _check_parameter('A_s', value, (int, float), 0, 2)
+        _check_parameter('A_s', value, (int, float), -100, 100)
         if not np.allclose(value, self.A_s):
             self._parameters.A_s = value
             self._free_power_spectrum()
@@ -645,7 +645,7 @@ cdef class Coffe:
 
     @T_cmb.setter
     def T_cmb(self, value):
-        _check_parameter('T_cmb', value, (int, float), 0, 10)
+        _check_parameter('T_cmb', value, (int, float), -100, 100)
         if not np.allclose(value, self.T_cmb):
             self._parameters.T_cmb = value
             self._free_except_parameters()
@@ -660,7 +660,7 @@ cdef class Coffe:
 
     @N_ur.setter
     def N_ur(self, value):
-        _check_parameter('N_ur', value, (int, float), 0, 10)
+        _check_parameter('N_ur', value, (int, float), -100, 100)
         if not np.allclose(value, self.N_ur):
             self._parameters.N_ur = value
             self._free_except_parameters()
@@ -676,7 +676,7 @@ cdef class Coffe:
 
     @m_ncdm.setter
     def m_ncdm(self, value):
-        _check_parameter('m_ncdm', value, (int, float), 0, 10)
+        _check_parameter('m_ncdm', value, (int, float), -100, 100)
         if not np.allclose(value, self.m_ncdm):
             self._parameters.m_ncdm = value
             # see eq. (19) of https://arxiv.org/abs/1212.6154
@@ -697,7 +697,7 @@ cdef class Coffe:
 
     @YHe.setter
     def YHe(self, value):
-        _check_parameter('YHe', value, (int, float), 0, 10)
+        _check_parameter('YHe', value, (int, float), -100, 100)
         if not np.allclose(value, self.YHe):
             self._parameters.YHe = value
             self._free_except_parameters()
@@ -712,7 +712,7 @@ cdef class Coffe:
 
     @N_ncdm.setter
     def N_ncdm(self, value):
-        _check_parameter('N_ncdm', value, int, 0, 10)
+        _check_parameter('N_ncdm', value, int, -100, 100)
         if not np.allclose(value, self.N_ncdm):
             self._parameters.N_ncdm = value
             self._free_except_parameters()
