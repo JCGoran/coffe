@@ -410,7 +410,7 @@ cdef class Coffe:
             # we set the value, rebalance the Omega budget, and free memory
             self._check_omegas(value, self.omega_cdm, self.omega_gamma)
             self._parameters.Omega0_baryon = value / self._coeff
-            self._parameters.Omega0_m = self._parameters.Omega0_cdm + self._parameters.Omega0_baryon
+            self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon - self._parameters.Omega0_nu
             self._balance_content()
             self._free_except_parameters()
 
@@ -451,14 +451,6 @@ cdef class Coffe:
     def h(self, value):
         _check_parameter('h', value, (int, float), -100, 100)
         if not np.allclose(value, self.h):
-            # we change the big omegas first so that the product Omega * h^2 is
-            # constant when we change h
-            coeff = (self._parameters.h / value)**2 if self.use_little_omega else 1
-            self._parameters.Omega0_m *= coeff
-            self._parameters.Omega0_baryon *= coeff
-            self._parameters.Omega0_gamma *= coeff
-            self._parameters.Omega0_cdm = self._parameters.Omega0_m - self._parameters.Omega0_baryon
-
             # setting the old value equal to the new value of h
             self._parameters.h = value
             self._balance_content()
@@ -627,13 +619,12 @@ cdef class Coffe:
     @A_s.setter
     def A_s(self, value):
         _check_parameter('A_s', value, (int, float), -100, 100)
-        if not np.allclose(value, self.A_s):
-            self._parameters.A_s = value
-            self._free_power_spectrum()
-            self._free_integrals()
-            self._free_corrfunc()
-            self._free_multipoles()
-            self._free_covariance_multipoles()
+        self._parameters.A_s = value
+        self._free_power_spectrum()
+        self._free_integrals()
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
 
 
     @property
