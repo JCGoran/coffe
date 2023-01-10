@@ -795,7 +795,7 @@ cdef class Coffe:
         .. math::
             \frac{1}{2 \pi^2} \int\limits_0^\infty dk\, k^2\, P(k, z = 0) \frac{j_\ell(k r)}{(k r)^n}
 
-        Note that if n > l, it returns the above multiplied by r^(n - l)
+        Note that if $n > \ell$, it returns the above multiplied by $r^{n - \ell}$
         instead (see arXiv:1806.11090, section 4.2 for further explanation).
 
         Parameters
@@ -804,8 +804,15 @@ cdef class Coffe:
             the separation (in Mpc) for which one wants to compute the integral
 
         n : int
+            the power of the denominator
 
         l : int
+            the order of the Bessel function
+
+        Returns
+        -------
+        float
+            the value of the integral
         """
         _check_parameter('r', r, (int, float), 0, 25000)
         _check_parameter('n', n, int, -2, 4)
@@ -840,6 +847,10 @@ cdef class Coffe:
         """
         Evaluates the galaxy bias of the first population of tracers at some
         redshift.
+
+        Returns
+        -------
+        float
         """
         return evaluate_spline(&self._parameters.galaxy_bias1, z)
 
@@ -847,6 +858,14 @@ cdef class Coffe:
     def set_galaxy_bias1(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the galaxy bias for the first population of tracers.
+
+        Parameters
+        ----------
+        x_sampling : array_like of float
+            the redshifts at which the bias is sampled
+
+        y_sampling : array_like of float
+            the values of the bias at the redshifts given in x_sampling
         """
         set_spline(
             &self._parameters.galaxy_bias1,
@@ -859,7 +878,12 @@ cdef class Coffe:
 
     def galaxy_bias2(self, z : float):
         """
-        Evaluates the galaxy bias of the second population at some redshift.
+        Evaluates the galaxy bias of the second population of tracers at some
+        redshift.
+
+        Returns
+        -------
+        float
         """
         return evaluate_spline(&self._parameters.galaxy_bias2, z)
 
@@ -867,6 +891,14 @@ cdef class Coffe:
     def set_galaxy_bias2(self, x_sampling : List[float], y_sampling : List[float]):
         """
         Sets the value of the galaxy bias for the second population of tracers.
+
+        Parameters
+        ----------
+        x_sampling : array_like of float
+            the redshifts at which the bias is sampled
+
+        y_sampling : array_like of float
+            the values of the bias at the redshifts given in x_sampling
         """
         set_spline(
             &self._parameters.galaxy_bias2,
@@ -880,6 +912,10 @@ cdef class Coffe:
     def magnification_bias1(self, z : float):
         """
         Evaluates the magnification bias of the first population at some redshift.
+
+        Returns
+        -------
+        float
         """
         return evaluate_spline(&self._parameters.magnification_bias1, z)
 
@@ -888,6 +924,14 @@ cdef class Coffe:
         """
         Sets the value of the magnification bias for the first population of
         tracers.
+
+        Parameters
+        ----------
+        x_sampling : array_like of float
+            the redshifts at which the bias is sampled
+
+        y_sampling : array_like of float
+            the values of the bias at the redshifts given in x_sampling
         """
         set_spline(
             &self._parameters.magnification_bias1,
@@ -901,6 +945,10 @@ cdef class Coffe:
     def magnification_bias2(self, z : float):
         """
         Evaluates the magnification bias of the second population at some redshift.
+
+        Returns
+        -------
+        float
         """
         return evaluate_spline(&self._parameters.magnification_bias2, z)
 
@@ -909,6 +957,14 @@ cdef class Coffe:
         """
         Sets the value of the magnification bias of the second population of
         tracers.
+
+        Parameters
+        ----------
+        x_sampling : array_like of float
+            the redshifts at which the bias is sampled
+
+        y_sampling : array_like of float
+            the values of the bias at the redshifts given in x_sampling
         """
         set_spline(
             &self._parameters.magnification_bias2,
@@ -995,8 +1051,8 @@ cdef class Coffe:
 
     @property
     def number_density1(self):
-        """
-        Number density of first tracers (in 1/Mpc^3) at z_mean.
+        r"""
+        Number density of first tracers (in $1/\mathrm{Mpc}^3$) at `z_mean`.
         """
         return np.array(
             [self._parameters.density1[i] for i in range(self._parameters.density1_len)]
@@ -1032,7 +1088,7 @@ cdef class Coffe:
     @property
     def number_density2(self):
         """
-        Number density of second tracers (in 1/Mpc^3) at z_mean.
+        Number density of second tracers (in $1/\mathrm{Mpc}^3$) at `z_mean`.
         """
         return np.array(
             [self._parameters.density2[i] for i in range(self._parameters.density2_len)]
@@ -1213,7 +1269,7 @@ cdef class Coffe:
     @property
     def deltaz(self):
         """
-        The half width of the redshift bin which is centered at z_mean.
+        The half width of the redshift bin which is centered at `z_mean`.
         """
         return np.array(
             [self._parameters.deltaz[i] for i in range(self._parameters.deltaz_len)]
@@ -1280,10 +1336,11 @@ cdef class Coffe:
     @property
     def has_binned_covariance(self):
         """
-        Returns whether or not the covariance should be bin averaged (see eq. (A18) of arXiv:1509.04293).
-        Note that the parameter `pixelsize` controls the bin width (in Mpc) in each redshift bin.
-        If set to False, the covariance will not be bin averaged, and eq. (2.52)
-        from arXiv:1806.11090 will be used.
+        Returns whether or not the covariance should be bin averaged (see eq.
+        (A18) of arXiv:1509.04293). Note that the parameter `pixelsize`
+        controls the bin width (in Mpc) in each redshift bin. If set to False,
+        the covariance will not be bin averaged, and eq. (2.52) from
+        arXiv:1806.11090 will be used.
         """
         return bool(self._parameters.covariance_window)
 
@@ -1398,6 +1455,18 @@ cdef class Coffe:
         """
         Returns the maximum allowed comoving separation (in Mpc) to compute the
         multipoles for a given redshift bin, assuming the current cosmology.
+
+        Parameters
+        ----------
+        z_mean : float
+            the mean redshift
+
+        deltaz : float
+            the half-width of the redshift bin
+
+        Returns
+        -------
+        float
         """
         _check_parameter('z_mean', z_mean, (int, float), 0, 15)
         _check_parameter('deltaz', deltaz, (int, float), 0, z_mean)
@@ -1406,8 +1475,8 @@ cdef class Coffe:
             self._background_init()
 
         return 2 * (
-            ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean + deltaz) \
-            - \
+            ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean + deltaz)
+            -
             ccoffe.coffe_interp_spline(&self._background.comoving_distance, z_mean)
         )
 
@@ -1434,10 +1503,28 @@ cdef class Coffe:
             self._free_integrals()
 
 
-    def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation : str = 'geometric'):
-        """
-        Evaluates the matter cross spectrum (in Mpc^3) at some k and z1 and z2.
-        Input k must be in 1/Mpc.
+    def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation = "geometric"):
+        r"""
+        Evaluates the matter cross spectrum (in $\mathrm{Mpc}^3$) at some k and z1 and z2.
+        Input k must be in $1/\mathrm{Mpc}$.
+
+        Parameters
+        ----------
+        k : float
+            the wavenumber at which to evaluate the cross spectrum
+
+        z1 : float
+            the redshift of the first population of tracers
+
+        z2 : float
+            the redshift of the second population of tracers
+
+        approximation : str, optional
+            which approximation to use to evaluate the cross-spectrum (default: "geometric")
+
+        Returns
+        -------
+        float
         """
         _check_parameter('k', k, (int, float), self.k_min, self.k_max)
         _check_parameter('z1', z1, (int, float), 0, 15)
@@ -1449,16 +1536,29 @@ cdef class Coffe:
         if not self._background.flag:
             self._background_init()
 
-        return \
-            ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
-           *ccoffe.coffe_interp_spline(&self._background.D1, z1) \
+        return (
+            ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k)
+           *ccoffe.coffe_interp_spline(&self._background.D1, z1)
            *ccoffe.coffe_interp_spline(&self._background.D1, z2)
+        )
 
 
     def power_spectrum(self, k : float, z : float):
-        """
+        r"""
         Evaluates the matter power spectrum at some k and z.
-        Input k must be in 1/Mpc.
+        Input k must be in $1/\mathrm{Mpc}$.
+
+        Parameters
+        ----------
+        k : float
+            the wavenumber at which to evaluate the spectrum
+
+        z : float
+            the mean redshift at which to evaluate the spectrum
+
+        Returns
+        -------
+        float
         """
         _check_parameter('k', k, (int, float), self.k_min, self.k_max)
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1470,9 +1570,10 @@ cdef class Coffe:
             self._background_init()
 
         if self._parameters.pk_type == ccoffe.COFFE_PK_LINEAR:
-            return \
-                ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k) \
+            return (
+                ccoffe.coffe_interp_spline(&self._parameters.power_spectrum, k)
                *ccoffe.coffe_interp_spline(&self._background.D1, z)**2
+            )
         return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k)
 
     @property
@@ -1492,8 +1593,8 @@ cdef class Coffe:
 
     @property
     def k_min(self):
-        """
-        The minimum wavenumber (in 1/Mpc) for which the power spectrum should be computed.
+        r"""
+        The minimum wavenumber (in $1/\mathrm{Mpc}$) for which the power spectrum should be computed.
         """
         return self._parameters.k_min
 
@@ -1506,8 +1607,8 @@ cdef class Coffe:
 
     @property
     def k_max(self):
-        """
-        The maximum wavenumber (in 1/Mpc) for which the power spectrum should be computed.
+        r"""
+        The maximum wavenumber (in $1/\mathrm{Mpc}$) for which the power spectrum should be computed.
         """
         return self._parameters.k_max
 
@@ -1519,10 +1620,11 @@ cdef class Coffe:
 
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
-        """
-        Sets the linear matter power spectrum, optionally at some redshift (by default it's
-        assumed the input is at z = 0).
-        The input k must be in units 1/Mpc, and P(k) in units Mpc^3.
+        r"""
+        Sets the linear matter power spectrum, optionally at some redshift (by
+        default it's assumed the input is at z = 0).
+        The input $k$ must be in units $1/\mathrm{Mpc}$, and $P(k)$ in units
+        $\mathrm{Mpc}^3$.
 
         Parameters
         ----------
@@ -1534,6 +1636,10 @@ cdef class Coffe:
 
         z : float, default = 0
             the redshift at which the power spectrum is evaluated
+
+        Returns
+        -------
+        None
         """
         # value checking
         if not np.allclose(k, np.sort(k)):
@@ -1583,8 +1689,19 @@ cdef class Coffe:
 
 
     def comoving_distance(self, z : float):
-        """
-        Evaluates the comoving distance at some redshift (in Mpc).
+        r"""
+        Evaluates the comoving distance at some redshift (in units
+        $\mathrm{Mpc}$).
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         # TODO figure out how to dereference an operator
         _check_parameter('z', z, (int, float), 0, 15)
@@ -1596,8 +1713,19 @@ cdef class Coffe:
 
 
     def hubble_rate(self, z : float):
-        """
-        Evaluates the Hubble rate (H(z)) at some redshift (in 1/Mpc).
+        r"""
+        Evaluates the Hubble rate ($H(z)$) at some redshift (in units
+        $1/\mathrm{Mpc}$).
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1609,7 +1737,17 @@ cdef class Coffe:
 
     def scale_factor(self, z : float):
         """
-        Returns the scale factor a evaluated at some redshift.
+        Returns the scale factor $a(z)$ evaluated at some redshift.
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1620,8 +1758,19 @@ cdef class Coffe:
 
 
     def hubble_rate_conformal(self, z : float):
-        """
-        Evaluates the conformal Hubble rate (𝓗(z)) at some redshift (in 1/Mpc).
+        r"""
+        Evaluates the conformal Hubble rate ($\mathcal{H}(z)$) at some redshift
+        (in units $1/\mathrm{Mpc}$).
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1632,9 +1781,20 @@ cdef class Coffe:
 
 
     def hubble_rate_conformal_derivative(self, z : float):
-        """
+        r"""
         Evaluates the first derivative of the conformal Hubble rate w.r.t.
-        conformal time (d𝓗(z)/dτ) at some redshift (in 1/Mpc^2).
+        conformal time ($\mathrm{d} \mathcal{H}(z)/\mathrm{d}\tau$) at some
+        redshift (in units $1/\mathrm{Mpc}^2$).
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1645,8 +1805,18 @@ cdef class Coffe:
 
 
     def growth_factor(self, z : float):
-        """
-        Returns the scale-independent function D1 evaluated at some redshift.
+        r"""
+        Returns the scale-independent function $D_1$ evaluated at some redshift.
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1657,8 +1827,19 @@ cdef class Coffe:
 
 
     def growth_rate(self, z : float):
-        """
-        Returns the scale-independent growth rate f evaluated at some redshift.
+        r"""
+        Returns the scale-independent growth rate $f \equiv \mathrm{d}(\log
+        D_1) / \mathrm{d} (\log a)$ evaluated at some redshift.
+
+        Parameters
+        ----------
+        z : float
+            the redshift
+
+        Returns
+        -------
+        float
+            the result
         """
         _check_parameter('z', z, (int, float), 0, 15)
 
@@ -1674,9 +1855,9 @@ cdef class Coffe:
         z : float, r : float, mu : float,
         recompute : bool = False,
     ):
-        """
+        r"""
         Computes the correlation function of the current configuration at the
-        point (z, r, mu)
+        point $(\bar{z}, r, \mu)$.
 
         Parameters
         ----------
@@ -1688,6 +1869,11 @@ cdef class Coffe:
 
         mu : float
             the angle mu (see `help(coffe.mu)` for definition)
+
+        Returns
+        -------
+        float
+            the result
         """
         self._check_coords_corrfunc()
         self._check_contributions()
@@ -1740,8 +1926,8 @@ cdef class Coffe:
         z : float, r : float, l : int,
         recompute : bool = False,
     ):
-        """
-        Computes the multipole of the current configuration at the point (z, r, l)
+        r"""
+        Computes the multipole of the current configuration at the point $(\bar{z}, r, \ell)$.
 
         Parameters
         ----------
@@ -1753,6 +1939,11 @@ cdef class Coffe:
 
         l : int
             the multipole moment
+
+        Returns
+        -------
+        float
+            the result
         """
         self._check_coords_multipoles()
         self._check_contributions()
@@ -1813,7 +2004,7 @@ cdef class Coffe:
 
         Returns
         -------
-        an array of instances of `Multipoles`.
+        an array of instances of `coffe.representation.Multipoles`.
         """
         self._check_coords_multipoles()
         self._check_contributions()
@@ -1854,7 +2045,7 @@ cdef class Coffe:
 
         Returns
         -------
-        an array of instances of `Corrfunc`.
+        an array of instances of `coffe.representation.Corrfunc`.
 
         """
         self._check_coords_corrfunc()
@@ -1896,14 +2087,14 @@ cdef class Coffe:
 
         Returns
         -------
-        an array of instances of `Covariance`.
+        an array of instances of `coffe.representation.Covariance`.
         """
         self._check_coords_multipoles()
         self._check_contributions()
         recompute = bool(recompute)
 
         if not all(
-            len(self.z_mean) == len(_) \
+            len(self.z_mean) == len(_)
             for _ in (self.deltaz, self.number_density1, self.number_density2, self.pixelsize, self.fsky)
         ):
             raise ValueError('Mismatching lengths for covariance parameters (`z_mean`, `deltaz`, `number_density1`, `number_density2`, `pixelsize`, `fsky`')
