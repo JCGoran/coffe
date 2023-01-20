@@ -11,14 +11,70 @@ from coffe.representation import (
     Covariance,
 )
 
-
 from cython.operator cimport dereference
 from ctypes import CFUNCTYPE
 
-from typing import Any, Callable, List, Tuple, Union
-from dataclasses import dataclass
 import os
+import sys
+import warnings
+from configparser import ConfigParser
+from pathlib import Path
+from typing import Any, Callable, List, Tuple, Union, Optional, Sequence
+
 import numpy as np
+
+
+class LegacyOption:
+    """
+    Class for handling legacy options in the config file.
+    """
+
+    def __init__(self, name, kind, replaced_by = None):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        name : str
+            Name of the legacy option
+
+        kind : str
+            Type of the legacy option
+
+        replaced_by : str, optional
+            Name of the new option that replaces the legacy one
+        """
+        self.name = name
+        self.kind = kind
+        self.replaced_by = replaced_by
+
+
+
+class CoffeConfigParser(ConfigParser):
+    """
+    The custom parser for the configuration file of COFFE
+    """
+
+    def getfloat_array(self, section, option, *args, **kwargs):
+        """
+        Converts the value of the option to a list of floats
+        """
+        return [float(_) for _ in self.get(section, option).strip("[]").split(",")]
+
+    def getint_array(self, section, option, *args, **kwargs):
+        """
+        Converts the value of the option to a list of ints
+        """
+        return [int(_) for _ in self.get(section, option).strip("[]").split(",")]
+
+    def getstr_array(self, section, option, *args, **kwargs):
+        """
+        Converts the value of the option to a list of strings
+        """
+        return [
+            str(_.strip(' "')) for _ in self.get(section, option).strip("[]").split(",")
+        ]
+
 
 
 def _check_parameter(
@@ -162,6 +218,195 @@ cdef class Coffe:
 
         if kwargs:
             self.set_parameters(**kwargs)
+
+
+    @staticmethod
+    def from_file(filename):
+        """
+        Constructor that initializes the structures and sets parameters from a
+        file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file containing the parameters.
+
+        Returns
+        -------
+        cosmo : Coffe
+            The Coffe object with the parameters set from the file.
+
+        Examples
+        --------
+        >>> import coffe
+        >>> cosmo = coffe.Coffe.from_file("settings.cfg")
+        """
+        section = "default"
+        contents = f"[{section}]\n" + "\n".join(
+            [_.strip(";") for _ in Path(filename).read_text().split("\n")]
+        )
+        config = CoffeConfigParser()
+        config.read_string(contents)
+        config = config[section]
+
+        cosmo = Coffe()
+
+        # some of the other options have different names now, or have been
+        # removed; for compatibility reasons, now first the legacy options are
+        # read, followed by the new ones (if they exist, they override the
+        # legacy ones)
+        legacy_options = [
+            LegacyOption("only_cross_correlations", "int", "has_only_cross_correlations"),
+            LegacyOption("covariance_z_mean", "float_array", "z_mean"),
+            LegacyOption("covariance_deltaz", "float_array", "deltaz"),
+            LegacyOption("covariance_fsky", "float_array", "fsky"),
+            LegacyOption("covariance_pixelsize", "float_array", "pixelsize"),
+            LegacyOption("covariance_step_size", "float"),
+            LegacyOption("covariance_zmin", "float"),
+            LegacyOption("covariance_zmax", "float"),
+            LegacyOption("covariance_minimum_separation", "float"),
+            LegacyOption("covariance_window", "int", "has_binned_covariance"),
+            LegacyOption(
+                "covariance_density", "float_array", ["number_density1", "number_density2"]
+            ),
+            LegacyOption("covariance_integration_bins", "int"),
+            LegacyOption("multipoles", "int_array", "l"),
+            LegacyOption("flatsky_local", "int", "has_flatsky_local"),
+            LegacyOption("flatsky_local_nonlocal", "int", "has_flatsky_local_nonlocal"),
+            LegacyOption("flatsky_nonlocal", "int", "has_flatsky_nonlocal"),
+        ]
+
+        for legacy_option in legacy_options:
+            if legacy_option.name in config:
+                if legacy_option.replaced_by:
+                    warnings.warn(
+                        f"Option '{legacy_option.name}' is no longer supported; "
+                        f"it may be replaced by '{legacy_option.replaced_by}' (if found).",
+                        DeprecationWarning,
+                    )
+
+                    if not isinstance(legacy_option.replaced_by, list):
+                        setattr(
+                            cosmo,
+                            legacy_option.replaced_by,
+                            getattr(config, f"get{legacy_option.kind}")(legacy_option.name),
+                        )
+                    else:
+                        for item in legacy_option.replaced_by:
+                            setattr(
+                                cosmo,
+                                item,
+                                getattr(config, f"get{legacy_option.kind}")(legacy_option.name),
+                            )
+                else:
+                    warnings.warn(
+                        f"Option '{legacy_option.name}' is no longer supported and will be ignored.",
+                        DeprecationWarning,
+                    )
+
+        if "correlation_contributions" in config:
+            warnings.warn(
+                f"Option 'correlation_contributions' is no longer supported; "
+                f"it may be replaced by 'has_density', 'has_rsd', and 'has_lensing' (if found).",
+                DeprecationWarning,
+            )
+            contributions = config.getstr_array("correlation_contributions")
+            if "den" in contributions:
+                cosmo.has_density = True
+            if "rsd" in contributions:
+                cosmo.has_rsd = True
+            if "len" in contributions:
+                cosmo.has_lensing = True
+
+        options_float_array = [
+            "sep",
+            "z_mean",
+            "deltaz",
+            "mu",
+            "number_density1",
+            "number_density2",
+            "pixelsize",
+            "fsky",
+        ]
+        for option in options_float_array:
+            if option in config:
+                setattr(cosmo, option, config.getfloat_array(option))
+
+        options_int_array = ["l"]
+        for option in options_int_array:
+            if option in config:
+                setattr(cosmo, option, config.getint_array(option))
+
+        options_float = [
+            "omega_m",
+            "omega_baryon",
+            "omega_gamma",
+            "w0",
+            "wa",
+            "h",
+            "sigma8",
+            "n_s",
+            "T_cmb",
+            "A_s",
+            "k_per_decade_for_bao",
+            "k_per_decade_for_pk",
+            "start_large_k_at_tau_c_over_tau_h",
+            "l_max_g",
+            "l_max_ur",
+            "tol_perturb_integration",
+            "radiation_streaming_trigger_tau_over_tau_k",
+            "ur_fluid_trigger_tau_over_tau_k",
+            "N_ur",
+            "m_ncdm",
+            "k_min",
+            "k_max",
+            "YHe",
+        ]
+        for option in options_float:
+            if option in config:
+                setattr(cosmo, option, config.getfloat(option))
+
+        options_int = [
+            "has_density",
+            "has_lensing",
+            "has_rsd",
+            "integration_sampling",
+            "background_sampling",
+            "has_binned_covariance",
+            "has_flatsky_local",
+            "has_flatsky_nonlocal",
+            "has_flatsky_local_nonlocal",
+            "covariance_cosmic",
+            "covariance_mixed",
+            "covariance_poisson",
+        ]
+        for option in options_int:
+            if option in config:
+                setattr(cosmo, option, config.getint(option))
+
+        # the bias options are a bit special
+        biases = ["galaxy", "magnification"]
+        populations = [1, 2]
+        for bias in biases:
+            for population in populations:
+                if (
+                    f"read_{bias}_bias{population}" in config
+                    and config.getint(f"read_{bias}_bias{population}") == 1
+                ):
+                    getattr(cosmo, f"set_{bias}_bias{population}")(
+                        *np.transpose(
+                            np.loadtxt(
+                                config.get(f"input_{bias}_bias{population}").strip('" ')
+                            )
+                        )
+                    )
+                elif f"input_{bias}_bias{population}" in config:
+                    getattr(cosmo, f"set_{bias}_bias{population}")(
+                        np.linspace(0, 10, 100),
+                        [config.getfloat(f"{bias}_bias{population}")] * 100,
+                    )
+
+        return cosmo
 
 
     def _free_background(self):

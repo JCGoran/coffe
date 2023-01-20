@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
+
+import coffe
 import numpy as np
 import pandas as pd
 import pytest
 
-import coffe
 from coffe_utils import covariance_matrix
 
 DATA_DIR = "tests/benchmarks/"
@@ -11,6 +13,13 @@ h = 0.67
 
 
 class TestCoffe:
+    def test_from_file(self):
+        """
+        Test for reading the parameters from a configuration file
+        """
+        with pytest.warns(DeprecationWarning):
+            cosmo = coffe.Coffe.from_file(Path(DATA_DIR) / "settings.cfg")
+
     def test_bias(self):
         """
         Tests for setting and getting the biases.
