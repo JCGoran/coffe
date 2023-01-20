@@ -908,16 +908,18 @@ int coffe_parse_default_parameters(
     par->degree_evolution_bias2 = 1;
 
     par->output_type = MULTIPOLES;
-    par->density1 = NULL;
-    par->density1_len = 0;
-    par->density2 = NULL;
-    par->density2_len = 0;
-    par->deltaz = NULL;
-    par->deltaz_len = 0;
-    par->fsky = NULL;
-    par->fsky_len = 0;
-    par->pixelsize = NULL;
-    par->pixelsize_len = 0;
+    par->density1 = (double *)coffe_malloc(sizeof(double));
+    par->density1[0] = 1e-3;
+    par->density1_len = 1;
+    par->density2 = (double *)coffe_malloc(sizeof(double));
+    par->density2[0] = 1e-3;
+    par->density2_len = 1;
+    par->fsky = (double *)coffe_malloc(sizeof(double));
+    par->fsky[0] = 1.0;
+    par->fsky_len = 1;
+    par->pixelsize = (double *)coffe_malloc(sizeof(double));
+    par->pixelsize[0] = 10;
+    par->pixelsize_len = 1;
     par->zmin = NULL;
     par->zmin_len = 0;
     par->zmax = NULL;
@@ -958,8 +960,9 @@ int coffe_parse_default_parameters(
     par->correlation_contrib.g4 = 0;
     par->correlation_contrib.g5 = 0;
 
-    par->mu = NULL;
-    par->mu_len = 0;
+    par->mu = (double *)coffe_malloc(sizeof(double));
+    par->mu[0] = 0.5;
+    par->mu_len = 1;
 
     par->divergent = 0;
 
