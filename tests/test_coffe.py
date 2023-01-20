@@ -20,6 +20,25 @@ class TestCoffe:
         with pytest.warns(DeprecationWarning):
             cosmo = coffe.Coffe.from_file(Path(DATA_DIR) / "settings.cfg")
 
+    def test_to_from_file(self):
+        """
+        Test we can save and then read the default config
+        """
+        cosmo_out = coffe.Coffe()
+        cosmo_out.to_file("test.cfg")
+        cosmo_in = coffe.Coffe.from_file("test.cfg")
+
+        p1 = {
+            k: list(v) if isinstance(v, (list, np.ndarray)) else v
+            for k, v in cosmo_out.parameters.items()
+        }
+        p2 = {
+            k: list(v) if isinstance(v, (list, np.ndarray)) else v
+            for k, v in cosmo_in.parameters.items()
+        }
+
+        assert p1 == p2
+
     def test_bias(self):
         """
         Tests for setting and getting the biases.

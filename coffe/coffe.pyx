@@ -408,6 +408,22 @@ cdef class Coffe:
 
         return cosmo
 
+    def to_file(self, filename):
+        """Write the cosmology to a file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file.
+        """
+        with open(filename, "w", encoding="utf-8") as f:
+            for key, value in self.parameters.items():
+                if isinstance(value, bool):
+                    value = int(value)
+                if isinstance(value, (list, tuple, np.ndarray)):
+                    value = list(value)
+                f.write(f"{key} = {value}\n")
+
 
     def _free_background(self):
         ccoffe.coffe_background_free(&self._background)
