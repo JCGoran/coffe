@@ -15,7 +15,6 @@ fi
 
 git submodule update --init --recursive
 git submodule foreach './install.sh'
-python3 setup.py build_ext -i
-python3 -m pip install .
+sh reinstall.sh
 
 set +euxo
