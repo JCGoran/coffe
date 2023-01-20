@@ -6,6 +6,31 @@ import subprocess
 from Cython.Build import cythonize
 from setuptools import Extension, setup
 
+
+def get_include_dirs():
+    """
+    Returns a list of all of the alternative include directories (virtual env,
+    conda env, etc.)
+    """
+    return [
+        os.path.join(os.environ.get(_), "include/")
+        for _ in ["VIRTUAL_ENV", "CONDA_PREFIX"]
+        if os.environ.get(_)
+    ]
+
+
+def get_library_dirs():
+    """
+    Returns a list of all of the alternative library directories (virtual env,
+    conda env, etc.)
+    """
+    return [
+        os.path.join(os.environ.get(_), "lib/")
+        for _ in ["VIRTUAL_ENV", "CONDA_PREFIX"]
+        if os.environ.get(_)
+    ]
+
+
 extra_compile_args = [
     "-fopenmp",
     "-Ofast",
@@ -53,7 +78,8 @@ setup(
                 include_dirs=[
                     "src/",
                     "./",
-                ],
+                ]
+                + get_include_dirs(),
                 libraries=[
                     "m",
                     "gsl",
@@ -62,6 +88,7 @@ setup(
                     "cuba",
                     "class",
                 ],
+                library_dirs=get_library_dirs(),
                 extra_compile_args=extra_compile_args,
                 extra_link_args=["-fopenmp"],
             ),
