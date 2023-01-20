@@ -104,6 +104,27 @@ def _check_parameter(
 
 
 
+cdef int get_spline_size(
+    ccoffe.coffe_interpolation *interp,
+) except *:
+    return dereference(interp.spline).size
+
+
+
+cdef double get_spline_min(
+    ccoffe.coffe_interpolation *interp,
+) except *:
+    return dereference(interp.spline).x[0]
+
+
+
+cdef double get_spline_max(
+    ccoffe.coffe_interpolation *interp,
+) except *:
+    return dereference(interp.spline).x[get_spline_size(interp) - 1]
+
+
+
 cdef double evaluate_spline(
     ccoffe.coffe_interpolation *interp,
     const double x,
@@ -405,6 +426,14 @@ cdef class Coffe:
                         np.linspace(0, 10, 100),
                         [config.getfloat(f"{bias}_bias{population}")] * 100,
                     )
+                elif (
+                    f"{bias}_bias{population}_redshifts" in config
+                    and f"{bias}_bias{population}_values" in config
+                ):
+                    getattr(cosmo, f"set_{bias}_bias{population}")(
+                        config.getfloat_array(f"{bias}_bias{population}_redshifts"),
+                        config.getfloat_array(f"{bias}_bias{population}_values"),
+                    )
 
         return cosmo
 
@@ -423,6 +452,50 @@ cdef class Coffe:
                 if isinstance(value, (list, tuple, np.ndarray)):
                     value = list(value)
                 f.write(f"{key} = {value}\n")
+
+            # the various biases are handled separately
+
+            # -------------------------------------------------------------------------------
+            # galaxy bias
+            # -------------------------------------------------------------------------------
+            size_galaxy_bias1 = get_spline_size(&self._parameters.galaxy_bias1)
+            xmin_galaxy_bias1 = get_spline_min(&self._parameters.galaxy_bias1)
+            xmax_galaxy_bias1 = get_spline_max(&self._parameters.galaxy_bias1)
+
+            x = np.linspace(xmin_galaxy_bias1, xmax_galaxy_bias1, size_galaxy_bias1)
+
+            f.write(f"galaxy_bias1_redshifts = {x.tolist()}\n")
+            f.write(f"galaxy_bias1_values = {[self.galaxy_bias1(_) for _ in x]}\n")
+
+            size_galaxy_bias2 = get_spline_size(&self._parameters.galaxy_bias2)
+            xmin_galaxy_bias2 = get_spline_min(&self._parameters.galaxy_bias2)
+            xmax_galaxy_bias2 = get_spline_max(&self._parameters.galaxy_bias2)
+
+            x = np.linspace(xmin_galaxy_bias2, xmax_galaxy_bias2, size_galaxy_bias2)
+
+            f.write(f"galaxy_bias2_redshifts = {x.tolist()}\n")
+            f.write(f"galaxy_bias2_values = {[self.galaxy_bias2(_) for _ in x]}\n")
+
+            # -------------------------------------------------------------------------------
+            # magnification bias
+            # -------------------------------------------------------------------------------
+            size_magnification_bias1 = get_spline_size(&self._parameters.magnification_bias1)
+            xmin_magnification_bias1 = get_spline_min(&self._parameters.magnification_bias1)
+            xmax_magnification_bias1 = get_spline_max(&self._parameters.magnification_bias1)
+
+            x = np.linspace(xmin_magnification_bias1, xmax_magnification_bias1, size_magnification_bias1)
+
+            f.write(f"magnification_bias1_redshifts = {x.tolist()}\n")
+            f.write(f"magnification_bias1_values = {[self.magnification_bias1(_) for _ in x]}\n")
+
+            size_magnification_bias2 = get_spline_size(&self._parameters.magnification_bias2)
+            xmin_magnification_bias2 = get_spline_min(&self._parameters.magnification_bias2)
+            xmax_magnification_bias2 = get_spline_max(&self._parameters.magnification_bias2)
+
+            x = np.linspace(xmin_magnification_bias2, xmax_magnification_bias2, size_magnification_bias2)
+
+            f.write(f"magnification_bias2_redshifts = {x.tolist()}\n")
+            f.write(f"magnification_bias2_values = {[self.magnification_bias2(_) for _ in x]}\n")
 
 
     def _free_background(self):
