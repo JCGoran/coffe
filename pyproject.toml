@@ -2,14 +2,12 @@
 manylinux-x86_64-image = "manylinux_2_28"
 skip = ["cp36-*", "pp*", "pypy*"]
 
-[tool.cibuildwheel.linux]
-before-all = "yum install -y gsl-devel fftw-devel && git submodule update --init --recursive && git submodule foreach './install.sh'"
-
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
+before-all = "yum install -y gsl-devel fftw-devel && git submodule update --init --recursive && git submodule foreach './install.sh'"
 
 [build-system]
 requires = ["setuptools", "wheel", "Cython"]
