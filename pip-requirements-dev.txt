@@ -1,1 +1,12 @@
 pdoc
+scipy
+pandas
+pylint
+pytest
+mypy
+isort
+reorder-python-imports
+autoimport
+black
+cibuildwheel
+twine
