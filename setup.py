@@ -47,13 +47,12 @@ commit = subprocess.run(
 ).stdout.strip()
 
 setup(
-    name="Coffe",
-    version="3.0",
+    name="coffe",
+    version="3.0.0",
     description=commit,
     url="https://github.com/JCGoran/coffe",
     author="Goran Jelic-Cizmek",
     author_email="goran.jelic-cizmek@unige.ch",
-    install_requires=["numpy>=1.19.5"],
     packages=["coffe"],
     ext_modules=cythonize(
         [
