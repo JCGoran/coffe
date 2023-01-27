@@ -73,6 +73,7 @@ setup(
                     "src/utils.c",
                     "src/twobessel.c",
                     "src/covariance.c",
+                    "src/tanhsinh.c",
                 ],
                 include_dirs=[
                     "src/",
