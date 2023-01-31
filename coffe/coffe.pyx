@@ -458,44 +458,72 @@ cdef class Coffe:
             # -------------------------------------------------------------------------------
             # galaxy bias
             # -------------------------------------------------------------------------------
-            size_galaxy_bias1 = get_spline_size(&self._parameters.galaxy_bias1)
-            xmin_galaxy_bias1 = get_spline_min(&self._parameters.galaxy_bias1)
-            xmax_galaxy_bias1 = get_spline_max(&self._parameters.galaxy_bias1)
+            f.write(f"galaxy_bias1_redshifts = {self.galaxy_bias1_redshifts().tolist()}\n")
+            f.write(f"galaxy_bias1_values = {self.galaxy_bias1_values().tolist()}\n")
 
-            x = np.linspace(xmin_galaxy_bias1, xmax_galaxy_bias1, size_galaxy_bias1)
-
-            f.write(f"galaxy_bias1_redshifts = {x.tolist()}\n")
-            f.write(f"galaxy_bias1_values = {[self.galaxy_bias1(_) for _ in x]}\n")
-
-            size_galaxy_bias2 = get_spline_size(&self._parameters.galaxy_bias2)
-            xmin_galaxy_bias2 = get_spline_min(&self._parameters.galaxy_bias2)
-            xmax_galaxy_bias2 = get_spline_max(&self._parameters.galaxy_bias2)
-
-            x = np.linspace(xmin_galaxy_bias2, xmax_galaxy_bias2, size_galaxy_bias2)
-
-            f.write(f"galaxy_bias2_redshifts = {x.tolist()}\n")
-            f.write(f"galaxy_bias2_values = {[self.galaxy_bias2(_) for _ in x]}\n")
+            f.write(f"galaxy_bias2_redshifts = {self.galaxy_bias2_redshifts().tolist()}\n")
+            f.write(f"galaxy_bias2_values = {self.galaxy_bias2_values().tolist()}\n")
 
             # -------------------------------------------------------------------------------
             # magnification bias
             # -------------------------------------------------------------------------------
-            size_magnification_bias1 = get_spline_size(&self._parameters.magnification_bias1)
-            xmin_magnification_bias1 = get_spline_min(&self._parameters.magnification_bias1)
-            xmax_magnification_bias1 = get_spline_max(&self._parameters.magnification_bias1)
+            f.write(f"magnification_bias1_redshifts = {self.magnification_bias1_redshifts().tolist()}\n")
+            f.write(f"magnification_bias1_values = {self.magnification_bias1_values().tolist()}\n")
 
-            x = np.linspace(xmin_magnification_bias1, xmax_magnification_bias1, size_magnification_bias1)
+            f.write(f"magnification_bias2_redshifts = {self.magnification_bias2_redshifts().tolist()}\n")
+            f.write(f"magnification_bias2_values = {self.magnification_bias2_values().tolist()}\n")
 
-            f.write(f"magnification_bias1_redshifts = {x.tolist()}\n")
-            f.write(f"magnification_bias1_values = {[self.magnification_bias1(_) for _ in x]}\n")
 
-            size_magnification_bias2 = get_spline_size(&self._parameters.magnification_bias2)
-            xmin_magnification_bias2 = get_spline_min(&self._parameters.magnification_bias2)
-            xmax_magnification_bias2 = get_spline_max(&self._parameters.magnification_bias2)
+    def galaxy_bias1_redshifts(self):
+        """Return the redshifts of the galaxy bias 1 spline."""
+        size = get_spline_size(&self._parameters.galaxy_bias1)
+        xmin = get_spline_min(&self._parameters.galaxy_bias1)
+        xmax = get_spline_max(&self._parameters.galaxy_bias1)
 
-            x = np.linspace(xmin_magnification_bias2, xmax_magnification_bias2, size_magnification_bias2)
+        return np.linspace(xmin, xmax, size)
 
-            f.write(f"magnification_bias2_redshifts = {x.tolist()}\n")
-            f.write(f"magnification_bias2_values = {[self.magnification_bias2(_) for _ in x]}\n")
+    def galaxy_bias1_values(self):
+        """Return the values of the galaxy bias 1 spline."""
+        return np.array([self.galaxy_bias1(_) for _ in self.galaxy_bias1_redshifts()])
+
+
+    def galaxy_bias2_redshifts(self):
+        """Return the redshifts of the galaxy bias 2 spline."""
+        size = get_spline_size(&self._parameters.galaxy_bias2)
+        xmin = get_spline_min(&self._parameters.galaxy_bias2)
+        xmax = get_spline_max(&self._parameters.galaxy_bias2)
+
+        return np.linspace(xmin, xmax, size)
+
+    def galaxy_bias2_values(self):
+        """Return the values of the galaxy bias 2 spline."""
+        return np.array([self.galaxy_bias2(_) for _ in self.galaxy_bias2_redshifts()])
+
+
+    def magnification_bias1_redshifts(self):
+        """Return the redshifts of the magnification bias 1 spline."""
+        size = get_spline_size(&self._parameters.magnification_bias1)
+        xmin = get_spline_min(&self._parameters.magnification_bias1)
+        xmax = get_spline_max(&self._parameters.magnification_bias1)
+
+        return np.linspace(xmin, xmax, size)
+
+    def magnification_bias1_values(self):
+        """Return the values of the magnification bias 1 spline."""
+        return np.array([self.magnification_bias1(_) for _ in self.magnification_bias1_redshifts()])
+
+
+    def magnification_bias2_redshifts(self):
+        """Return the redshifts of the magnification bias 2 spline."""
+        size = get_spline_size(&self._parameters.magnification_bias2)
+        xmin = get_spline_min(&self._parameters.magnification_bias2)
+        xmax = get_spline_max(&self._parameters.magnification_bias2)
+
+        return np.linspace(xmin, xmax, size)
+
+    def magnification_bias2_values(self):
+        """Return the values of the magnification bias 2 spline."""
+        return np.array([self.magnification_bias2(_) for _ in self.magnification_bias2_redshifts()])
 
 
     def _free_background(self):
