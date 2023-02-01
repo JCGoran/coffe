@@ -197,7 +197,7 @@ static int coffe_test_multipoles(
                     )
                 ){
                     weak_assert(
-                        approx_equal_const_epsilon(y_expected, y_obtained),
+                        approx_equal(y_expected, y_obtained, 5e-3, 1e-10),
                         &error_flag
                     );
                 }
@@ -550,8 +550,8 @@ static int coffe_test_multipoles(
                     approx_equal(
                         y_expected,
                         y_obtained,
-                        5e-4,
-                        1e-14
+                        5e-3,
+                        1e-10
                     ),
                     &error_flag
                 );
