@@ -600,7 +600,7 @@ double functions_nonintegrated(
         par->correlation_contrib.g1 &&
         !par->only_cross_correlations
     ){
-        result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
+        result += pow(COFFE_H0 * par->h, 4) * (9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(1 + G1)*(1 + G2)/4/a1/a2
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
@@ -617,14 +617,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* g2-g2 term */
     if (
         par->correlation_contrib.g2 &&
         !par->only_cross_correlations
     ){
-        result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
+        result += pow(COFFE_H0 * par->h, 4) * (9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(5*s1 - 2)*(5*s2 - 2)/4/a1/a2
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
@@ -641,14 +641,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* g3-g3 term */
     if (
         par->correlation_contrib.g3 &&
         !par->only_cross_correlations
     ){
-        result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
+        result += pow(COFFE_H0 * par->h, 4) * (9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)
            *(f1 - 1)*(f2 - 1)/4/a1/a2
            *(
                 coffe_interp_spline(&coffe_find_integral(integral, 4, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep)
@@ -665,7 +665,7 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* den-rsd + rsd-den term */
     if (
