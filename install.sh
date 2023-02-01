@@ -2,7 +2,7 @@
 
 # THIS IS THE ONLY SCRIPT YOU NEED TO RUN TO INSTALL COFFE
 
-set -euxo
+set -eux
 
 # in case of no conda env, we just install the Python-specific requirements
 if [ -z "${CONDA_PREFIX-}" ] && [ -z "${CONDA_DEFAULT_ENV-}" ]
@@ -17,4 +17,4 @@ git submodule update --init --recursive
 git submodule foreach './install.sh'
 sh reinstall.sh
 
-set +euxo
+set +eux
