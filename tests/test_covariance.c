@@ -16,6 +16,8 @@
 #include "tools.h"
 #include "covariance.h"
 
+const double h = 0.67;
+
 
 typedef struct legendre_parameters_t
 {
@@ -236,6 +238,11 @@ static int coffe_test_covariance(
             name, 3, &size, &r1, &r2, &result
         );
 
+        for (size_t i = 0; i < size; ++i){
+            r1[i] /= h;
+            r2[i] /= h;
+        }
+
         const size_t sep_size = (size_t)sqrt(size);
 
         for (size_t i = 0; i < sep_size; ++i){
@@ -254,12 +261,14 @@ static int coffe_test_covariance(
                 ).value
             );
             weak_assert(
-                approx_equal_const_epsilon(
+                approx_equal(
                     result[i * sep_size + j],
                     coffe_covariance_find(
                         cov, 1.0, multipoles[mp1], multipoles[mp2],
                         r1[i * sep_size + j], r2[i * sep_size + j]
-                    ).value
+                    ).value,
+                    1e-2,
+                    1e-12
                 ),
                 &error_flag
             );
@@ -290,11 +299,11 @@ int main(void)
     par.correlation_contrib.rsd = 1;
 
     par.density1 = (double *)malloc(sizeof(double));
-    par.density1[0] = 1e-3;
+    par.density1[0] = 1e-3 * pow(h, 3);
     par.density1_len = 1;
 
     par.density2 = (double *)malloc(sizeof(double));
-    par.density2[0] = 1e-3;
+    par.density2[0] = 1e-3 * pow(h, 3);
     par.density2_len = 1;
 
     par.z_mean = (double *)malloc(sizeof(double));
@@ -315,7 +324,7 @@ int main(void)
 
     par.sep_len = 6;
     free(par.sep);
-    par.sep = coffe_generate_range(50, 350, par.sep_len);
+    par.sep = coffe_generate_range(50 / h, 350 / h, par.sep_len);
 
     coffe_background_t bg = {.flag = 0};
     coffe_background_init(&par, &bg);

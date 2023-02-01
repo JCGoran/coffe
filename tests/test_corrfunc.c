@@ -140,7 +140,7 @@ static int coffe_test_corrfunc(
             );
 
             for (size_t k = 0; k < size; ++k){
-                const double x = xvalue[k] * COFFE_H0;
+                const double x = xvalue[k] / par->h;
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
@@ -201,7 +201,7 @@ static int coffe_test_corrfunc(
             );
 
             for (size_t k = 0; k < size; ++k){
-                const double x = xvalue[k] * COFFE_H0;
+                const double x = xvalue[k] / par->h;
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
@@ -262,7 +262,7 @@ static int coffe_test_corrfunc(
             );
 
             for (size_t k = 0; k < size; ++k){
-                const double x = xvalue[k] * COFFE_H0;
+                const double x = xvalue[k] / par->h;
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
@@ -323,7 +323,7 @@ static int coffe_test_corrfunc(
             );
 
             for (size_t k = 0; k < size; ++k){
-                const double x = xvalue[k] * COFFE_H0;
+                const double x = xvalue[k] / par->h;
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
@@ -383,7 +383,7 @@ static int coffe_test_corrfunc(
             );
 
             for (size_t k = 0; k < size; ++k){
-                const double x = xvalue[k] * COFFE_H0;
+                const double x = xvalue[k] / par->h;
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,

@@ -811,12 +811,17 @@ int coffe_parse_default_parameters(
         turns out you can do this
         https://stackoverflow.com/a/1662202
     */
-    const double k[] = {
+    double k[] = {
         #include "WAVENUMBER_HEADER.dat"
     };
-    const double pk[] = {
+    double pk[] = {
         #include "POWER_SPECTRUM_HEADER.dat"
     };
+
+    for (size_t i = 0; i < COFFE_ARRAY_SIZE(k); ++i){
+        k[i] *= par->h;
+        pk[i] /= pow(par->h, 3);
+    }
 
     coffe_new_spline(&par->power_spectrum);
     coffe_new_spline(&par->power_spectrum_norm);
