@@ -870,36 +870,36 @@ double functions_nonintegrated(
         par->correlation_contrib.den &&
         par->correlation_contrib.g1
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(1 + G2)
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(1 + G1)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* den-g2 + g2-den term */
     if (
         par->correlation_contrib.den &&
         par->correlation_contrib.g2
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(5*s2 - 2)
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(5*s1 - 2)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* den-g3 + g3-den term */
     if (
         par->correlation_contrib.den &&
         par->correlation_contrib.g3
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 b1*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a2*(f2 - 1)
                 +
                 b2*3*(par->Omega0_cdm + par->Omega0_baryon)/2/a1*(f1 - 1)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 0, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* rsd-d1 + d1-rsd term */
     if (
@@ -1166,7 +1166,7 @@ double functions_nonintegrated(
         par->correlation_contrib.rsd &&
         par->correlation_contrib.g1
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(1 + G2)
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)
@@ -1177,14 +1177,14 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(1 + G1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* rsd-g2 + g2-rsd term */
     if (
         par->correlation_contrib.rsd &&
         par->correlation_contrib.g2
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(5*s2 - 2)
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)
@@ -1195,14 +1195,14 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(5*s1 - 2)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* rsd-g3 + g3-rsd term */
     if (
         par->correlation_contrib.rsd &&
         par->correlation_contrib.g3
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a2*f1*(f2 - 1)
                 +
                 (par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)
@@ -1213,7 +1213,7 @@ double functions_nonintegrated(
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*f2*(f1 - 1)*(2./3*pow(sep, 2) - (1 - pow(costheta, 2))*pow(chi1, 2))
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 2, 2, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
 
     }
     /* d1-d2 + d2-d1 term */
@@ -1233,43 +1233,43 @@ double functions_nonintegrated(
         par->correlation_contrib.d1 &&
         par->correlation_contrib.g1
     ){
-        result += (
+        result += pow(COFFE_H0 * par->h, 2) * ((
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(1 + G2)*(chi2*costheta - chi1)
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(1 + G1)*(chi1*costheta - chi2)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* d1-g2 + g2-d1 term */
     if (
         par->correlation_contrib.d1 &&
         par->correlation_contrib.g2
     ){
-        result += (
+        result += pow(COFFE_H0 * par->h, 2) * ((
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(5*s2 - 2)*(chi2*costheta - chi1)
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(5*s1 - 2)*(chi1*costheta - chi2)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* d1-g3 + g3-d1 term */
     if (
         par->correlation_contrib.d1 &&
         par->correlation_contrib.g3
     ){
-        result += (
+        result += pow(COFFE_H0 * par->h, 2) * ((
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*curlyH1*f1*(f2 - 1.)*(chi2*costheta - chi1)
                 +
                 3*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*curlyH2*f2*(f1 - 1.)*(chi1*costheta - chi2)
             )
-           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep);
+           *coffe_interp_spline(&coffe_find_integral(integral, 3, 1, COFFE_INTEGER, COFFE_INTEGER)->result, sep));
     }
     /* d2-g1 + g1-d2 term */
     if (
         par->correlation_contrib.d2 &&
         par->correlation_contrib.g1
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(1 + G2)
                 +
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(1 + G1)
@@ -1289,14 +1289,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* d2-g2 + g2-d2 term */
     if (
         par->correlation_contrib.d2 &&
         par->correlation_contrib.g2
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(5*s2 - 2)
                 +
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(5*s1 - 2)
@@ -1316,14 +1316,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* d2-g3 + g3-d2 term */
     if (
         par->correlation_contrib.d2 &&
         par->correlation_contrib.g3
     ){
-        result += -(
+        result += pow(COFFE_H0 * par->h, 2) * (-(
                 3*(3 - fevo1)*(par->Omega0_cdm + par->Omega0_baryon)/2./a2*pow(curlyH1, 2)*f1*(f2 - 1)
                 +
                 3*(3 - fevo2)*(par->Omega0_cdm + par->Omega0_baryon)/2./a1*pow(curlyH2, 2)*f2*(f1 - 1)
@@ -1343,14 +1343,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* g1-g2 + g2-g1 term */
     if (
         par->correlation_contrib.g1 &&
         par->correlation_contrib.g2
     ){
-        result += (
+        result += pow(COFFE_H0 * par->h, 4) * ((
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a1/a2*(1 + G1)*(5*s2 - 2)
                 +
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(5*s1 - 2)
@@ -1370,14 +1370,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* g1-g3 + g3-g1 term */
     if (
         par->correlation_contrib.g1 &&
         par->correlation_contrib.g3
     ){
-        result += (
+        result += pow(COFFE_H0 * par->h, 4) * ((
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a1/a2*(1 + G1)*(f2 - 1)
                 +
                 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4./a2/a1*(1 + G2)*(f1 - 1)
@@ -1397,14 +1397,14 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     /* g2-g3 + g3-g2 term */
     if (
         par->correlation_contrib.g2 &&
         par->correlation_contrib.g3
     ){
-        result += 9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4.*(
+        result += pow(COFFE_H0 * par->h, 4) * (9*pow((par->Omega0_cdm + par->Omega0_baryon), 2)/4.*(
                 (5*s1 - 2)*(f2 - 1)/a1/a2
                 +
                 (5*s2 - 2)*(f1 - 1)/a2/a1
@@ -1424,7 +1424,7 @@ double functions_nonintegrated(
                     chi1,
                     chi2
                 )
-            );
+            ));
     }
     if (gsl_finite(result)){
 #ifdef HAVE_CLASS
@@ -3325,15 +3325,15 @@ double functions_single_integrated(
                 chi2*(1 + coffe_interp_spline(&bg->G1, z1_const))*coffe_interp_spline(&bg->G2, z2_const)
                *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
-               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)
+               *(coffe_interp_spline(&bg->f, z2) - 1)
                *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
                 chi1*(1 + coffe_interp_spline(&bg->G2, z2_const))*coffe_interp_spline(&bg->G1, z1_const)
                *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
-               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+                *coffe_interp_spline(&bg->conformal_Hz, z1)
+               *(coffe_interp_spline(&bg->f, z1) - 1)
                *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             ));
     }
@@ -3367,15 +3367,15 @@ double functions_single_integrated(
                 chi2*(5*s1 - 2)*coffe_interp_spline(&bg->G2, z2_const)
                *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
-               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)
+               *(coffe_interp_spline(&bg->f, z2) - 1)
                *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
                 chi1*(5*s2 - 2)*coffe_interp_spline(&bg->G1, z1_const)
                *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
-               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+                *coffe_interp_spline(&bg->conformal_Hz, z1)
+               *(coffe_interp_spline(&bg->f, z1) - 1)
                *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             ));
     }
@@ -3409,15 +3409,15 @@ double functions_single_integrated(
                 chi2*(coffe_interp_spline(&bg->f, z1_const) - 1)*coffe_interp_spline(&bg->G2, z2_const)
                *coffe_interp_spline(&bg->D1, z1_const)/coffe_interp_spline(&bg->a, z1_const)
                 /* integrand */
-               *coffe_interp_spline(&bg->conformal_Hz, lambda2)
-               *(coffe_interp_spline(&bg->f, lambda2) - 1)
+               *coffe_interp_spline(&bg->conformal_Hz, z2)
+               *(coffe_interp_spline(&bg->f, z2) - 1)
                *coffe_interp_spline(&bg->D1, z2)/coffe_interp_spline(&bg->a, z2)*ren1
                 +
                 chi1*(coffe_interp_spline(&bg->f, z2_const) - 1)*coffe_interp_spline(&bg->G1, z1_const)
                *coffe_interp_spline(&bg->D1, z2_const)/coffe_interp_spline(&bg->a, z2_const)
                 /* integrand */
-                *coffe_interp_spline(&bg->conformal_Hz, lambda1)
-               *(coffe_interp_spline(&bg->f, lambda1) - 1)
+                *coffe_interp_spline(&bg->conformal_Hz, z1)
+               *(coffe_interp_spline(&bg->f, z1) - 1)
                *coffe_interp_spline(&bg->D1, z1)/coffe_interp_spline(&bg->a, z1)*ren2
             ));
     }
