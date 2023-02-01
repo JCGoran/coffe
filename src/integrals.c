@@ -688,7 +688,8 @@ int coffe_integrals_init(
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
-                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+                if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT || par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+                    pk_type = pk_nonlinear;
 
                 /* TODO make the upper bound modular */
                 const double z_min = 0.0, z_max = 3.0;
@@ -999,7 +1000,8 @@ int coffe_integrals_init(
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
-                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+                if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT || par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+                    pk_type = pk_nonlinear;
 
                 /* TODO make the upper bound modular */
                 const double z_min = 0.0, z_max = 3.0;
@@ -1162,7 +1164,8 @@ int coffe_integrals_init(
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
-                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+                if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT || par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+                    pk_type = pk_nonlinear;
 
                 /* TODO make the upper bound modular */
                 const double z_min = 0.0, z_max = 3.0;
@@ -1326,7 +1329,8 @@ int coffe_integrals_init(
 
                 /* do we want the linear, or the nonlinear one? */
                 enum pk_outputs pk_type = pk_linear;
-                if (par->pk_type == 2 || par->pk_type == 3) pk_type = pk_nonlinear;
+                if (par->pk_type == COFFE_PK_NONLINEAR_HALOFIT || par->pk_type == COFFE_PK_NONLINEAR_HMCODE)
+                    pk_type = pk_nonlinear;
 
                 /* TODO make the upper bound modular */
                 const double z_min = 0.0, z_max = 3.0;

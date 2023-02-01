@@ -1563,7 +1563,7 @@ double functions_single_integrated(
         /* den-len + len-den modified in flatsky */
         if (
             par->flatsky_local_nonlocal &&
-            par->output_type != 2
+            par->output_type != MULTIPOLES
         ){
 #ifdef HAVE_CLASS
             if (
