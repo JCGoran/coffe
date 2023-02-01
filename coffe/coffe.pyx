@@ -400,6 +400,7 @@ cdef class Coffe:
             "covariance_cosmic",
             "covariance_mixed",
             "covariance_poisson",
+            "N_ncdm",
         ]
         for option in options_int:
             if option in config:
