@@ -649,10 +649,13 @@ cdef class Coffe:
 
 
     def _check_contributions(self):
-        if not any([self.has_density, self.has_rsd, self.has_lensing]):
+        if not any([self.has_density, self.has_rsd, self.has_lensing, self.has_d1, self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
             raise ValueError(
-                'No contributions specified, you need to specify at least one of \'has_density\', \'has_rsd\', \'has_lensing\''
+                "No contributions specified, you need to specify at least one of: "
+                "'has_density', 'has_rsd', 'has_lensing, 'has_d1', 'has_d2', 'has_g1', 'has_g2', 'has_g3'"
             )
+        if any([self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
+            self._parameters.divergent = 1
 
 
     def _balance_content(self):
@@ -812,7 +815,7 @@ cdef class Coffe:
 
     @h.setter
     def h(self, value):
-        _check_parameter('h', value, (int, float), -100, 100)
+        _check_parameter('h', value, (int, float), 0, 100)
         if not np.allclose(value, self.h):
             # setting the old value equal to the new value of h
             self._parameters.h = value
@@ -1272,6 +1275,50 @@ cdef class Coffe:
         self._free_multipoles()
 
 
+    def galaxy_bias3(self, z : float):
+        """
+        Evaluates the galaxy bias of the first population of tracers at some
+        redshift.
+        """
+        return evaluate_spline(&self._parameters.galaxy_bias3, z)
+
+
+    def set_galaxy_bias3(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the galaxy bias for the third population of tracers
+        (only relevant for covariance).
+        """
+        set_spline(
+            &self._parameters.galaxy_bias3,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    def galaxy_bias4(self, z : float):
+        """
+        Evaluates the galaxy bias of the first population of tracers at some
+        redshift.
+        """
+        return evaluate_spline(&self._parameters.galaxy_bias4, z)
+
+
+    def set_galaxy_bias4(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the galaxy bias for the fourth population of tracers
+        (only relevant for covariance).
+        """
+        set_spline(
+            &self._parameters.galaxy_bias4,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
     def magnification_bias1(self, z : float):
         """
         Evaluates the magnification bias of the first population at some redshift.
@@ -1331,6 +1378,48 @@ cdef class Coffe:
         """
         set_spline(
             &self._parameters.magnification_bias2,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    def evolution_bias1(self, z : float):
+        """
+        Evaluates the evolution bias of the first population at some redshift.
+        """
+        return evaluate_spline(&self._parameters.evolution_bias1, z)
+
+
+    def set_evolution_bias1(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the evolution bias for the first population of
+        tracers.
+        """
+        set_spline(
+            &self._parameters.evolution_bias1,
+            x_sampling, y_sampling,
+            self._parameters.interp_method
+        )
+        self._free_corrfunc()
+        self._free_multipoles()
+
+
+    def evolution_bias2(self, z : float):
+        """
+        Evaluates the evolution bias of the second population at some redshift.
+        """
+        return evaluate_spline(&self._parameters.evolution_bias2, z)
+
+
+    def set_evolution_bias2(self, x_sampling : List[float], y_sampling : List[float]):
+        """
+        Sets the value of the evolution bias of the second population of
+        tracers.
+        """
+        set_spline(
+            &self._parameters.evolution_bias2,
             x_sampling, y_sampling,
             self._parameters.interp_method
         )
@@ -1510,6 +1599,9 @@ cdef class Coffe:
 
         if len(value) != 4:
             raise ValueError('The array for setting `covariance_populations` must have length 4')
+
+        if any(_ not in [1, 2, 3, 4] for _ in value):
+            raise ValueError('The values for `covariance_populations` must be one of: [1, 2, 3, 4]')
 
         self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
         self._free_covariance_multipoles()
@@ -1756,6 +1848,74 @@ cdef class Coffe:
         self._parameters.correlation_contrib.len = int(bool(value))
         self._free_corrfunc()
         self._free_multipoles()
+
+
+    @property
+    def has_d1(self):
+        """
+        Returns whether the Doppler 1 contribution is taken into account.
+        """
+        return bool(self._parameters.correlation_contrib.d1)
+
+    @has_d1.setter
+    def has_d1(self, value : bool):
+        self._parameters.correlation_contrib.d1 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_d2(self):
+        """
+        Returns whether the Doppler 2 contribution is taken into account.
+        """
+        return bool(self._parameters.correlation_contrib.d2)
+
+    @has_d2.setter
+    def has_d2(self, value : bool):
+        self._parameters.correlation_contrib.d2 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g1(self):
+        """
+        Returns whether the relativistic non-integrated contribution 1 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g1)
+
+    @has_g1.setter
+    def has_g1(self, value : bool):
+        self._parameters.correlation_contrib.g1 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g2(self):
+        """
+        Returns whether the relativistic non-integrated contribution 2 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g2)
+
+    @has_g2.setter
+    def has_g2(self, value : bool):
+        self._parameters.correlation_contrib.g2 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g3(self):
+        """
+        Returns whether the relativistic non-integrated contribution 3 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g3)
+
+    @has_g3.setter
+    def has_g3(self, value : bool):
+        self._parameters.correlation_contrib.g3 = int(bool(value))
+        self._free_except_parameters()
 
 
     def reset_contributions(self):

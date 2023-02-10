@@ -5,6 +5,8 @@ import coffe
 import numpy as np
 import pandas as pd
 import pytest
+from coffe import Multipoles
+from coffe.representation import Representation
 
 from coffe_utils import covariance_matrix
 
@@ -183,6 +185,9 @@ class TestCoffe:
                             d[key][index] / h,
                             getattr(cosmo, key)(zi),
                         )
+                else:
+                    for index, zi in enumerate(d["z"]):
+                        assert np.isclose(d[key][index], getattr(cosmo, key)(zi))
 
     def test_integrals(self):
         cosmo = coffe.Coffe()
@@ -228,7 +233,17 @@ class TestCoffe:
         k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
 
-        contributions = {"den": "density", "rsd": "rsd", "len": "lensing"}
+        contributions = {
+            "den": "density",
+            "rsd": "rsd",
+            "len": "lensing",
+            "d1": "d1",
+            "d2": "d2",
+            "g1": "g1",
+            "g2": "g2",
+            "g3": "g3",
+        }
+
         for prefix in contributions:
             cosmo.reset_contributions()
             setattr(cosmo, f"has_{contributions[prefix]}", True)
@@ -452,7 +467,6 @@ class TestRepresentation:
     """
 
     def test_representation(self):
-        with pytest.raises(ImportError):
-            from coffe import Representation
-
-        coffe.Multipoles(l=0, r=10, z=1.0, value=1e-3)
+        with pytest.raises(TypeError):
+            Representation()
+        Multipoles(l=0, r=10, z=1.0, value=1e-3)
