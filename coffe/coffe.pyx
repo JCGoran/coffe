@@ -195,25 +195,30 @@ _allowed_pk_types_inverse = {
 
 cdef class Coffe:
     r"""
-    Class for handling the COFFE library
+    Class for handling the COFFE library.
 
     ## Examples
 
-    Import the necessary classes:
+    First, import the `Coffe` class:
     >>> from coffe import Coffe
 
     ### Initialization
 
-    Initialize the COFFE class with a default cosmology:
+    To initialize the COFFE class with the default parameters, run:
     >>> cosmology = Coffe()
 
     You can also read a configuration file using `from_file`:
     >>> Coffe.from_file([FILE])
 
-    ### Setting paramters
+    There is of course an inverse, `to_file`, which can be used to save the
+    current configuration to a file:
+    >>> cosmology.to_file([FILE])
 
-    You can change the cosmology at creation:
-    >>> cosmology = Coffe(omega_m=0.35) # sets Omega_matter to 0.35
+    ### Setting parameters
+
+    You can change any of the parameters when creating the instance by passing
+    them as keyword arguments:
+    >>> cosmology = Coffe(omega_m=0.35)
 
     or later:
     >>> cosmology.omega_m = 0.32
@@ -221,9 +226,14 @@ cdef class Coffe:
     For a list of settable parameters, you can print the parameters:
     >>> cosmology.parameters
 
+    You can also set the parameters in bulk using `set_parameters`:
+    >>> cosmology.set_parameters(h=0.7, n_s=0.9)
+
     The only values which cannot be set as above are:
     * the galaxy, magnification, and evolution bias
-    * the input power spectrum
+    * the input power spectrum (**NOTE**: COFFE by default uses
+    [CLASS](https://github.com/lesgourg/class_public/) to generate the linear
+    matter power spectrum on-the-fly; this can be overridden if necessary)
 
     ### Setting bias and power spectrum parameters
 
@@ -287,7 +297,8 @@ cdef class Coffe:
     contains the 3-dimensional coordinates and the values of the output at
     those coordinates.
 
-    For instance, one element of the output of `compute_multipoles_bulk()` can be:
+    For instance, one element of the output of `compute_multipoles_bulk()` can
+    be:
 
     ```python
     Corrfunc(
@@ -303,17 +314,21 @@ cdef class Coffe:
     Each coordinate can then be accessed using `[VARIABLE].[NAME]`, where
     `[NAME]` is one of the elements in the dictionary above (so `mu`, `r`,
     `value`, and `z`).
+    The computation of the multipoles and the covariance provides analogous
+    outputs.
 
     ### Setting coordinates for the outputs
 
     For the 2PCF, you can set the following coordinates:
-    * `sep`: the list of comoving separations (in Mpc) between the 2 points in the sky
+    * `sep`: the list of comoving separations (in $\mathrm{Mpc}$) between the 2
+    points in the sky
     * `mu`: the list of angles with respect to the observer
     * `z_mean`: the list of mean redshifts at which the 2PCF should be evaluated
     * `deltaz`: the list of half-widths of the redshift bins centered at `z_mean`
 
     For the multipoles, you can set the following coordinates:
-    * `sep`: the list of comoving separations (in Mpc) between the 2 points in the sky
+    * `sep`: the list of comoving separations (in $\mathrm{Mpc}$) between the 2
+    points in the sky
     * `l`: the list of multipoles (can be any positive integer as COFFE can
     take into account 2 populations of galaxies)
     * `z_mean`: the list of mean redshifts at which the 2PCF should be evaluated
@@ -321,10 +336,10 @@ cdef class Coffe:
 
     For the covariance of the multipoles, along with the above for the
     multipoles, you can set the following coordinates:
-    * `pixelsize`: the list of limiting sizes (resolutions) (in Mpc) for each
-    redshift bin
+    * `pixelsize`: the list of limiting sizes (resolutions) (in $\mathrm{Mpc}$)
+    for each redshift bin
     * `number_density1` and `number_density2`: the list of number densities (in
-    1 / $\mathrm{Mpc}^3$) for the first and second population of galaxies,
+    $1 / \mathrm{Mpc}^3$) for the first and second population of galaxies,
     respectively
     * `fsky`: the list of sky fractions surveyed at each redshift bin
 
@@ -334,7 +349,8 @@ cdef class Coffe:
     when computing the output.
 
     For the 2PCF and its multipoles, these are:
-    * `has_density`: controls whether to take into account the density contribution
+    * `has_density`: controls whether to take into account the density
+    contribution
     * `has_rsd`: -||- the redshift-space distortion (RSD) contribution
     * `has_lensing`: -||- the magnification lensing contribution
     * `has_d1`: -||- the Doppler 1 term
@@ -347,7 +363,8 @@ cdef class Coffe:
     active terms + their auto correlations. This can be controlled with the
     `has_only_cross_correlations` option.
 
-    Furthermore, one can control whether the flat-sky approximation should be used with the following options:
+    Furthermore, one can control whether the flat-sky approximation should be
+    used with the following options:
     * `has_flatsky_local`: controls whether to use the flat-sky approximation
     for local terms (such as density, RSD, and their cross-correlations)
     * `has_flatsky_local_nonlocal`: -||- for cross terms between local and
@@ -373,6 +390,18 @@ cdef class Coffe:
     Also note that you can specify whether or not the covariance should be
     averaged (binned) over the pixelsize or not using the
     `has_binned_covariance` option.
+
+    ### Setting precision parameters
+
+    You can set certain precision parameters in COFFE:
+    * `integration_sampling`: how many points are sampled when computing
+    2-dimensional (or higher) integrals
+    * `background_sampling`: how many points are sampled between redshifts 0
+    and 15 to compute the background quantities
+    * `k_min`: the minimum wavenumber (in $1/\mathrm{Mpc}$) used for computing the
+    Fourier-Bessel transform
+    * `k_max`: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing the
+    Fourier-Bessel transform
     """
     cdef ccoffe.coffe_parameters_t _parameters
     cdef ccoffe.coffe_background_t _background
@@ -439,8 +468,8 @@ cdef class Coffe:
 
         Examples
         --------
-        >>> import coffe
-        >>> cosmo = coffe.Coffe.from_file("settings.cfg")
+        >>> from coffe import Coffe
+        >>> cosmo = Coffe.from_file("settings.cfg")
         """
         section = "default"
         contents = f"[{section}]\n" + "\n".join(
@@ -1231,8 +1260,8 @@ cdef class Coffe:
 
     @property
     def sigma8(self):
-        """
-        Windowed density fluctuation at r = 8 Mpc/h
+        r"""
+        Windowed density fluctuation at $r = 8\ \mathrm{Mpc}/h$
         """
         return self._parameters.sigma8
 
@@ -1350,8 +1379,8 @@ cdef class Coffe:
 
     @property
     def sep(self):
-        """
-        Returns the list of separations (in Mpc) for which the
+        r"""
+        Returns the list of separations (in $\mathrm{Mpc}$) for which the
         2PCF/multipoles/covariance of multipoles should be computed.
         """
         return np.array(
@@ -1442,7 +1471,8 @@ cdef class Coffe:
         Parameters
         ----------
         r : float
-            the separation (in Mpc) for which one wants to compute the integral
+            the separation (in $\mathrm{Mpc}$) for which one wants to compute
+            the integral
 
         n : int
             the power of the denominator
@@ -1925,8 +1955,9 @@ cdef class Coffe:
 
     @property
     def pixelsize(self):
-        """
-        The pixel size of the covariance (roughly the resolution of the survey) in Mpc.
+        r"""
+        The pixel size of the covariance (roughly the resolution of the survey)
+        in $\mathrm{Mpc}$.
         """
         return np.array(
             [self._parameters.pixelsize[i] for i in range(self._parameters.pixelsize_len)]
@@ -2065,12 +2096,12 @@ cdef class Coffe:
 
     @property
     def has_binned_covariance(self):
-        """
+        r"""
         Returns whether or not the covariance should be bin averaged (see eq.
         (A18) of [arXiv:1509.04293](https://arxiv.org/abs/1509.04293)). Note
-        that the parameter `pixelsize` controls the bin width (in Mpc) in each
-        redshift bin. If set to False, the covariance will not be bin averaged,
-        and eq. (2.52) from
+        that the parameter `pixelsize` controls the bin width (in
+        $\mathrm{Mpc}$) in each redshift bin. If set to False, the covariance
+        will not be bin averaged, and eq. (2.52) from
         [arXiv:1806.11090](https://arxiv.org/abs/1806.11090) will be used.
         """
         return bool(self._parameters.covariance_window)
@@ -2251,9 +2282,10 @@ cdef class Coffe:
 
 
     def maximum_separation(self, z_mean : float, deltaz : float):
-        """
-        Returns the maximum allowed comoving separation (in Mpc) to compute the
-        multipoles for a given redshift bin, assuming the current cosmology.
+        r"""
+        Returns the maximum allowed comoving separation (in $\mathrm{Mpc}$) to
+        compute the multipoles for a given redshift bin, assuming the current
+        cosmology.
 
         Parameters
         ----------
@@ -2375,25 +2407,12 @@ cdef class Coffe:
             )
         return ccoffe.coffe_interp_spline2d(&self._parameters.power_spectrum2d, z, k)
 
-    @property
-    def inv_k_window(self):
-        """
-        The (inverse) wavenumber (in Mpc) at which the power spectrum should be
-        windowed (default: 0, i.e. no window).
-        """
-        return self._parameters.inv_k_window
-
-    @inv_k_window.setter
-    def inv_k_window(self, value):
-        _check_parameter('inv_k_window', value, (int, float), 0, 1e5)
-        self._parameters.inv_k_window = value
-        self._free_power_spectrum()
-
 
     @property
     def k_min(self):
         r"""
-        The minimum wavenumber (in $1/\mathrm{Mpc}$) for which the power spectrum should be computed.
+        The minimum wavenumber (in $1/\mathrm{Mpc}$) for which the power
+        spectrum should be computed.
         """
         return self._parameters.k_min
 
@@ -2407,7 +2426,8 @@ cdef class Coffe:
     @property
     def k_max(self):
         r"""
-        The maximum wavenumber (in $1/\mathrm{Mpc}$) for which the power spectrum should be computed.
+        The maximum wavenumber (in $1/\mathrm{Mpc}$) for which the power
+        spectrum should be computed.
         """
         return self._parameters.k_max
 
@@ -2664,7 +2684,8 @@ cdef class Coffe:
             the mean redshift
 
         r : float
-            the comoving separation (in Mpc) between the two points in the sky
+            the comoving separation (in $\mathrm{Mpc}$) between the two points
+            in the sky
 
         mu : float
             the angle mu (see `help(coffe.mu)` for definition)
@@ -2726,7 +2747,8 @@ cdef class Coffe:
         recompute : bool = False,
     ):
         r"""
-        Computes the multipole of the current configuration at the point $(\bar{z}, r, \ell)$.
+        Computes the multipole of the current configuration at the point
+        $(\bar{z}, r, \ell)$.
 
         Parameters
         ----------
@@ -2734,7 +2756,8 @@ cdef class Coffe:
             the mean redshift
 
         r : float
-            the comoving separation (in Mpc) between the 2 points in the sky
+            the comoving separation (in $\mathrm{Mpc}$) between the 2 points in
+            the sky
 
         l : int
             the multipole moment
