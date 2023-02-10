@@ -194,6 +194,186 @@ _allowed_pk_types_inverse = {
 
 
 cdef class Coffe:
+    r"""
+    Class for handling the COFFE library
+
+    ## Examples
+
+    Import the necessary classes:
+    >>> from coffe import Coffe
+
+    ### Initialization
+
+    Initialize the COFFE class with a default cosmology:
+    >>> cosmology = Coffe()
+
+    You can also read a configuration file using `from_file`:
+    >>> Coffe.from_file([FILE])
+
+    ### Setting paramters
+
+    You can change the cosmology at creation:
+    >>> cosmology = Coffe(omega_m=0.35) # sets Omega_matter to 0.35
+
+    or later:
+    >>> cosmology.omega_m = 0.32
+
+    For a list of settable parameters, you can print the parameters:
+    >>> cosmology.parameters
+
+    The only values which cannot be set as above are:
+    * the galaxy, magnification, and evolution bias
+    * the input power spectrum
+
+    ### Setting bias and power spectrum parameters
+
+    To set the biases, you can run:
+    >>> cosmology.set_galaxy_bias1([REDSHIFTS], [VALUES])
+
+    where `[REDSHIFTS]` is an array of redshifts (in increasing order) and
+    `[VALUES]` are the corresponding values of the bias.
+    There are several functions available for accomplishing this, all requiring
+    the same kind of input as the above:
+    * `set_galaxy_bias1`
+    * `set_galaxy_bias2`
+    * `set_galaxy_bias3`
+    * `set_galaxy_bias4`
+    * `set_magnification_bias1`
+    * `set_magnification_bias2`
+    * `set_evolution_bias1`
+    * `set_evolution_bias2`
+
+    To obtain the values of the biases, you can run:
+    >>> cosmology.galaxy_bias1([REDSHIFT])
+
+    where `[REDSHIFT]` is the redshift (must be a Python `int` or a `float`) at
+    which we want to evaluate the given bias.
+
+    COFFE can also evaluate the linear power spectrum (internally uses CLASS to
+    generate it) at a given wavenumber and redshift using `power_spectrum`:
+    >>> cosmology.power_spectrum([WAVENUMBER], [REDSHIFT])
+
+    The power spectrum can also be set using `set_power_spectrum_linear`:
+    >>> cosmology.set_power_spectrum_linear([WAVENUMBERS], [VALUES])
+
+    where `[VALUES]` denote the values of the power spectrum at redshift zero.
+
+    ### Background quantities
+
+    There are several background (i.e. only redshift-dependent) quantities
+    which can be computed with COFFE:
+    * `scale_factor`: evaluates the scale factor $a(z)$
+    * `hubble_rate`: evaluates the Hubble rate $H(z)$
+    * `hubble_rate_conformal`: evaluates the conformal Hubble rate
+    $\mathcal{H}(z)$
+    * `hubble_rate_conformal_derivative`: evaluates the first derivative of the
+    conformal Hubble rate $\mathrm{d}\mathcal{H} / \mathrm{d}\tau$
+    * `growth_factor`: evaluates the linear matter growth factor $D_1(z)$
+    * `growth_rate`: evaluates the derivative of the growth factor $f(z)$
+    * `comoving_distance`: evaluates the comoving distance $\chi(z)$
+
+    ### Main outputs
+
+    The main objects that COFFE v3 can compute are the 2-point correlation
+    function (2PCF), its multipoles, and the covariance of the multipoles.
+    All of them can be computed in bulk (i.e. in a single call), using:
+    * `compute_corrfunc_bulk`: for the 2PCF
+    * `compute_multipoles_bulk`: for the multipoles
+    * `compute_covariance_bulk`: for the covariance of the multipoles
+
+    The output of those is an array of corresponding containers, and each
+    container (`coffe.representation.Corrfunc`,
+    `coffe.representation.Multipoles`, and `coffe.representation.Covariance`)
+    contains the 3-dimensional coordinates and the values of the output at
+    those coordinates.
+
+    For instance, one element of the output of `compute_multipoles_bulk()` can be:
+
+    ```python
+    Corrfunc(
+        {
+            'mu': 0.99,
+            'r': 95.0,
+            'value': -0.004418327661669844,
+            'z': 1.5
+        }
+    )
+    ```
+
+    Each coordinate can then be accessed using `[VARIABLE].[NAME]`, where
+    `[NAME]` is one of the elements in the dictionary above (so `mu`, `r`,
+    `value`, and `z`).
+
+    ### Setting coordinates for the outputs
+
+    For the 2PCF, you can set the following coordinates:
+    * `sep`: the list of comoving separations (in Mpc) between the 2 points in the sky
+    * `mu`: the list of angles with respect to the observer
+    * `z_mean`: the list of mean redshifts at which the 2PCF should be evaluated
+    * `deltaz`: the list of half-widths of the redshift bins centered at `z_mean`
+
+    For the multipoles, you can set the following coordinates:
+    * `sep`: the list of comoving separations (in Mpc) between the 2 points in the sky
+    * `l`: the list of multipoles (can be any positive integer as COFFE can
+    take into account 2 populations of galaxies)
+    * `z_mean`: the list of mean redshifts at which the 2PCF should be evaluated
+    * `deltaz`: the list of half-widths of the redshift bins centered at `z_mean`
+
+    For the covariance of the multipoles, along with the above for the
+    multipoles, you can set the following coordinates:
+    * `pixelsize`: the list of limiting sizes (resolutions) (in Mpc) for each
+    redshift bin
+    * `number_density1` and `number_density2`: the list of number densities (in
+    1 / $\mathrm{Mpc}^3$) for the first and second population of galaxies,
+    respectively
+    * `fsky`: the list of sky fractions surveyed at each redshift bin
+
+    ### Setting contributions to outputs
+
+    In COFFE you can control which contributions should be taken into account
+    when computing the output.
+
+    For the 2PCF and its multipoles, these are:
+    * `has_density`: controls whether to take into account the density contribution
+    * `has_rsd`: -||- the redshift-space distortion (RSD) contribution
+    * `has_lensing`: -||- the magnification lensing contribution
+    * `has_d1`: -||- the Doppler 1 term
+    * `has_d2`: -||- the Doppler 2 term
+    * `has_g1`: -||- the local gravitational term 1
+    * `has_g2`: -||- the local gravitational term 2
+    * `has_g3`: -||- the local gravitational term 3
+
+    By default, COFFE computes the cross-correlation of all of the currently
+    active terms + their auto correlations. This can be controlled with the
+    `has_only_cross_correlations` option.
+
+    Furthermore, one can control whether the flat-sky approximation should be used with the following options:
+    * `has_flatsky_local`: controls whether to use the flat-sky approximation
+    for local terms (such as density, RSD, and their cross-correlations)
+    * `has_flatsky_local_nonlocal`: -||- for cross terms between local and
+    non-local terms (such as density-lensing)
+    * `has_flatsky_nonlocal`: -||- for non-local (integrated) terms (such as
+    lensing-lensing)
+
+    For the covariance of the multipoles, only the `has_density` and `has_rsd`
+    contributions have an effect, as all of the other effects are not
+    implemented.
+
+    By default, COFFE computes all of the terms which contribute to the
+    covariance; this can be controlled with the following options:
+    * `covariance_cosmic`: controls whether to take into account the cosmic
+    variance autocorrelation term
+    * `covariance_poisson`: -||- the Poisson noise autocorrelation term
+    * `covariance_mixed`: -||- the cross correlation term between cosmic
+    variance and Poisson noise
+
+    Note that for the covariance you can control for which populations you
+    would like to compute it for with the `covariance_populations` option.
+
+    Also note that you can specify whether or not the covariance should be
+    averaged (binned) over the pixelsize or not using the
+    `has_binned_covariance` option.
+    """
     cdef ccoffe.coffe_parameters_t _parameters
     cdef ccoffe.coffe_background_t _background
     cdef ccoffe.coffe_integral_array_t _integral
@@ -1254,8 +1434,10 @@ cdef class Coffe:
         .. math::
             \frac{1}{2 \pi^2} \int\limits_0^\infty dk\, k^2\, P(k, z = 0) \frac{j_\ell(k r)}{(k r)^n}
 
-        Note that if $n > \ell$, it returns the above multiplied by $r^{n - \ell}$
-        instead (see arXiv:1806.11090, section 4.2 for further explanation).
+        Note that if $n > \ell$, it returns the above multiplied by $r^{n -
+        \ell}$ instead (see
+        [arXiv:1806.11090](https://arxiv.org/abs/1806.11090), section 4.2 for
+        further explanation).
 
         Parameters
         ----------
@@ -1885,10 +2067,11 @@ cdef class Coffe:
     def has_binned_covariance(self):
         """
         Returns whether or not the covariance should be bin averaged (see eq.
-        (A18) of arXiv:1509.04293). Note that the parameter `pixelsize`
-        controls the bin width (in Mpc) in each redshift bin. If set to False,
-        the covariance will not be bin averaged, and eq. (2.52) from
-        arXiv:1806.11090 will be used.
+        (A18) of [arXiv:1509.04293](https://arxiv.org/abs/1509.04293)). Note
+        that the parameter `pixelsize` controls the bin width (in Mpc) in each
+        redshift bin. If set to False, the covariance will not be bin averaged,
+        and eq. (2.52) from
+        [arXiv:1806.11090](https://arxiv.org/abs/1806.11090) will be used.
         """
         return bool(self._parameters.covariance_window)
 

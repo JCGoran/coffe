@@ -21,7 +21,13 @@ class Representation(ABC):
         """
         User-friendly representation of the class
         """
-        return f"{self.__class__}({self.to_dict()})"
+        return f"<{self.__class__.__name__}({self.to_dict()})>"
+
+    def __str__(self):
+        """
+        User-friendly representation of the class (string)
+        """
+        return f"{self.__class__.__name__}({self.to_dict()})"
 
     def _repr_html_(self):
         names = self.to_dict().keys()
