@@ -1,16 +1,18 @@
-import os
+"""
+Tests for the Python wrapper of COFFE.
+"""
+
 from pathlib import Path
 
-import coffe
 import numpy as np
 import pandas as pd
 import pytest
-from coffe import Multipoles
+from coffe import Coffe, Multipoles
 from coffe.representation import Representation
 
 from coffe_utils import covariance_matrix
 
-DATA_DIR = "tests/benchmarks/"
+DATA_DIR = Path("tests/benchmarks/")
 h = 0.67
 
 
@@ -20,15 +22,15 @@ class TestCoffe:
         Test for reading the parameters from a configuration file
         """
         with pytest.warns(DeprecationWarning):
-            cosmo = coffe.Coffe.from_file(Path(DATA_DIR) / "settings.cfg")
+            cosmo = Coffe.from_file(DATA_DIR / "settings.cfg")
 
     def test_to_from_file(self):
         """
         Test we can save and then read the default config
         """
-        cosmo_out = coffe.Coffe()
+        cosmo_out = Coffe()
         cosmo_out.to_file("test.cfg")
-        cosmo_in = coffe.Coffe.from_file("test.cfg")
+        cosmo_in = Coffe.from_file("test.cfg")
 
         p1 = {
             k: list(v) if isinstance(v, (list, np.ndarray)) else v
@@ -45,7 +47,7 @@ class TestCoffe:
         """
         Tests for setting and getting the biases.
         """
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
 
         with pytest.raises(ValueError):
             x = np.linspace(-1, 10, 100)
@@ -67,7 +69,7 @@ class TestCoffe:
         """
         Tests setting of various cosmological parameters.
         """
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
 
         with pytest.raises(ValueError):
             cosmo.omega_cdm = 1.1
@@ -115,7 +117,7 @@ class TestCoffe:
             cosmo.integral(r=100, n=4, l=4)
 
     def test_power_spectrum(self):
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
         k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
@@ -126,7 +128,7 @@ class TestCoffe:
         )
 
     def test_cross_spectrum(self):
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
         k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
@@ -137,11 +139,11 @@ class TestCoffe:
         )
 
     def test_background(self):
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
         # we can't init the background automatically, so this is cheating a bit
         cosmo.comoving_distance(1)
 
-        data = np.loadtxt(os.path.join(DATA_DIR, "benchmark_background.dat"))
+        data = np.loadtxt(DATA_DIR / "benchmark_background.dat")
 
         d = {
             name: data[:, index]
@@ -190,7 +192,7 @@ class TestCoffe:
                         assert np.isclose(d[key][index], getattr(cosmo, key)(zi))
 
     def test_integrals(self):
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
 
         k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
@@ -209,7 +211,7 @@ class TestCoffe:
         }
 
         for index in mapping:
-            data = np.loadtxt(os.path.join(DATA_DIR, f"benchmark_integral{index}.dat"))
+            data = np.loadtxt(DATA_DIR / f"benchmark_integral{index}.dat")
             xarr, yarr = np.transpose(data)
             for x, y in zip(xarr, yarr):
                 if x > 1 and x < 20000:
@@ -224,7 +226,7 @@ class TestCoffe:
                     )
 
     def test_corrfunc(self):
-        cosmo = coffe.Coffe(
+        cosmo = Coffe(
             # in Mpc
             sep=np.array([10, 20, 40, 100, 150]) / h,
             mu=[0.0, 0.2, 0.5, 0.8, 0.95],
@@ -251,15 +253,13 @@ class TestCoffe:
             result = cosmo.compute_corrfunc_bulk()
             df = pd.DataFrame([_.to_dict() for _ in result])
             for index, mu in enumerate(cosmo.mu):
-                data = np.loadtxt(
-                    os.path.join(DATA_DIR, f"benchmark_{prefix}_corrfunc{index}.dat")
-                )
+                data = np.loadtxt(DATA_DIR / f"benchmark_{prefix}_corrfunc{index}.dat")
                 x, y = np.transpose(data)
                 assert np.allclose(df.loc[df.mu == mu].r.values * h, x)
                 assert np.allclose(df.loc[df.mu == mu].value.values, y, rtol=5e-4)
 
     def test_multipoles(self):
-        cosmo = coffe.Coffe(
+        cosmo = Coffe(
             # in Mpc
             sep=np.array([10, 20, 40, 100, 150]) / h,
             l=[0, 2, 4],
@@ -277,15 +277,13 @@ class TestCoffe:
             result = cosmo.compute_multipoles_bulk()
             df = pd.DataFrame([_.to_dict() for _ in result])
             for mp in cosmo.l:
-                data = np.loadtxt(
-                    os.path.join(DATA_DIR, f"benchmark_{prefix}_multipoles{mp}.dat")
-                )
+                data = np.loadtxt(DATA_DIR / f"benchmark_{prefix}_multipoles{mp}.dat")
                 x, y = np.transpose(data)
                 assert np.allclose(df.loc[df.l == mp].r.values * h, x)
                 assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
     def test_multipoles_flat_lensing_lensing(self):
-        cosmo = coffe.Coffe(
+        cosmo = Coffe(
             # in Mpc
             sep=np.array([20, 40, 100, 150]) / h,
             l=[0, 2, 4],
@@ -304,16 +302,14 @@ class TestCoffe:
         df = pd.DataFrame([_.to_dict() for _ in result])
         for mp in cosmo.l:
             data = np.loadtxt(
-                os.path.join(
-                    DATA_DIR, f"benchmark_flatsky_lensing_lensing_multipoles{mp}.dat"
-                )
+                DATA_DIR / f"benchmark_flatsky_lensing_lensing_multipoles{mp}.dat"
             )
             x, y = np.transpose(data)
             assert np.allclose(df.loc[df.l == mp].r.values * h, x)
             assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
     def test_multipoles_flat_density_lensing(self):
-        cosmo = coffe.Coffe(
+        cosmo = Coffe(
             # in Mpc
             sep=np.array([20, 40, 100, 150]) / h,
             l=[0, 2, 4],
@@ -334,16 +330,14 @@ class TestCoffe:
         df = pd.DataFrame([_.to_dict() for _ in result])
         for mp in cosmo.l:
             data = np.loadtxt(
-                os.path.join(
-                    DATA_DIR, f"benchmark_flatsky_density_lensing_multipoles{mp}.dat"
-                )
+                DATA_DIR / f"benchmark_flatsky_density_lensing_multipoles{mp}.dat"
             )
             x, y = np.transpose(data)
             assert np.allclose(df.loc[df.l == mp].r.values * h, x)
             assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
     def test_covariance_multipoles(self):
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
         cosmo.set_parameters(
             has_density=True,
             has_rsd=True,
@@ -366,9 +360,7 @@ class TestCoffe:
         for mp1 in cosmo.l:
             for mp2 in cosmo.l:
                 data = np.loadtxt(
-                    os.path.join(
-                        DATA_DIR, f"benchmark_multipoles_covariance_{mp1}{mp2}.dat"
-                    )
+                    DATA_DIR / f"benchmark_multipoles_covariance_{mp1}{mp2}.dat"
                 )
                 x, y, z = np.transpose(data)
                 assert np.allclose(
@@ -399,7 +391,7 @@ class TestCoffe:
         Checks that the GSL error handler doesn't abort the computation
         """
         # initialize COFFE with some cosmology
-        cosmo = coffe.Coffe()
+        cosmo = Coffe()
         cosmo.set_parameters(
             sep=np.linspace(10, 300, 100) / h,
             has_rsd=False,
@@ -412,7 +404,7 @@ class TestCoffe:
         Tests for 2 populations of galaxies
         """
         # no covariance contributions
-        cosmo = coffe.Coffe(
+        cosmo = Coffe(
             has_density=True,
             has_rsd=True,
             number_density1=[1e-5 * h**3],

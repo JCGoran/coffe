@@ -1,39 +1,39 @@
 """
 Various helper utilities that are outside of the scope of the core functionality of COFFE.
 """
+
 from __future__ import annotations
 
-from typing import Callable, List, Optional, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
-from scipy.linalg import block_diag
 import pandas as pd
-
 from coffe import Covariance
+from scipy.linalg import block_diag
 
 
 def covariance_matrix(
-    cov: List[Covariance],
-    l: Optional[List[int]] = None,
-    z_mean: Optional[List[float]] = None,
-    deltaz: Optional[List[float]] = None,
+    cov: list[Covariance],
+    l: Optional[list[int]] = None,
+    z_mean: Optional[list[float]] = None,
+    deltaz: Optional[list[float]] = None,
     rmin: Optional[Union[Callable, float, int]] = None,
     rmax: Optional[Union[Callable, float, int]] = None,
     rstep: Optional[Union[float, int]] = None,
-) -> np.array:
+):
     """
     Converts an array of covariances into a numpy matrix for easy matrix
     multiplication.
 
     Parameters
     ----------
-    l : Optional[List[int]], default = None
+    l : Optional[list[int]], default = None
         the list of values of l
 
-    z_mean : Optional[List[float]], default = None
+    z_mean : Optional[list[float]], default = None
         the list of values of mean redshifts
 
-    deltaz : Optional[List[float]], default = None
+    deltaz : Optional[list[float]], default = None
         the list of redshift bin widths. Only useful if one of `rmin`, `rmax` is a function.
 
     rmin : Optional[Union[Callable, float, int]], default = None
@@ -54,7 +54,7 @@ def covariance_matrix(
 
     Examples
     --------
-    >>> covariance_matrix(coffe.Coffe(has_density=True).compute_corrfunc_bulk())
+    >>> covariance_matrix(Coffe(has_density=True).compute_covariance_bulk())
     """
 
     def convert_array_to_matrix(arr):
