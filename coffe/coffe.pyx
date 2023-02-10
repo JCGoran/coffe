@@ -407,7 +407,7 @@ cdef class Coffe:
                 setattr(cosmo, option, config.getint(option))
 
         # the bias options are a bit special
-        biases = ["galaxy", "magnification"]
+        biases = ["galaxy", "magnification", "evolution"]
         populations = [1, 2]
         for bias in biases:
             for population in populations:
@@ -436,7 +436,35 @@ cdef class Coffe:
                         config.getfloat_array(f"{bias}_bias{population}_values"),
                     )
 
+        # the galaxy bias can have 4 populations
+        for population in [3, 4]:
+            if (
+                f"read_galaxy_bias{population}" in config
+                and config.getint(f"read_galaxy_bias{population}") == 1
+            ):
+                getattr(cosmo, f"set_galaxy_bias{population}")(
+                    *np.transpose(
+                        np.loadtxt(
+                            config.get(f"input_galaxy_bias{population}").strip('" ')
+                        )
+                    )
+                )
+            elif f"input_galaxy_bias{population}" in config:
+                getattr(cosmo, f"set_galaxy_bias{population}")(
+                    np.linspace(0, 10, 100),
+                    [config.getfloat(f"galaxy_bias{population}")] * 100,
+                )
+            elif (
+                f"galaxy_bias{population}_redshifts" in config
+                and f"galaxy_bias{population}_values" in config
+            ):
+                getattr(cosmo, f"set_galaxy_bias{population}")(
+                    config.getfloat_array(f"galaxy_bias{population}_redshifts"),
+                    config.getfloat_array(f"galaxy_bias{population}_values"),
+                )
+
         return cosmo
+
 
     def to_file(self, filename):
         """Write the cosmology to a file.
@@ -465,6 +493,12 @@ cdef class Coffe:
             f.write(f"galaxy_bias2_redshifts = {self.galaxy_bias2_redshifts().tolist()}\n")
             f.write(f"galaxy_bias2_values = {self.galaxy_bias2_values().tolist()}\n")
 
+            f.write(f"galaxy_bias3_redshifts = {self.galaxy_bias3_redshifts().tolist()}\n")
+            f.write(f"galaxy_bias3_values = {self.galaxy_bias3_values().tolist()}\n")
+
+            f.write(f"galaxy_bias4_redshifts = {self.galaxy_bias4_redshifts().tolist()}\n")
+            f.write(f"galaxy_bias4_values = {self.galaxy_bias4_values().tolist()}\n")
+
             # -------------------------------------------------------------------------------
             # magnification bias
             # -------------------------------------------------------------------------------
@@ -473,6 +507,15 @@ cdef class Coffe:
 
             f.write(f"magnification_bias2_redshifts = {self.magnification_bias2_redshifts().tolist()}\n")
             f.write(f"magnification_bias2_values = {self.magnification_bias2_values().tolist()}\n")
+
+            # -------------------------------------------------------------------------------
+            # evolution bias
+            # -------------------------------------------------------------------------------
+            f.write(f"evolution_bias1_redshifts = {self.evolution_bias1_redshifts().tolist()}\n")
+            f.write(f"evolution_bias1_values = {self.evolution_bias1_values().tolist()}\n")
+
+            f.write(f"evolution_bias2_redshifts = {self.evolution_bias2_redshifts().tolist()}\n")
+            f.write(f"evolution_bias2_values = {self.evolution_bias2_values().tolist()}\n")
 
 
     def galaxy_bias1_redshifts(self):
@@ -500,6 +543,30 @@ cdef class Coffe:
         """Return the values of the galaxy bias 2 spline."""
         return np.array([self.galaxy_bias2(_) for _ in self.galaxy_bias2_redshifts()])
 
+    def galaxy_bias3_redshifts(self):
+        """Return the redshifts of the galaxy bias 3 spline."""
+        size = get_spline_size(&self._parameters.galaxy_bias3)
+        xmin = get_spline_min(&self._parameters.galaxy_bias3)
+        xmax = get_spline_max(&self._parameters.galaxy_bias3)
+
+        return np.linspace(xmin, xmax, size)
+
+    def galaxy_bias3_values(self):
+        """Return the values of the galaxy bias 3 spline."""
+        return np.array([self.galaxy_bias3(_) for _ in self.galaxy_bias3_redshifts()])
+
+    def galaxy_bias4_redshifts(self):
+        """Return the redshifts of the galaxy bias 4 spline."""
+        size = get_spline_size(&self._parameters.galaxy_bias4)
+        xmin = get_spline_min(&self._parameters.galaxy_bias4)
+        xmax = get_spline_max(&self._parameters.galaxy_bias4)
+
+        return np.linspace(xmin, xmax, size)
+
+    def galaxy_bias4_values(self):
+        """Return the values of the galaxy bias 4 spline."""
+        return np.array([self.galaxy_bias4(_) for _ in self.galaxy_bias4_redshifts()])
+
 
     def magnification_bias1_redshifts(self):
         """Return the redshifts of the magnification bias 1 spline."""
@@ -525,6 +592,32 @@ cdef class Coffe:
     def magnification_bias2_values(self):
         """Return the values of the magnification bias 2 spline."""
         return np.array([self.magnification_bias2(_) for _ in self.magnification_bias2_redshifts()])
+
+
+    def evolution_bias1_redshifts(self):
+        """Return the redshifts of the evolution bias 1 spline."""
+        size = get_spline_size(&self._parameters.evolution_bias1)
+        xmin = get_spline_min(&self._parameters.evolution_bias1)
+        xmax = get_spline_max(&self._parameters.evolution_bias1)
+
+        return np.linspace(xmin, xmax, size)
+
+    def evolution_bias1_values(self):
+        """Return the values of the evolution bias 1 spline."""
+        return np.array([self.evolution_bias1(_) for _ in self.evolution_bias1_redshifts()])
+
+
+    def evolution_bias2_redshifts(self):
+        """Return the redshifts of the evolution bias 2 spline."""
+        size = get_spline_size(&self._parameters.evolution_bias2)
+        xmin = get_spline_min(&self._parameters.evolution_bias2)
+        xmax = get_spline_max(&self._parameters.evolution_bias2)
+
+        return np.linspace(xmin, xmax, size)
+
+    def evolution_bias2_values(self):
+        """Return the values of the evolution bias 2 spline."""
+        return np.array([self.evolution_bias2(_) for _ in self.evolution_bias2_redshifts()])
 
 
     def _free_background(self):
