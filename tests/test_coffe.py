@@ -244,6 +244,8 @@ class TestCoffe:
             "g1": "g1",
             "g2": "g2",
             "g3": "g3",
+            "g4": "g4",
+            "g5": "g5",
         }
 
         for prefix in contributions:
@@ -269,7 +271,18 @@ class TestCoffe:
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
-        contributions = {"den": "density", "rsd": "rsd", "len": "lensing"}
+        contributions = {
+            "den": "density",
+            "rsd": "rsd",
+            "len": "lensing",
+            "d1": "d1",
+            "d2": "d2",
+            "g1": "g1",
+            "g2": "g2",
+            "g3": "g3",
+            "g4": "g4",
+            "g5": "g5",
+        }
         for prefix in contributions:
             cosmo.reset_contributions()
             setattr(cosmo, f"has_{contributions[prefix]}", True)

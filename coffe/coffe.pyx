@@ -951,12 +951,27 @@ cdef class Coffe:
 
 
     def _check_contributions(self):
-        if not any([self.has_density, self.has_rsd, self.has_lensing, self.has_d1, self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
+        if not any(
+            [
+                self.has_density,
+                self.has_rsd,
+                self.has_lensing,
+                self.has_d1,
+                self.has_d2,
+                self.has_g1,
+                self.has_g2,
+                self.has_g3,
+                self.has_g4,
+                self.has_g5,
+            ]
+        ):
             raise ValueError(
                 "No contributions specified, you need to specify at least one of: "
-                "'has_density', 'has_rsd', 'has_lensing, 'has_d1', 'has_d2', 'has_g1', 'has_g2', 'has_g3'"
+                "'has_density', 'has_rsd', 'has_lensing, "
+                "'has_d1', 'has_d2', 'has_g1', 'has_g2', 'has_g3', "
+                "'has_g4', 'has_g5'"
             )
-        if any([self.has_d2, self.has_g1, self.has_g2, self.has_g3]):
+        if any([self.has_d2, self.has_g1, self.has_g2, self.has_g3, self.has_g4, self.has_g5]):
             self._parameters.divergent = 1
 
 
@@ -2222,6 +2237,34 @@ cdef class Coffe:
     @has_g3.setter
     def has_g3(self, value : bool):
         self._parameters.correlation_contrib.g3 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g4(self):
+        """
+        Returns whether the relativistic integrated contribution 1 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g4)
+
+    @has_g4.setter
+    def has_g4(self, value : bool):
+        self._parameters.correlation_contrib.g4 = int(bool(value))
+        self._free_except_parameters()
+
+
+    @property
+    def has_g5(self):
+        """
+        Returns whether the relativistic integrated contribution 2 is taken
+        into account.
+        """
+        return bool(self._parameters.correlation_contrib.g5)
+
+    @has_g5.setter
+    def has_g5(self, value : bool):
+        self._parameters.correlation_contrib.g5 = int(bool(value))
         self._free_except_parameters()
 
 
