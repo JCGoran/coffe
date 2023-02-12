@@ -26,6 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install coffe
+        python3 -m pip install -r pip-requirements-dev.txt
 
     # Build the site
     - name: Build the site
