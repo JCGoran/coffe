@@ -4,7 +4,7 @@
 
 set -eux
 
-python3 setup.py build_ext -i
 python3 -m pip install .
+python3 setup.py build_ext -i
 
 set +eux
