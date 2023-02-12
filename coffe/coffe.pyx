@@ -1,6 +1,10 @@
 # cython: binding=True
 # cython: language_level=3
 
+r"""
+The main modules used for the Python version of the COFFE code
+"""
+
 # TODO figure out how to use OpenMP
 
 from libc.stdlib cimport malloc, free
@@ -235,6 +239,11 @@ cdef class Coffe:
     [CLASS](https://github.com/lesgourg/class_public/) to generate the linear
     matter power spectrum on-the-fly; this can be overridden if necessary)
 
+    #### Default parameters
+
+    The complete list of default parameters is available as an input file
+    [here](https://github.com/JCGoran/coffe/blob/master/DEFAULT_SETTINGS.cfg).
+
     ### Setting bias and power spectrum parameters
 
     To set the biases, you can run:
@@ -358,6 +367,8 @@ cdef class Coffe:
     * `has_g1`: -||- the local gravitational term 1
     * `has_g2`: -||- the local gravitational term 2
     * `has_g3`: -||- the local gravitational term 3
+    * `has_g4`: -||- the non-local gravitational term 1
+    * `has_g5`: -||- the non-local gravitational term 2
 
     By default, COFFE computes the cross-correlation of all of the currently
     active terms + their auto correlations. This can be controlled with the
