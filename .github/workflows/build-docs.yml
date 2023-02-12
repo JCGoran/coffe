@@ -25,7 +25,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sh reinstall.sh
+        python3 -m pip install coffe
 
     # Build the site
     - name: Build the site
