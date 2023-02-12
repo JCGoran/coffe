@@ -26,6 +26,9 @@ dependencies = [
     "numpy>=1.19.5",
 ]
 
+[project.scripts]
+coffe-cli = "coffe.__main__:main"
+
 [project.urls]
 repository = "https://github.com/JCGoran/coffe"
 
