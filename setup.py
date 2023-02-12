@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import subprocess
 
 from Cython.Build import cythonize
 from setuptools import Extension, setup
@@ -40,16 +39,9 @@ extra_compile_args = [
 ]
 
 
-commit = subprocess.run(
-    ["git", "rev-parse", "HEAD"],
-    capture_output=True,
-    encoding="utf-8",
-).stdout.strip()
-
 setup(
     name="coffe",
     version="3.0.0",
-    description=commit,
     url="https://github.com/JCGoran/coffe",
     author="Goran Jelic-Cizmek",
     author_email="goran.jelic-cizmek@unige.ch",
