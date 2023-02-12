@@ -31,6 +31,7 @@ jobs:
     # Build the site
     - name: Build the site
       run: |
+        rm -fr coffe/__init__.py
         sh generate_docs.sh
 
     # If we've pushed to master, push the book's HTML to github-pages
