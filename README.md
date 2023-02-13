@@ -1,4 +1,5 @@
 # COFFE v3
+
 This is the public repository for the code COFFE (COrrelation Function Full-sky Estimator), which can be used to compute the following quantities in linear perturbation theory:
 
 * full-sky and flat-sky 2-point correlation function (2PCF) of galaxy number counts, taking into account all of the effects (density, RSD, lensing, etc.)
@@ -27,12 +28,14 @@ If you are on another platform, refer to the section below.
 
 ### Development version (including non-Linux machines)
 
+**NOTE**: the use of a virtual environment (such as Python's [venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment) or [Conda](https://docs.conda.io/en/latest/)) is highly recommended.
+
 If you would like to install the development version, you will need to first install the following:
 
 * a C compiler, compatible with the C99 standard
 * a Python interpreter, version 3.7 or above
-* [GSL](https://www.gnu.org/software/gsl/) (GNU Scientific Library), version 2.1 or above
-* [FFTW](http://www.fftw.org/download.html), version 3 or above
+* [GSL](https://www.gnu.org/software/gsl/) (GNU Scientific Library) and the corresponding headers, version 2.1 or above (available as `libgsl-dev` on Debian-based, and as `gsl-devel` on RHEL/CentOS-based distros)
+* [FFTW](http://www.fftw.org/download.html) and the corresponding headers, version 3 or above (available as `libfftw3-dev` on Debian-based, and as `fftw-devel` on RHEL/CentOS-based distros)
 
 **NOTE**: if you are using Conda, you can install all of the above easily.
 First, create a new environment:
@@ -75,11 +78,10 @@ The documentation for the latest version is available [here](https://jcgoran.git
 ## Bug reports and feature requests
 
 Please use the [issue tracker](https://github.com/JCGoran/coffe/issues) to submit any bug reports and feature requests.
-For bug reports, if you are running something other than the Docker version, please specify your platform as well as library versions.
 
 ## License
 
-COFFE is licensed under the GNU GPL 3.0. See the `LICENSE` file for more information.
+COFFE is licensed under the GNU GPL 3.0. See the [LICENSE](LICENSE) file for more information.
 
 ## Citations
 
@@ -122,3 +124,15 @@ Then run:
 ```sh
 pytest tests/test_coffe.py
 ```
+
+### Building Python wheels
+
+The building of wheels is done using the [`cibuildwheel`](https://cibuildwheel.readthedocs.io/en/stable/) utility.
+If building wheels for Linux, you can run:
+
+```sh
+sh build_wheels_linux.sh
+```
+
+which should build all of the wheels for Python 3.7 and above on Linux.
+The building of wheels for other platforms is not implemented, however, contributions are certainly welcome.
