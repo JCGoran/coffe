@@ -573,7 +573,7 @@ cdef class Coffe:
             if "len" in contributions:
                 cosmo.has_lensing = True
 
-        options_float_array = [
+        options_float_array = {
             "sep",
             "z_mean",
             "deltaz",
@@ -582,7 +582,7 @@ cdef class Coffe:
             "number_density2",
             "pixelsize",
             "fsky",
-        ]
+        }
         for option in options_float_array:
             if option in config:
                 setattr(cosmo, option, config.getfloat_array(option))
@@ -592,7 +592,7 @@ cdef class Coffe:
             if option in config:
                 setattr(cosmo, option, config.getint_array(option))
 
-        options_float = [
+        options_float = {
             "omega_m",
             "omega_baryon",
             "omega_gamma",
@@ -616,15 +616,21 @@ cdef class Coffe:
             "k_min",
             "k_max",
             "YHe",
-        ]
+        }
         for option in options_float:
             if option in config:
                 setattr(cosmo, option, config.getfloat(option))
 
-        options_int = [
+        options_int = {
             "has_density",
             "has_lensing",
             "has_rsd",
+            "has_d1",
+            "has_d2",
+            "has_g1",
+            "has_g3",
+            "has_g4",
+            "has_g5",
             "integration_sampling",
             "background_sampling",
             "has_binned_covariance",
@@ -635,7 +641,7 @@ cdef class Coffe:
             "covariance_mixed",
             "covariance_poisson",
             "N_ncdm",
-        ]
+        }
         for option in options_int:
             if option in config:
                 setattr(cosmo, option, config.getint(option))
