@@ -640,6 +640,10 @@ cdef class Coffe:
             "covariance_cosmic",
             "covariance_mixed",
             "covariance_poisson",
+            "covariance_integration_method",
+            "covariance_integration_sampling",
+            "covariance_interpolation_method",
+            "integrals_fftlog_sampling",
             "N_ncdm",
         }
         for option in options_int:
@@ -1501,6 +1505,33 @@ cdef class Coffe:
         self._free_corrfunc()
 
 
+    @property
+    def integrals_fftlog_sampling(self):
+        r"""
+        Gets and sets the number of samples used for computing the FFTlog for
+        the integrals of the form:
+
+        .. math::
+            \frac{1}{2 \pi^2} \int\limits_0^\infty dk\, k^2\, P(k, z = 0) \frac{j_\ell(k r)}{(k r)^n}
+
+        Default: 10000
+        """
+        return self._parameters.bessel_bins
+
+    @integrals_fftlog_sampling.setter
+    def integrals_fftlog_sampling(self, value):
+        _check_parameter(
+            "integrals_fftlog_sampling",
+            value,
+            int,
+            0,
+            1000000,
+        )
+
+        self._parameter.bessel_bins = int(value)
+        self._free_except_parameters()
+
+
     def integral(self, *, r : float, n : int, l : int):
         r"""
         Returns one of the Fourier Bessel integrals (only integer arguments for now).
@@ -1996,6 +2027,78 @@ cdef class Coffe:
     @covariance_poisson.setter
     def covariance_poisson(self, value):
         self._parameters.covariance_poisson = int(bool(value))
+        self._free_covariance_multipoles()
+
+
+    @property
+    def covariance_integration_method(self):
+        """
+        Gets and sets the integration method for the covariance.
+        Possible values: 1 (use GSL integrator), 2 (use FFTlog).
+        Default: 1.
+
+        See also
+        --------
+        `covariance_integration_sampling`
+        """
+        return self._parameters.covariance_integration_method
+
+    @covariance_integration_method.setter
+    def covariance_integration_method(self, value):
+        allowed_values = (1, 2)
+        _check_parameter_discrete(
+            "covariance_integration_method",
+            value,
+            int,
+            allowed_values,
+        )
+        self._parameters.covariance_integration_method = int(value)
+        self._free_covariance_multipoles()
+
+
+    @property
+    def covariance_integration_sampling(self):
+        """
+        Gets and sets the number of samples used for computing the covariance
+        when using the FFTlog integration method (default: 8000).
+        """
+        return self._parameters.covariance_integration_bins
+
+    @covariance_integration_sampling.setter
+    def covariance_integration_sampling(self, value):
+        _check_parameter(
+            "covariance_integration_sampling",
+            value,
+            int,
+            0,
+            1000000,
+        )
+
+        self._parameters.covariance_integration_bins = int(value)
+        self._free_covariance_multipoles()
+
+
+    @property
+    def covariance_interpolation_method(self):
+        """
+        Gets and sets the interpolation method used to compute values of the
+        covariance when using the FFTlog integration method.
+        Possible values: 1 (bilinear), 2 (bicubic).
+        Default: 1.
+        """
+        return self._parameters.covariance_interpolation_method
+
+    @covariance_interpolation_method.setter
+    def covariance_interpolation_method(self, value):
+        allowed_values = (1, 2)
+        _check_parameter_discrete(
+            "covariance_interpolation_method",
+            value,
+            int,
+            allowed_values,
+        )
+
+        self._parameters.covariance_interpolation_method = int(value)
         self._free_covariance_multipoles()
 
 
