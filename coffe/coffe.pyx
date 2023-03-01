@@ -110,14 +110,8 @@ def _check_parameter(
 def _check_parameter_discrete(
     name : str,
     value : Any,
-    kind : Union[type, Tuple[type], List[type]],
     allowed_values : List[Any],
 ):
-    if not isinstance(value, kind):
-        raise TypeError(
-            f"Expected {kind}, got {type(value)}"
-        )
-
     if value not in allowed_values:
         raise ValueError(f"The value `{name}={value}` is not one of `{allowed_values}")
 
@@ -2061,7 +2055,6 @@ cdef class Coffe:
         _check_parameter_discrete(
             "covariance_integration_method",
             value,
-            int,
             allowed_values,
         )
         self._parameters.covariance_integration_method = int(value)
@@ -2106,7 +2099,6 @@ cdef class Coffe:
         _check_parameter_discrete(
             "covariance_interpolation_method",
             value,
-            int,
             allowed_values,
         )
 
@@ -2512,8 +2504,11 @@ cdef class Coffe:
 
     @pk_type.setter
     def pk_type(self, value):
-        # we don't care about the case (user is lazy, and so am I)
-        _check_parameter_discrete('pk_type', value, str, _allowed_pk_types.values())
+        _check_parameter_discrete(
+            "pk_type",
+            value,
+            _allowed_pk_types.values(),
+        )
 
         if value != self.pk_type:
             self._parameters.pk_type = _allowed_pk_types_inverse[value]
