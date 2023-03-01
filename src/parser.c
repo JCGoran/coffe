@@ -803,7 +803,7 @@ int coffe_parse_default_parameters(
     par->sep_len = separations_size;
 
     par->interp_method = COFFE_INTERP_AKIMA;
-    par->covariance_integration_method = 1;
+    par->covariance_integration_method = COFFE_COVARIANCE_INTEGRATION_GSL;
     par->covariance_integration_bins = 8000;
     par->covariance_interpolation_method = COFFE_INTERP2D_BICUBIC;
     par->file_power_spectrum[0] = 0;
@@ -1171,14 +1171,14 @@ int coffe_parser_init(
     /* integration method for covariance */
     parse_int(conf, "covariance_integration_method", &par->covariance_integration_method, COFFE_TRUE);
     if (
-        par->covariance_integration_method != 1 &&
-        par->covariance_integration_method != 2
+        par->covariance_integration_method != COFFE_COVARIANCE_INTEGRATION_GSL &&
+        par->covariance_integration_method != COFFE_COVARIANCE_INTEGRATION_FFTLOG
     ){
         print_error_verbose(PROG_VALUE_ERROR, "covariance_integration_method");
         exit(EXIT_FAILURE);
     }
 
-    if (par->covariance_integration_method == 2){
+    if (par->covariance_integration_method == COFFE_COVARIANCE_INTEGRATION_FFTLOG){
         /* integration method for covariance (only for FFT log) */
         parse_int(conf, "covariance_integration_bins", &par->covariance_integration_bins, COFFE_TRUE);
         if (par->covariance_integration_bins <= 0){
@@ -1191,8 +1191,8 @@ int coffe_parser_init(
         par->covariance_interpolation_method = (enum coffe_interp2d_type)temp;
         }
         if (
-            par->covariance_interpolation_method != 1 &&
-            par->covariance_interpolation_method != 2
+            par->covariance_interpolation_method != COFFE_INTERP2D_BILINEAR &&
+            par->covariance_interpolation_method != COFFE_INTERP2D_BICUBIC
         ){
             print_error_verbose(PROG_VALUE_ERROR, "covariance_interpolation_method");
             exit(EXIT_FAILURE);

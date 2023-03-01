@@ -291,6 +291,13 @@ enum coffe_pk_type
 };
 
 
+enum coffe_covariance_integration_method
+{
+    COFFE_COVARIANCE_INTEGRATION_GSL = 1,
+    COFFE_COVARIANCE_INTEGRATION_FFTLOG = 2
+};
+
+
 /**
     contains all the values for n and l
     for which we need to compute the I^n_l;
