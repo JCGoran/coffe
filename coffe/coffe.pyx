@@ -597,16 +597,25 @@ cdef class Coffe:
         if "correlation_contributions" in config:
             warnings.warn(
                 f"Option 'correlation_contributions' is no longer supported; "
-                f"it may be replaced by 'has_density', 'has_rsd', and 'has_lensing' (if found).",
+                f"it may be replaced by one of {['has_' + _ for _ in ['density', 'rsd', 'lensing', 'd1', 'd2', 'g1', 'g2', 'g3', 'g4', 'g4']]} (if found).",
                 DeprecationWarning,
             )
             contributions = config.getstr_array("correlation_contributions")
-            if "den" in contributions:
-                cosmo.has_density = True
-            if "rsd" in contributions:
-                cosmo.has_rsd = True
-            if "len" in contributions:
-                cosmo.has_lensing = True
+            mapping = {
+                'den' : 'has_density',
+                'rsd' : 'has_rsd',
+                'len' : 'has_lensing',
+                'd1' : 'has_d1',
+                'd2' : 'has_d2',
+                'g1' : 'has_g1',
+                'g2' : 'has_g2',
+                'g3' : 'has_g3',
+                'g4' : 'has_g4',
+                'g5' : 'has_g5',
+            }
+            for key, value in mapping.items():
+                if key in contributions:
+                    setattr(cosmo, value, True)
 
         options_float_array = {
             "sep",
