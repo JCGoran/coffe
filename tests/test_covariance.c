@@ -60,10 +60,11 @@ static int coffe_test_legendre_integral(int ell_max)
             .b = l
         };
 
-        const double expected = coffe_integrate_1d(
+        const double expected = coffe_integrate_1d_prec_gsl(
             &legendre_integral,
             &test,
-            -1, 1
+            -1, 1,
+            1e-5
         );
 
         const double obtained = coffe_legendre_integral(i, j, k, l);

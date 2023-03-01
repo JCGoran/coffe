@@ -417,6 +417,9 @@ cdef class Coffe:
     ### Setting precision parameters
 
     You can set certain precision parameters in COFFE:
+    * `integration_1d_type`: which method to use for 1D integration
+    * `integration_1d_prec`: the relative precision wanted for the 1D
+    integration
     * `integration_sampling`: how many points are sampled when computing
     2-dimensional (or higher) integrals
     * `integrals_fftlog_sampling`: the number of integration samples used for
@@ -424,15 +427,14 @@ cdef class Coffe:
     * `covariance_integration_method`: which integration method to use for
     computing the covariance
     * `covariance_integration_sampling`: the number of integration samples used
-    to compute the covariance when using the 2D FFTlog method
-    * `covariance_interpolation_method`: the kind of interpolation to use when
-    computing the covariance with the 2D FFTlog method
-    * `background_sampling`: how many points are sampled between redshifts 0
-    and 15 to compute the background quantities
-    * `k_min`: the minimum wavenumber (in $1/\mathrm{Mpc}$) used for computing the
-    Fourier-Bessel transform
-    * `k_max`: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing the
-    Fourier-Bessel transform
+    to compute the covariance when using the 2D FFTlog method *
+    `covariance_interpolation_method`: the kind of interpolation to use when
+    computing the covariance with the 2D FFTlog method * `background_sampling`:
+    how many points are sampled between redshifts 0 and 15 to compute the
+    background quantities * `k_min`: the minimum wavenumber (in
+    $1/\mathrm{Mpc}$) used for computing the Fourier-Bessel transform *
+    `k_max`: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing
+    the Fourier-Bessel transform
     """
     cdef ccoffe.coffe_parameters_t _parameters
     cdef ccoffe.coffe_background_t _background
@@ -2214,6 +2216,49 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+
+
+    @property
+    def integration_1d_type(self):
+        """
+        Gets and sets the 1D integration method.
+        Possible values: 1 (GSL quadrature integrator), 2 (double exponential
+        quadrature).
+        Default: 1
+        """
+        return self._parameters.integration_1d_type
+
+    @integration_1d_type.setter
+    def integration_1d_type(self, value):
+        allowed_values = (1, 2)
+        _check_parameter_discrete(
+            "integration_1d_type",
+            value,
+            allowed_values,
+        )
+        self._parameters.integration_1d_type = int(value)
+        self._free_except_parameters()
+
+
+    @property
+    def integration_1d_prec(self):
+        """
+        Gets and sets the relative precision used for 1D integration.
+        Default: 1e-5
+        """
+        return self._parameters.integration_1d_prec
+
+    @integration_1d_prec.setter
+    def integration_1d_prec(self, value):
+        _check_parameter(
+            "integration_1d_prec",
+            value,
+            float,
+            0,
+            1,
+        )
+        self._parameters.integration_1d_prec = float(value)
+        self._free_except_parameters()
 
 
     @property

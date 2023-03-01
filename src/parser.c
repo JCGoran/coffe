@@ -765,6 +765,8 @@ int coffe_parse_default_parameters(
     par->b_tilde_derivative = 0;
     par->f_tilde_derivative = 0;
     par->inv_k_window = 0;
+    par->integration_1d_type = COFFE_INTEGRATION_GSL;
+    par->integration_1d_prec = 1e-5;
 
     coffe_new_fit_coefficients_array(&par->galaxy_bias1_coefficients);
     coffe_new_fit_coefficients_array(&par->galaxy_bias2_coefficients);

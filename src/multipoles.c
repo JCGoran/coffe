@@ -22,9 +22,7 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
-#endif
 
 #ifdef HAVE_CUBA
 #include "cuba.h"

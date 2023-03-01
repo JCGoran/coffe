@@ -21,11 +21,7 @@
 
 static double corrfunc_single_integrated_integrand(
     double x,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     const struct coffe_integration_parameters_t *test =
@@ -86,11 +82,7 @@ static double corrfunc_double_integrated_integrand(
 
 static double multipoles_nonintegrated_integrand(
     double x,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     const struct coffe_integration_parameters_t *all_params =
@@ -118,13 +110,10 @@ static double multipoles_nonintegrated_integrand(
     }
 }
 
+
 static double multipoles_flatsky_integrand(
     double x,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     const struct coffe_integration_parameters_t *all_params =
@@ -508,12 +497,25 @@ double coffe_integrate(
                     );
                 }
                 case MULTIPOLES:{
-                    const double result = coffe_integrate_1d(
-                        &multipoles_nonintegrated_integrand,
-                        &test,
-                        0,
-                        1
-                    );
+                    double result = 0;
+                    if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                        result = coffe_integrate_1d_prec_gsl(
+                            &multipoles_nonintegrated_integrand,
+                            &test,
+                            0,
+                            1,
+                            par->integration_1d_prec
+                        );
+                    }
+                    else{
+                        result = coffe_integrate_1d_prec_double_exponential(
+                            &multipoles_nonintegrated_integrand,
+                            &test,
+                            0,
+                            1,
+                            par->integration_1d_prec
+                        );
+                    }
                     return (2 * l + 1) * result;
                 }
                 case AVERAGE_MULTIPOLES:{
@@ -558,12 +560,25 @@ double coffe_integrate(
 
             switch(flag_output){
                 case CORRFUNC:{
-                    const double result = coffe_integrate_1d(
-                        &corrfunc_single_integrated_integrand,
-                        &test,
-                        0,
-                        1
-                    );
+                    double result = 0;
+                    if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                        result = coffe_integrate_1d_prec_gsl(
+                            &corrfunc_single_integrated_integrand,
+                            &test,
+                            0,
+                            1,
+                            par->integration_1d_prec
+                        );
+                    }
+                    else{
+                        result = coffe_integrate_1d_prec_double_exponential(
+                            &corrfunc_single_integrated_integrand,
+                            &test,
+                            0,
+                            1,
+                            par->integration_1d_prec
+                        );
+                    }
 
                     return result;
                 }
@@ -674,12 +689,25 @@ double coffe_integrate(
                         /* the odd ones are zero by construction, so we care only about the even */
                         l % 2 == 0
                     ){
-                        const double result = coffe_integrate_1d(
-                            &multipoles_flatsky_integrand,
-                            &test,
-                            0,
-                            1
-                        );
+                        double result = 0;
+                        if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                            result = coffe_integrate_1d_prec_gsl(
+                                &multipoles_flatsky_integrand,
+                                &test,
+                                0,
+                                1,
+                                par->integration_1d_prec
+                            );
+                        }
+                        else{
+                            result = coffe_integrate_1d_prec_double_exponential(
+                                &multipoles_flatsky_integrand,
+                                &test,
+                                0,
+                                1,
+                                par->integration_1d_prec
+                            );
+                        }
                         /* the factor of 2 pi^2 is because of the definition of the I^n_l integrals */
                         final_result += 2 * M_PI * M_PI * result;
                     }
@@ -719,5 +747,3 @@ double coffe_integrate(
             return 0.0;
     }
 }
-
-

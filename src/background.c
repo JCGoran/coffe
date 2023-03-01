@@ -351,14 +351,28 @@ int coffe_background_init(
         for (size_t i = 0; i <= bins; ++i){
             z = z_max*i/(double)bins;
             z_array[i] = z;
-            wint_array[i] = exp(
-                3 * coffe_integrate_1d(
-                    &integrand_w,
-                    &ipar,
-                    0,
-                    z
-                )
-            );
+            if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                wint_array[i] = exp(
+                    3 * coffe_integrate_1d_prec_gsl(
+                        &integrand_w,
+                        &ipar,
+                        0,
+                        z,
+                        par->integration_1d_prec
+                    )
+                );
+            }
+            else{
+                wint_array[i] = exp(
+                    3 * coffe_integrate_1d_prec_double_exponential(
+                        &integrand_w,
+                        &ipar,
+                        0,
+                        z,
+                        par->integration_1d_prec
+                    )
+                );
+            }
         }
         coffe_init_spline(&ipar.wint, z_array, wint_array, bins + 1, COFFE_INTERP_LINEAR);
         free(wint_array);
@@ -368,17 +382,34 @@ int coffe_background_init(
             z = z_max*i/(double)bins;
             if (i != 0){
                 z_array[i] = z;
-                xint_array[i] =
-                    (ipar.Omega0_cdm + ipar.Omega0_baryon)
-                   /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))
-                   *exp(
-                        -3 * coffe_integrate_1d(
-                            &integrand_x,
-                            &ipar,
-                            1. / (1 + z),
-                            1.
-                        )
-                    );
+                if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                    xint_array[i] =
+                        (ipar.Omega0_cdm + ipar.Omega0_baryon)
+                       /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))
+                       *exp(
+                            -3 * coffe_integrate_1d_prec_gsl(
+                                &integrand_x,
+                                &ipar,
+                                1. / (1 + z),
+                                1.,
+                                par->integration_1d_prec
+                            )
+                        );
+                }
+                else{
+                    xint_array[i] =
+                        (ipar.Omega0_cdm + ipar.Omega0_baryon)
+                       /(1 - (ipar.Omega0_cdm + ipar.Omega0_baryon))
+                       *exp(
+                            -3 * coffe_integrate_1d_prec_double_exponential(
+                                &integrand_x,
+                                &ipar,
+                                1. / (1 + z),
+                                1.,
+                                par->integration_1d_prec
+                            )
+                        );
+                }
             }
             else{
                 z_array[i] = 0;
@@ -451,12 +482,24 @@ int coffe_background_init(
         (temp_bg->D1)[i] = initial_values[0];
         (temp_bg->f)[i] = initial_values[1] * (temp_bg->a)[i] / (temp_bg->D1)[i];
 
-        (temp_bg->comoving_distance)[i] = coffe_integrate_1d(
-            &integrand_comoving,
-            &ipar,
-            0.,
-            z
-        ) / (par->h * COFFE_H0); // in units Mpc
+        if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+            (temp_bg->comoving_distance)[i] = coffe_integrate_1d_prec_gsl(
+                &integrand_comoving,
+                &ipar,
+                0.,
+                z,
+                par->integration_1d_prec
+            ) / (par->h * COFFE_H0); // in units Mpc
+        }
+        else{
+            (temp_bg->comoving_distance)[i] = coffe_integrate_1d_prec_double_exponential(
+                &integrand_comoving,
+                &ipar,
+                0.,
+                z,
+                par->integration_1d_prec
+            ) / (par->h * COFFE_H0); // in units Mpc
+        }
 
         if (z > 1E-10){
             (temp_bg->G1)[i] =

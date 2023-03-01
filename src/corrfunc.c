@@ -24,9 +24,7 @@
 #include <gsl/gsl_spline2d.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
-#endif
 
 #ifdef HAVE_CUBA
 #include "cuba.h"
@@ -149,4 +147,3 @@ int coffe_corrfunc_free(
     cf->size = 0;
     return EXIT_SUCCESS;
 }
-

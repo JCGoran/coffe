@@ -94,6 +94,10 @@ cdef extern from "common.h":
     cdef enum coffe_output_type:
         CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4
 
+    cdef enum coffe_integration_1d_type:
+        COFFE_INTEGRATION_GSL = 1,
+        COFFE_INTEGRATION_DOUBLE_EXPONENTIAL = 2
+
     cdef struct coffe_correlation_contributions:
         int den
         int rsd
@@ -281,6 +285,10 @@ cdef extern from "common.h":
         double YHe
 
         int only_cross_correlations
+
+        coffe_integration_1d_type integration_1d_type
+
+        double integration_1d_prec
 
 
     int coffe_parameters_free(

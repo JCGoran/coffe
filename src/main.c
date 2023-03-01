@@ -76,9 +76,6 @@ int main(int argc, char *argv[])
 #ifdef HAVE_CLASS
                 printf("CLASS: enabled\n");
 #endif
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-                printf("Double exponential quadrature: enabled\n");
-#endif
                 return EXIT_SUCCESS;
                 break;
             case 'C':

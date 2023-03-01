@@ -1001,14 +1001,10 @@ void coffe_multiply_power_array(
     between `a` and `b`, with relative precision `prec`, and returns `result`
 **/
 
-double coffe_integrate_1d_prec(
+double coffe_integrate_1d_prec_gsl(
     double (*func)(
         double,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-        const void*
-#else
         void*
-#endif
     ),
     const void *parameters,
     const double a,
@@ -1017,18 +1013,6 @@ double coffe_integrate_1d_prec(
 )
 {
     double result, error;
-
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-    result = tanhsinh_quad(
-        func,
-        parameters,
-        a,
-        b,
-        0.,
-        &error,
-        NULL
-    );
-#else
 
     gsl_function integrand;
     integrand.params = (void *)parameters;
@@ -1051,33 +1035,34 @@ double coffe_integrate_1d_prec(
     );
 
     gsl_integration_workspace_free(wspace);
-#endif
 
     return result;
 }
 
-
-double coffe_integrate_1d(
+double coffe_integrate_1d_prec_double_exponential(
     double (*func)(
         double,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
         const void*
-#else
-        void*
-#endif
     ),
     const void *parameters,
     const double a,
-    const double b
+    const double b,
+    const double precision
 )
 {
-    return coffe_integrate_1d_prec(
+    double result, error;
+
+    result = tanhsinh_quad(
         func,
         parameters,
         a,
         b,
-        1e-5
+        0.,
+        &error,
+        NULL
     );
+
+    return result;
 }
 
 

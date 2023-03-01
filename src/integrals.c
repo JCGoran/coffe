@@ -26,9 +26,7 @@
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_errno.h>
 
-#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
-#endif
 
 #include "common.h"
 #include "background.h"
@@ -239,11 +237,7 @@ static double integrals_coefficients(
 
 static double integrals_prefactor(
     double k,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     integrals_params_t *test = (integrals_params_t *) p;
@@ -285,11 +279,7 @@ static double integrals_prefactor(
 
 static double integrals_bessel_integrand(
     double k,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-    const void *p
-#else
     void *p
-#endif
 )
 {
     const integrals_params_t *integrand = (const integrals_params_t *) p;
@@ -343,11 +333,7 @@ static double integrals_bessel_integrand(
 static double integrals_integrate_function(
     double (*func)(
         double,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
         const void*
-#else
-        void*
-#endif
     ),
     const coffe_interpolation *input,
     const int n,
@@ -378,11 +364,12 @@ static double integrals_integrate_function(
         &local_l
     );
 
-    const double result = coffe_integrate_1d(
+    const double result = coffe_integrate_1d_prec_gsl(
         func,
         &test,
         kmin,
-        kmax
+        kmax,
+        1e-5
     );
 
     double output;
@@ -402,11 +389,7 @@ static double integrals_integrate_function(
 
 static double integrals_renormalization0_integrand(
     double k,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     integrals_params_t *integrand = (integrals_params_t *) p;
@@ -422,11 +405,7 @@ static double integrals_renormalization0_integrand(
 
 static double integrals_renormalization_integrand(
     double k,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
     const void *p
-#else
-    void *p
-#endif
 )
 {
     integrals_divergent_params_t *integrand =
@@ -455,11 +434,12 @@ static double integrals_renormalization(
     test.chi1 = chi1;
     test.chi2 = chi2;
 
-    const double output = coffe_integrate_1d(
+    const double output = coffe_integrate_1d_prec_gsl(
         &integrals_renormalization_integrand,
         &test,
         kmin,
-        kmax
+        kmax,
+        1e-5
     );
 
     return output / 2. / M_PI / M_PI;

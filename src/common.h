@@ -30,9 +30,7 @@
 #include "cuba.h"
 #endif
 
-#ifdef HAVE_DOUBLE_EXPONENTIAL
 #include "tanhsinh.h"
-#endif
 
 #ifndef COFFE_COPYRIGHT
 #define COFFE_COPYRIGHT  \
@@ -298,6 +296,13 @@ enum coffe_covariance_integration_method
 };
 
 
+enum coffe_integration_1d_type
+{
+    COFFE_INTEGRATION_GSL = 1,
+    COFFE_INTEGRATION_DOUBLE_EXPONENTIAL = 2
+};
+
+
 /**
     contains all the values for n and l
     for which we need to compute the I^n_l;
@@ -523,6 +528,10 @@ typedef struct coffe_parameters_t
 
     int only_cross_correlations;
 
+    enum coffe_integration_1d_type integration_1d_type;
+
+    double integration_1d_prec;
+
     coffe_fit_coefficients_array_t galaxy_bias1_coefficients;
     coffe_fit_coefficients_array_t galaxy_bias2_coefficients;
     coffe_fit_coefficients_array_t magnification_bias1_coefficients;
@@ -739,42 +748,30 @@ void coffe_multiply_power_array(
 
 /**
     integrates any 1D function `func` with arbitrary parameters `parameters`
-    between `a` and `b`, with relative precision `prec`, and returns `result`
+    between `a` and `b`, with relative precision `prec`, and returns `result`,
+    using either GSL (top) or double exponential quadrature (bottom)
 **/
 
-double coffe_integrate_1d_prec(
+double coffe_integrate_1d_prec_gsl(
     double (*func)(
         double,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
-        const void*
-#else
         void*
-#endif
     ),
     const void *parameters,
     const double a,
     const double b,
-    const double prec
+    const double precision
 );
 
-
-/**
-    integrates any 1D function `func` with arbitrary parameters `parameters`
-    between `a` and `b` and returns `result`
-**/
-
-double coffe_integrate_1d(
+double coffe_integrate_1d_prec_double_exponential(
     double (*func)(
         double,
-#ifdef HAVE_DOUBLE_EXPONENTIAL
         const void*
-#else
-        void*
-#endif
     ),
     const void *parameters,
     const double a,
-    const double b
+    const double b,
+    const double precision
 );
 
 

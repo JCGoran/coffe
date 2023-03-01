@@ -8,7 +8,7 @@ AM_INIT_AUTOMAKE([foreign subdir-objects]) # Does not require NEWS, COPYING, AUT
 # silent make https://autotools.io/automake/silent.html
 # silent rules enabled by default with 'yes'
 # disable silent runles with ./configure --disable-silent-rules
-AM_SILENT_RULES([yes]) # less verbose make output 
+AM_SILENT_RULES([yes]) # less verbose make output
 
 AC_CONFIG_SRCDIR([src/main.c])
 
@@ -84,7 +84,7 @@ dnl                 AC_MSG_WARN([ARB library not found.])
 dnl                 ])
 
 # Checks for header files.
-AC_HEADER_ASSERT # ./configure --disable-assert to define NDEBUG 
+AC_HEADER_ASSERT # ./configure --disable-assert to define NDEBUG
 AC_CHECK_HEADERS([stdlib.h stdarg.h complex.h math.h string.h float.h limits.h stddef.h], [], [
     AC_MSG_ERROR([Certain standard headers not found.])
     ])
@@ -96,7 +96,6 @@ AC_CHECK_FUNCS([mkdir pow sqrt], [],[
 AC_ARG_ENABLE(class, [  --enable-class      Automatically includes CLASS library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CLASS", [])
 dnl AC_ARG_ENABLE(covariance, [--enable-covariance Automatically includes the covariance calculation if required libraries found], CPPFLAGS="$CPPFLAGS -DHAVE_COVARIANCE", [])
 AC_ARG_ENABLE(cuba, [  --enable-cuba    Automatically includes the CUBA library if found], CPPFLAGS="$CPPFLAGS -DHAVE_CUBA", [])
-AC_ARG_ENABLE(doubleexp, [  --enable-doubleexp    Uses the double exponential quadrature for one dimensional integrals], CPPFLAGS="$CPPFLAGS -DHAVE_DOUBLE_EXPONENTIAL", [])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

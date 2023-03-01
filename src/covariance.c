@@ -330,11 +330,12 @@ static double covariance_integral(
     test.windowed1.s_delta = chi1_delta;
     test.windowed2.s_delta = chi2_delta;
 
-    return 2 * coffe_integrate_1d(
+    return 2 * coffe_integrate_1d_prec_gsl(
         &covariance_integrand,
         &test,
         kmin,
-        kmax
+        kmax,
+        1e-5
     ) / M_PI;
 }
 
