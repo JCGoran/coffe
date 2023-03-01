@@ -251,7 +251,8 @@ cdef class Coffe:
     * the galaxy, magnification, and evolution bias
     * the input power spectrum (**NOTE**: COFFE by default uses
     [CLASS](https://github.com/lesgourg/class_public/) to generate the linear
-    matter power spectrum on-the-fly; this can be overridden if necessary)
+    matter power spectrum on-the-fly; this can be overridden if necessary using
+    `set_power_spectrum_linear`)
 
     #### Default parameters
 
@@ -281,6 +282,9 @@ cdef class Coffe:
 
     where `[REDSHIFT]` is the redshift (must be a Python `int` or a `float`) at
     which we want to evaluate the given bias.
+
+    Note that there are 4 galaxy biases as the covariance of the multipoles may
+    contain 4 populations of galaxies.
 
     COFFE can also evaluate the linear power spectrum (internally uses CLASS to
     generate it) at a given wavenumber and redshift using `power_spectrum`:
@@ -421,6 +425,14 @@ cdef class Coffe:
     You can set certain precision parameters in COFFE:
     * `integration_sampling`: how many points are sampled when computing
     2-dimensional (or higher) integrals
+    * `integrals_fftlog_sampling`: the number of integration samples used for
+    computing the standard FFTlog integrals
+    * `covariance_integration_method`: which integration method to use for
+    computing the covariance
+    * `covariance_integration_sampling`: the number of integration samples used
+    to compute the covariance when using the 2D FFTlog method
+    * `covariance_interpolation_method`: the kind of interpolation to use when
+    computing the covariance with the 2D FFTlog method
     * `background_sampling`: how many points are sampled between redshifts 0
     and 15 to compute the background quantities
     * `k_min`: the minimum wavenumber (in $1/\mathrm{Mpc}$) used for computing the
