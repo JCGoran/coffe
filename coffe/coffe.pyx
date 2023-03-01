@@ -191,6 +191,22 @@ cdef int set_spline(
     free(y)
 
 
+def _invert_dict(d):
+    """
+    Inverts a dictionary, i.e. returns the dictionary {value : key}
+
+    Raises
+    ------
+    ValueError
+        if the dictionary mapping is not one-to-one (a bijection)
+    """
+    if len(set(d.values())) != len(d.values()):
+        raise ValueError(
+            f"The list `{d.values()}` contains duplicates"
+        )
+
+    return {value : key for key, value in d.items()}
+
 
 _allowed_pk_types = {
     ccoffe.COFFE_PK_LINEAR : 'linear',
@@ -199,8 +215,19 @@ _allowed_pk_types = {
     ccoffe.COFFE_PK_NONLINEAR_HMCODE : 'hmcode',
 }
 
-_allowed_pk_types_inverse = {
-    value : key for key, value in _allowed_pk_types.items()
+_allowed_integration_1d_types = {
+    ccoffe.COFFE_INTEGRATION_GSL : 'gsl',
+    ccoffe.COFFE_INTEGRATION_DOUBLE_EXPONENTIAL : 'exponential',
+}
+
+_allowed_covariance_integration_methods = {
+    ccoffe.COFFE_COVARIANCE_INTEGRATION_GSL : 'gsl',
+    ccoffe.COFFE_COVARIANCE_INTEGRATION_FFTLOG : 'fftlog',
+}
+
+_allowed_interpolation_2d_methods = {
+    ccoffe.COFFE_INTERP2D_BILINEAR : 'bilinear',
+    ccoffe.COFFE_INTERP2D_BICUBIC : 'bicubic',
 }
 
 
@@ -648,15 +675,27 @@ cdef class Coffe:
             "covariance_cosmic",
             "covariance_mixed",
             "covariance_poisson",
-            "covariance_integration_method",
             "covariance_integration_sampling",
-            "covariance_interpolation_method",
             "integrals_fftlog_sampling",
             "N_ncdm",
         }
         for option in options_int:
             if option in config:
                 setattr(cosmo, option, config.getint(option))
+
+        options_int_or_string = {
+            "covariance_integration_method",
+            "pk_type",
+            "covariance_interpolation_method",
+            "integration_1d_type",
+        }
+        for option in options_int_or_string:
+            if option in config:
+                try:
+                    value = config.getint(option)
+                except:
+                    value = config.get(option)
+                setattr(cosmo, option, value)
 
         # the bias options are a bit special
         biases = ["galaxy", "magnification", "evolution"]
@@ -2042,24 +2081,28 @@ cdef class Coffe:
     def covariance_integration_method(self):
         """
         Gets and sets the integration method for the covariance.
-        Possible values: 1 (use GSL integrator), 2 (use FFTlog).
-        Default: 1.
+        Possible values: 'gsl' (use GSL integrator), 'fftlog' (use FFTlog).
+        Default: 'gsl'
 
         See also
         --------
-        `covariance_integration_sampling`
+        `covariance_integration_sampling` and `covariance_interpolation_method`
         """
-        return self._parameters.covariance_integration_method
+        return _allowed_covariance_integration_methods[self._parameters.covariance_integration_method]
 
     @covariance_integration_method.setter
     def covariance_integration_method(self, value):
-        allowed_values = (1, 2)
         _check_parameter_discrete(
             "covariance_integration_method",
             value,
-            allowed_values,
+            list(_allowed_covariance_integration_methods) + list(_allowed_covariance_integration_methods.values()),
         )
-        self._parameters.covariance_integration_method = int(value)
+
+        if value in _allowed_covariance_integration_methods:
+            self._parameters.covariance_integration_method = value
+        else:
+            self._parameters.covariance_integration_method = _invert_dict(_allowed_covariance_integration_methods)[value]
+
         self._free_covariance_multipoles()
 
 
@@ -2090,21 +2133,27 @@ cdef class Coffe:
         """
         Gets and sets the interpolation method used to compute values of the
         covariance when using the FFTlog integration method.
-        Possible values: 1 (bilinear), 2 (bicubic).
-        Default: 1.
+        Possible values: 'bilinear' (bilinear), 'bicubic' (bicubic).
+        Default: 'bicubic'
+
+        See also
+        --------
+        `covariance_integration_method`
         """
-        return self._parameters.covariance_interpolation_method
+        return _allowed_interpolation_2d_methods[self._parameters.covariance_interpolation_method]
 
     @covariance_interpolation_method.setter
     def covariance_interpolation_method(self, value):
-        allowed_values = (1, 2)
         _check_parameter_discrete(
             "covariance_interpolation_method",
             value,
-            allowed_values,
+            list(_allowed_interpolation_2d_methods) + list(_allowed_interpolation_2d_methods.values()),
         )
 
-        self._parameters.covariance_interpolation_method = int(value)
+        if value in _allowed_interpolation_2d_methods:
+            self._parameters.covariance_interpolation_method = value
+        else:
+            self._parameters.covariance_interpolation_method = _invert_dict(_allowed_interpolation_2d_methods)[value]
         self._free_covariance_multipoles()
 
 
@@ -2222,21 +2271,25 @@ cdef class Coffe:
     def integration_1d_type(self):
         """
         Gets and sets the 1D integration method.
-        Possible values: 1 (GSL quadrature integrator), 2 (double exponential
-        quadrature).
-        Default: 1
+        Possible values: 'gsl' (GSL quadrature integrator), 'exponential'
+        (double exponential quadrature).
+        Default: 'gsl'
         """
-        return self._parameters.integration_1d_type
+        return _allowed_integration_1d_types[self._parameters.integration_1d_type]
 
     @integration_1d_type.setter
     def integration_1d_type(self, value):
-        allowed_values = (1, 2)
         _check_parameter_discrete(
             "integration_1d_type",
             value,
-            allowed_values,
+            list(_allowed_integration_1d_types) + list(_allowed_integration_1d_types.values()),
         )
-        self._parameters.integration_1d_type = int(value)
+
+        if value in _allowed_integration_1d_types:
+            self._parameters.integration_1d_type = value
+        else:
+            self._parameters.integration_1d_type = _invert_dict(_allowed_integration_1d_types)[value]
+
         self._free_except_parameters()
 
 
@@ -2552,12 +2605,15 @@ cdef class Coffe:
         _check_parameter_discrete(
             "pk_type",
             value,
-            _allowed_pk_types.values(),
+            list(_allowed_pk_types) + list(_allowed_pk_types.values()),
         )
 
-        if value != self.pk_type:
-            self._parameters.pk_type = _allowed_pk_types_inverse[value]
-            self._free_except_parameters()
+        if value in _allowed_pk_types:
+            self._parameters.pk_type = value
+        else:
+            self._parameters.pk_type = _invert_dict(_allowed_pk_types)[value]
+
+        self._free_except_parameters()
 
 
     def cross_spectrum(self, k : float, z1 : float, z2 : float, approximation = "geometric"):

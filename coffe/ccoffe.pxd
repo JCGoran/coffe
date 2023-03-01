@@ -52,6 +52,14 @@ cdef extern from "common.h":
         COFFE_INTERP_AKIMA_PERIODIC = 6,
         COFFE_INTERP_STEFFEN = 7
 
+    cdef enum coffe_interp2d_type:
+        COFFE_INTERP2D_BILINEAR = 1,
+        COFFE_INTERP2D_BICUBIC = 2
+
+    cdef enum coffe_covariance_integration_method:
+        COFFE_COVARIANCE_INTEGRATION_GSL = 1,
+        COFFE_COVARIANCE_INTEGRATION_FFTLOG = 2
+
     cdef struct coffe_corrfunc_coords_t:
         double z_mean
         double separation
