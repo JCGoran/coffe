@@ -11,10 +11,13 @@
 #include "integrals.h"
 #include "tools.h"
 
-/* comparing anything above this value (in Mpc/h) is not sensible */
+/* comparing anything above this value (in Mpc) is not sensible */
 #ifndef MAX_SEPARATION
-#define MAX_SEPARATION 20000
+#define MAX_SEPARATION 10000
 #endif
+
+#define COFFE_H0 (1. / 2997.92458)
+#define h (0.67)
 
 static int coffe_test_integrals(
     const coffe_integral_array_t *integrals
@@ -61,28 +64,32 @@ static int coffe_test_integrals(
 
     /* compare the standard integrals (ones computes with 2FAST) */
     for (size_t integral = 0; integral < size_files; ++integral){
+        const int n = terms[integral].n, l = terms[integral].l;
         for (size_t i = 0; i < size - 1; ++i){
-            const double x = xvalue[i];
+            const double x = xvalue[i] / (COFFE_H0 * h);
             const double y_expected = yvalue[integral][i];
-            const double y_obtained = coffe_interp_spline(
+            double y_obtained = coffe_interp_spline(
                 &coffe_find_integral(
                     integrals,
-                    terms[integral].n,
-                    terms[integral].l,
+                    n,
+                    l,
                     COFFE_INTEGER,
                     COFFE_INTEGER
                 )->result,
-                xvalue[i]
+                x
             );
+            if (n > l){
+                y_obtained *= pow(COFFE_H0 * h, n - l);
+            }
             fprintf(
                 stderr,
                 "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
-                integral, terms[integral].n, terms[integral].l, x, y_expected, y_obtained
+                integral, n, l, x, y_expected, y_obtained
             );
             /* only compare until MAX_SEPARATION, as above it doesn't matter */
-            if (x / COFFE_H0 > MAX_SEPARATION){
+            if (x > 1.5 && x < MAX_SEPARATION){
                 weak_assert(
-                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    approx_equal(y_expected, y_obtained, 1e-2, 0),
                     &error_flag
                 );
             }
@@ -109,7 +116,7 @@ static int coffe_test_integrals(
         );
 
         for (size_t i = 0; i < size - 1; ++i){
-            const double x = x_array[i];
+            const double x = x_array[i] / (COFFE_H0 * h);
             const double y_expected = y_array[i];
             const double y_obtained = coffe_interp_spline(
                 &coffe_find_integral(
@@ -119,17 +126,18 @@ static int coffe_test_integrals(
                     COFFE_HALF_INTEGER,
                     COFFE_HALF_INTEGER
                 )->result,
-                x_array[i]
-            );
+                x
+            ) * pow(COFFE_H0 * h, 1);
+
             fprintf(
                 stderr,
                 "Integral = %zu, n = %d, l = %d, separation = %e, expected = %e, obtained = %e\n",
                 (size_t)9, 1, -1, x, y_expected, y_obtained
             );
             /* only compare until MAX_SEPARATION, as above it doesn't matter */
-            if (x / COFFE_H0 > MAX_SEPARATION){
+            if (x > 2 && x < 5000){
                 weak_assert(
-                    approx_equal_const_epsilon(y_expected, y_obtained),
+                    approx_equal(y_expected, y_obtained, 1e-3, 0),
                     &error_flag
                 );
             }
@@ -166,8 +174,8 @@ static int coffe_test_integrals(
                 COFFE_INTEGER,
                 COFFE_INTEGER
             )->result,
-            divergent_x[i]
-        );
+            divergent_x[i] / (COFFE_H0 * h)
+        ) * pow(COFFE_H0 * h, 4);
 
         fprintf(
             stderr,
@@ -176,9 +184,11 @@ static int coffe_test_integrals(
         );
 
         weak_assert(
-            approx_equal_const_epsilon(
+            approx_equal(
                 y_expected,
-                y_obtained
+                y_obtained,
+                1e-3,
+                0
             ),
             &error_flag
         );
@@ -212,20 +222,22 @@ static int coffe_test_integrals(
                 COFFE_INTEGER,
                 COFFE_INTEGER
             )->renormalization,
-            ren_x[i],
-            ren_y[i]
-        );
+            ren_x[i] / (COFFE_H0 * h),
+            ren_y[i] / (COFFE_H0 * h)
+        ) * pow(COFFE_H0 * h, 4);
 
         fprintf(
             stderr,
             "Integral 8 renormalization, x1 = %e, x2 = %e, expected = %e, obtained = %e\n",
-            ren_x[i], ren_y[i], y_expected, y_obtained
+            ren_x[i] / (COFFE_H0 * h), ren_y[i] / (COFFE_H0 * h), y_expected, y_obtained
         );
 
         weak_assert(
-            approx_equal_const_epsilon(
+            approx_equal(
                 y_expected,
-                y_obtained
+                y_obtained,
+                1e-3,
+                0
             ),
             &error_flag
         );

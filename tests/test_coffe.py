@@ -14,6 +14,7 @@ from coffe_utils import covariance_matrix
 
 DATA_DIR = Path("tests/benchmarks/")
 h = 0.67
+COFFE_H0 = 1 / 2997.92458
 
 
 class TestCoffe:
@@ -213,15 +214,20 @@ class TestCoffe:
         for index in mapping:
             data = np.loadtxt(DATA_DIR / f"benchmark_integral{index}.dat")
             xarr, yarr = np.transpose(data)
+            l = mapping[index]["l"]
+            n = mapping[index]["n"]
             for x, y in zip(xarr, yarr):
-                if x > 1 and x < 20000:
+                if x / (COFFE_H0 * h) > 1.5 and x / (COFFE_H0 * h) < 20000:
+                    result = cosmo.integral(
+                        r=x / (COFFE_H0 * h),
+                        l=l,
+                        n=n,
+                    )
+                    if n > l:
+                        result *= (COFFE_H0 * h) ** (n - l)
                     assert np.isclose(
                         y,
-                        cosmo.integral(
-                            r=x,
-                            l=mapping[index]["l"],
-                            n=mapping[index]["n"],
-                        ),
+                        result,
                         rtol=1e-4,
                     )
 
