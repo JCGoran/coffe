@@ -451,8 +451,8 @@ static const size_t offsets[] = {1, 4, 7, 13, 25, 49, 97, 193};
 static const size_t num_levels = sizeof(offsets) / sizeof(*offsets) - 1;
 
 /* Integrate f(c x + d) with the given integration constants. */
-static double integrate(double (*f)(double x, const void *ctx),
-                        const void *ctx,
+static double integrate(double (*f)(double x, void *ctx),
+                        void *ctx,
                         double c, /* slope     of change of variables */
                         double d, /* intercept of change of variables */
                         double abs_err, double *est_err, unsigned *num_eval)
@@ -532,7 +532,7 @@ static double integrate(double (*f)(double x, const void *ctx),
     return c * integral;
 }
 
-double tanhsinh_quad(double (*f)(double x, const void *ctx), const void *ctx,
+double tanhsinh_quad(double (*f)(double x, void *ctx), void *ctx,
                      double a, double b, double abs_err,
                      double *est_err, unsigned *num_eval)
 {

@@ -21,7 +21,7 @@
 
 static double corrfunc_single_integrated_integrand(
     double x,
-    const void *p
+    void *p
 )
 {
     const struct coffe_integration_parameters_t *test =
@@ -82,7 +82,7 @@ static double corrfunc_double_integrated_integrand(
 
 static double multipoles_nonintegrated_integrand(
     double x,
-    const void *p
+    void *p
 )
 {
     const struct coffe_integration_parameters_t *all_params =
@@ -113,7 +113,7 @@ static double multipoles_nonintegrated_integrand(
 
 static double multipoles_flatsky_integrand(
     double x,
-    const void *p
+    void *p
 )
 {
     const struct coffe_integration_parameters_t *all_params =

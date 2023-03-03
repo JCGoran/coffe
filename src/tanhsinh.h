@@ -32,7 +32,7 @@ extern "C" {
     @param[out]    num_eval number of function evaluations used (can be `NULL`)
     @return                 The value of the integral.
 */
-double tanhsinh_quad(double (*f)(double x, const void *ctx), const void *ctx,
+double tanhsinh_quad(double (*f)(double x, void *ctx), void *ctx,
                      double a, double b, double abs_err,
                      double *est_err, unsigned *num_eval);
 

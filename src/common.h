@@ -757,7 +757,7 @@ double coffe_integrate_1d_prec_gsl(
         double,
         void*
     ),
-    const void *parameters,
+    void *parameters,
     const double a,
     const double b,
     const double precision
@@ -766,9 +766,9 @@ double coffe_integrate_1d_prec_gsl(
 double coffe_integrate_1d_prec_double_exponential(
     double (*func)(
         double,
-        const void*
+        void*
     ),
-    const void *parameters,
+    void *parameters,
     const double a,
     const double b,
     const double precision

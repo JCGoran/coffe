@@ -237,7 +237,7 @@ static double integrals_coefficients(
 
 static double integrals_prefactor(
     double k,
-    const void *p
+    void *p
 )
 {
     integrals_params_t *test = (integrals_params_t *) p;
@@ -333,7 +333,7 @@ static double integrals_bessel_integrand(
 static double integrals_integrate_function(
     double (*func)(
         double,
-        const void*
+        void*
     ),
     const coffe_interpolation *input,
     const int n,
@@ -389,7 +389,7 @@ static double integrals_integrate_function(
 
 static double integrals_renormalization0_integrand(
     double k,
-    const void *p
+    void *p
 )
 {
     integrals_params_t *integrand = (integrals_params_t *) p;
@@ -405,7 +405,7 @@ static double integrals_renormalization0_integrand(
 
 static double integrals_renormalization_integrand(
     double k,
-    const void *p
+    void *p
 )
 {
     integrals_divergent_params_t *integrand =
