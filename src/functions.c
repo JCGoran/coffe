@@ -1469,7 +1469,7 @@ double functions_nonintegrated(
     }
     else{
         fprintf(stderr,
-            "ERROR: in function %s, values:\n"
+            "ERROR: in %s:%d in function %s, values:\n"
             "mu = %e\n"
             "z_mean = %e\n"
             "chi_mean = %e\n"
@@ -1478,7 +1478,7 @@ double functions_nonintegrated(
             "z2 = %e\n"
             "chi1 = %e\n"
             "chi2 = %e\n",
-            __func__, mu, z_mean, chi_mean, sep, z1, z2, chi1, chi2);
+            __FILE__, __LINE__, __func__, mu, z_mean, chi_mean, sep, z1, z2, chi1, chi2);
         exit(EXIT_FAILURE);
     }
 }
@@ -3427,7 +3427,7 @@ double functions_single_integrated(
     }
     else{
         fprintf(stderr,
-            "ERROR: in function %s, values:\n"
+            "ERROR: in %s:%d in function %s, values:\n"
             "mu = %e\n"
             "z_mean = %e\n"
             "chi_mean = %e\n"
@@ -3444,6 +3444,8 @@ double functions_single_integrated(
             "s1, s2 = %e, %e\n"
             "b1, b2 = %e, %e\n"
             "x = %e\n",
+            __FILE__,
+            __LINE__,
             __func__,
             mu, z_mean, chi_mean, sep,
             z1, z2, chi1, chi2, costheta,
@@ -3989,7 +3991,7 @@ double functions_double_integrated(
     }
     else{
         fprintf(stderr,
-            "ERROR: in function %s, values:\n"
+            "ERROR: in %s:%d in function %s, values:\n"
             "x1 = %e, x2 = %e\n"
             "r2 = %e\n"
             "mu = %e\n"
@@ -4003,6 +4005,8 @@ double functions_double_integrated(
             "lambda1 = %e\n"
             "lambda2 = %e\n"
             "ren(sqrt(r2)) = %e\n",
+            __FILE__,
+            __LINE__,
             __func__, x1, x2, r2,
             mu, z_mean, chi_mean, sep,
             z1, z2, chi1, chi2, lambda1, lambda2, ren

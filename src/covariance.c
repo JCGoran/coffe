@@ -644,6 +644,9 @@ int coffe_covariance_init(
             free(pk);
 
             if (par->covariance_integration_method == COFFE_COVARIANCE_INTEGRATION_STANDARD){
+                if (par->verbose){
+                    printf("%s:%d Using standard integration\n", __FILE__, __LINE__);
+                }
                 /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
                 for (size_t i = 0; i < par->multipole_values_len; ++i){
                 for (size_t j = i; j < par->multipole_values_len; ++j){
@@ -651,6 +654,9 @@ int coffe_covariance_init(
                     for (size_t m = 0; m < par->sep_len; ++m){
                     for (size_t n = 0; n < par->sep_len; ++n){
                         if (par->covariance_mixed){
+                        if (par->verbose){
+                            printf("%s:%d Computing CV x Poisson term\n", __FILE__, __LINE__);
+                        }
                         integral_pk[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] =
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
@@ -675,6 +681,9 @@ int coffe_covariance_init(
                     for (size_t m = 0; m < par->sep_len; ++m){
                     for (size_t n = 0; n < par->sep_len; ++n){
                         if (par->covariance_cosmic){
+                        if (par->verbose){
+                            printf("%s:%d Computing CV x CV term\n", __FILE__, __LINE__);
+                        }
                         integral_pk2[index_redshift][i * par->multipole_values_len + j][par->sep_len * n + m] =
                             (2 * par->multipole_values[i] + 1)
                            *(2 * par->multipole_values[j] + 1)
@@ -699,7 +708,9 @@ int coffe_covariance_init(
                 }}
             }
             else if (par->covariance_integration_method == COFFE_COVARIANCE_INTEGRATION_FFTLOG){
-                fprintf(stderr, "Using 2D FFTlog\n");
+                if (par->verbose){
+                    printf("Using 2D FFTlog\n");
+                }
                 /* here we do the 2DFFTlog */
 
                 /* first point of order: logarithmically sample k and P(k) */
