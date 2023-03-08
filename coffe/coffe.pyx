@@ -221,7 +221,7 @@ _allowed_integration_1d_types = {
 }
 
 _allowed_covariance_integration_methods = {
-    ccoffe.COFFE_COVARIANCE_INTEGRATION_GSL : 'gsl',
+    ccoffe.COFFE_COVARIANCE_INTEGRATION_STANDARD : 'standard',
     ccoffe.COFFE_COVARIANCE_INTEGRATION_FFTLOG : 'fftlog',
 }
 
@@ -2090,12 +2090,14 @@ cdef class Coffe:
     def covariance_integration_method(self):
         """
         Gets and sets the integration method for the covariance.
-        Possible values: 'gsl' (use GSL integrator), 'fftlog' (use FFTlog).
-        Default: 'gsl'
+        Possible values: 'standard' (use standard integration, as specified by
+        `integration_1d_type`), 'fftlog' (use FFTlog).
+        Default: 'standard'
 
         See also
         --------
-        `covariance_integration_sampling` and `covariance_interpolation_method`
+        `integration_1d_type`, `covariance_integration_sampling` and
+        `covariance_interpolation_method`
         """
         return _allowed_covariance_integration_methods[self._parameters.covariance_integration_method]
 

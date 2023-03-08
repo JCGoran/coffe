@@ -291,7 +291,7 @@ enum coffe_pk_type
 
 enum coffe_covariance_integration_method
 {
-    COFFE_COVARIANCE_INTEGRATION_GSL = 1,
+    COFFE_COVARIANCE_INTEGRATION_STANDARD = 1,
     COFFE_COVARIANCE_INTEGRATION_FFTLOG = 2
 };
 

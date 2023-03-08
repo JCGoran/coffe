@@ -318,7 +318,9 @@ static double covariance_integral(
     double chi1, double chi2,
     double chi1_delta, double chi2_delta,
     int l1, int l2,
-    double kmin, double kmax
+    double kmin, double kmax,
+    enum coffe_integration_1d_type integration_1d_type,
+    double prec
 )
 {
     struct covariance_params test;
@@ -330,12 +332,21 @@ static double covariance_integral(
     test.windowed1.s_delta = chi1_delta;
     test.windowed2.s_delta = chi2_delta;
 
-    return 2 * coffe_integrate_1d_prec_gsl(
+    if (integration_1d_type == COFFE_INTEGRATION_GSL){
+        return 2 * coffe_integrate_1d_prec_gsl(
+            &covariance_integrand,
+            &test,
+            kmin,
+            kmax,
+            prec
+        ) / M_PI;
+    }
+    return 2 * coffe_integrate_1d_prec_double_exponential(
         &covariance_integrand,
         &test,
         kmin,
         kmax,
-        1e-5
+        prec
     ) / M_PI;
 }
 
@@ -632,7 +643,7 @@ int coffe_covariance_init(
             free(k);
             free(pk);
 
-            if (par->covariance_integration_method == 1){
+            if (par->covariance_integration_method == COFFE_COVARIANCE_INTEGRATION_STANDARD){
                 /* calculating the integrals G_l1l2 and D_l1l2 (without the scale factor D1) */
                 for (size_t i = 0; i < par->multipole_values_len; ++i){
                 for (size_t j = i; j < par->multipole_values_len; ++j){
@@ -654,7 +665,9 @@ int coffe_covariance_init(
                                 par->multipole_values[i],
                                 par->multipole_values[j],
                                 k_min,
-                                k_max
+                                k_max,
+                                par->integration_1d_type,
+                                par->integration_1d_prec
                             )
                            /M_PI;
                     }}}
@@ -676,14 +689,16 @@ int coffe_covariance_init(
                                 par->multipole_values[i],
                                 par->multipole_values[j],
                                 k_min,
-                                k_max
+                                k_max,
+                                par->integration_1d_type,
+                                par->integration_1d_prec
                             )
                            /2.
                            /M_PI;
                     }}}
                 }}
             }
-            else if (par->covariance_integration_method == 2){
+            else if (par->covariance_integration_method == COFFE_COVARIANCE_INTEGRATION_FFTLOG){
                 fprintf(stderr, "Using 2D FFTlog\n");
                 /* here we do the 2DFFTlog */
 
