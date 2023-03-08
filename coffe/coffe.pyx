@@ -454,13 +454,14 @@ cdef class Coffe:
     * `covariance_integration_method`: which integration method to use for
     computing the covariance
     * `covariance_integration_sampling`: the number of integration samples used
-    to compute the covariance when using the 2D FFTlog method *
-    `covariance_interpolation_method`: the kind of interpolation to use when
-    computing the covariance with the 2D FFTlog method * `background_sampling`:
-    how many points are sampled between redshifts 0 and 15 to compute the
-    background quantities * `k_min`: the minimum wavenumber (in
-    $1/\mathrm{Mpc}$) used for computing the Fourier-Bessel transform *
-    `k_max`: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing
+    to compute the covariance when using the 2D FFTlog method
+    * `covariance_interpolation_method`: the kind of interpolation to use when
+    computing the covariance with the 2D FFTlog method
+    * `background_sampling`: how many points are sampled between redshifts 0
+    and 15 to compute the background quantities
+    * `k_min`: the minimum wavenumber (in $1/\mathrm{Mpc}$) used for computing
+    the Fourier-Bessel transform
+    * `k_max`: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing
     the Fourier-Bessel transform
     """
     cdef ccoffe.coffe_parameters_t _parameters
@@ -964,6 +965,10 @@ cdef class Coffe:
 
     @property
     def verbose(self):
+        """
+        Whether to be more verbose when performing computations.
+        Default: False
+        """
         return bool(self._parameters.verbose)
 
     @verbose.setter
@@ -973,10 +978,7 @@ cdef class Coffe:
 
     @property
     def use_little_omega(self):
-        try:
-            return bool(int(os.environ.get('COFFE_USE_LITTLE_OMEGA')))
-        except:
-            return False
+        return False
 
 
     @property
@@ -1078,6 +1080,7 @@ cdef class Coffe:
     def has_only_cross_correlations(self):
         """
         Whether or not we consider only cross-correlations.
+        Default: False
         """
         return bool(self._parameters.only_cross_correlations)
 
@@ -1127,6 +1130,7 @@ cdef class Coffe:
     def omega_cdm(self):
         """
         Fraction of cold dark matter today.
+        Default: 0.25
         """
         return self._parameters.Omega0_cdm * self._coeff
 
@@ -1146,6 +1150,7 @@ cdef class Coffe:
     def omega_nu(self):
         """
         Returns the energy density fraction of massive neutrinos.
+        Default: 0
         """
         return self._parameters.Omega0_nu * self._coeff
 
@@ -1174,6 +1179,7 @@ cdef class Coffe:
     def omega_baryon(self):
         """
         Fraction of baryonic matter today.
+        Default: 0.05
         """
         return self._parameters.Omega0_baryon * self._coeff
 
@@ -1193,6 +1199,7 @@ cdef class Coffe:
     def omega_gamma(self):
         """
         Fraction of relativistic species today.
+        Default: 9e-5
         """
         return self._parameters.Omega0_gamma * self._coeff
 
@@ -1210,6 +1217,7 @@ cdef class Coffe:
     def omega_de(self):
         """
         Dark energy fraction today.
+        Default: 0.7
         """
         return self._parameters.Omega0_de * self._coeff
 
@@ -1218,6 +1226,7 @@ cdef class Coffe:
     def h(self):
         """
         The 'little h' parameter (reduced Hubble rate).
+        Default: 0.67
         """
         return self._parameters.h
 
@@ -1239,6 +1248,7 @@ cdef class Coffe:
         .. math::
             w(z) = w_0 + (1 - a) w_a
 
+        Default: -1
         """
         return self._parameters.w0
 
@@ -1338,6 +1348,7 @@ cdef class Coffe:
         .. math::
             w(z) = w_0 + (1 - a) w_a
 
+        Default: 0
         """
         return self._parameters.wa
 
@@ -1353,6 +1364,7 @@ cdef class Coffe:
     def n_s(self):
         """
         Spectral index (tilt) of the primordial power spectrum.
+        Default: 0.96
         """
         return self._parameters.n_s
 
@@ -1368,6 +1380,7 @@ cdef class Coffe:
     def sigma8(self):
         r"""
         Windowed density fluctuation at $r = 8\ \mathrm{Mpc}/h$
+        Default: 0.8156
         """
         return self._parameters.sigma8
 
@@ -1386,7 +1399,8 @@ cdef class Coffe:
     @property
     def A_s(self):
         """
-        The amplitude of the primordial power spectrum
+        The amplitude of the primordial power spectrum.
+        Default: determined by `sigma8`
         """
         return self._parameters.A_s
 
@@ -1405,6 +1419,7 @@ cdef class Coffe:
     def T_cmb(self):
         """
         The average temperature of the CMB.
+        Default: 2.726
         """
         return self._parameters.T_cmb
 
@@ -1420,6 +1435,7 @@ cdef class Coffe:
     def N_ur(self):
         """
         The number of ultra-relativistic species.
+        Default: 2.0328
         """
         return self._parameters.N_ur
 
@@ -1436,6 +1452,7 @@ cdef class Coffe:
         """
         The sum of masses of non-CDM species (mostly for neutrinos), in units
         of eV.
+        Default: 0
         """
         return self._parameters.m_ncdm
 
@@ -1472,6 +1489,7 @@ cdef class Coffe:
     def N_ncdm(self):
         """
         The number of (massive!) non-CDM species.
+        Default: 1
         """
         return self._parameters.N_ncdm
 
@@ -1488,6 +1506,7 @@ cdef class Coffe:
         r"""
         Returns the list of separations (in $\mathrm{Mpc}$) for which the
         2PCF/multipoles/covariance of multipoles should be computed.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.sep[i] for i in range(self._parameters.sep_len)]
@@ -1529,6 +1548,7 @@ cdef class Coffe:
         .. math::
             \mu = \frac{r_\parallel}{r} = \frac{\chi_2 - \chi_1}{r}
 
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.mu[i] for i in range(self._parameters.mu_len)]
@@ -1869,6 +1889,7 @@ cdef class Coffe:
     def l(self):
         """
         Returns the multipole moments for which the multipoles should be computed.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.multipole_values[i] for i in range(self._parameters.multipole_values_len)]
@@ -1907,6 +1928,7 @@ cdef class Coffe:
         """
         The mean redshift for which the signal (2PCF/multipoles) or covariance
         should be computed.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.z_mean[i] for i in range(self._parameters.z_mean_len)]
@@ -1943,6 +1965,7 @@ cdef class Coffe:
     def number_density1(self):
         r"""
         Number density of first tracers (in $1/\mathrm{Mpc}^3$) at `z_mean`.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.density1[i] for i in range(self._parameters.density1_len)]
@@ -1979,6 +2002,7 @@ cdef class Coffe:
     def number_density2(self):
         """
         Number density of second tracers (in $1/\mathrm{Mpc}^3$) at `z_mean`.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.density2[i] for i in range(self._parameters.density2_len)]
@@ -2015,6 +2039,7 @@ cdef class Coffe:
     def covariance_populations(self):
         """
         Returns the populations used for the covariance matrix.
+        Must be given as a list.
         """
         return np.array([
             self._parameters.covariance_pop1,
@@ -2049,7 +2074,8 @@ cdef class Coffe:
     def covariance_cosmic(self):
         """
         Whether the CV-CV term should be taken into account when computing the
-        covariance of multipoles
+        covariance of multipoles.
+        Default: True
         """
         return bool(self._parameters.covariance_cosmic)
 
@@ -2062,8 +2088,9 @@ cdef class Coffe:
     @property
     def covariance_mixed(self):
         """
-        Whether the mixed (CV-Poisson + Poisson-CV) term should be taken into account when computing the
-        covariance of multipoles
+        Whether the mixed (CV-Poisson + Poisson-CV) term should be taken into
+        account when computing the covariance of multipoles.
+        Default: True
         """
         return bool(self._parameters.covariance_mixed)
 
@@ -2075,8 +2102,9 @@ cdef class Coffe:
     @property
     def covariance_poisson(self):
         """
-        Whether the Poisson-Poisson term should be taken into account when computing the
-        covariance of multipoles
+        Whether the Poisson-Poisson term should be taken into account when
+        computing the covariance of multipoles.
+        Default: True
         """
         return bool(self._parameters.covariance_poisson)
 
@@ -2121,7 +2149,8 @@ cdef class Coffe:
     def covariance_integration_sampling(self):
         """
         Gets and sets the number of samples used for computing the covariance
-        when using the FFTlog integration method (default: 8000).
+        when using the FFTlog integration method.
+        Default: 8000
         """
         return self._parameters.covariance_integration_bins
 
@@ -2173,6 +2202,7 @@ cdef class Coffe:
         r"""
         The pixel size of the covariance (roughly the resolution of the survey)
         in $\mathrm{Mpc}$.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.pixelsize[i] for i in range(self._parameters.pixelsize_len)]
@@ -2246,6 +2276,7 @@ cdef class Coffe:
     def deltaz(self):
         """
         The half width of the redshift bin which is centered at `z_mean`.
+        Must be given as a list.
         """
         return np.array(
             [self._parameters.deltaz[i] for i in range(self._parameters.deltaz_len)]
@@ -2328,8 +2359,9 @@ cdef class Coffe:
     @property
     def integration_sampling(self):
         """
-        Returns the maximum number of points to be sampled when using multidimensional
-        integration.
+        Returns the maximum number of points to be sampled when using
+        multidimensional integration.
+        Default: 750000
         """
         return self._parameters.integration_bins
 
@@ -2344,7 +2376,9 @@ cdef class Coffe:
     @property
     def background_sampling(self):
         """
-        Returns the number of points we use to sample the background (from z = 0 to z = 15).
+        Returns the number of points we use to sample the background (from z =
+        0 to z = 15).
+        Default: 10000
         """
         return self._parameters.background_bins
 
@@ -2365,6 +2399,7 @@ cdef class Coffe:
         $\mathrm{Mpc}$) in each redshift bin. If set to False, the covariance
         will not be bin averaged, and eq. (2.52) from
         [arXiv:1806.11090](https://arxiv.org/abs/1806.11090) will be used.
+        Default: False
         """
         return bool(self._parameters.covariance_window)
 
@@ -2378,6 +2413,7 @@ cdef class Coffe:
     def has_density(self):
         """
         Returns whether the density contribution is taken into account.
+        Default: True
         """
         return bool(self._parameters.correlation_contrib.den)
 
@@ -2393,6 +2429,7 @@ cdef class Coffe:
     def has_rsd(self):
         """
         Returns whether the RSD contribution is taken into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.rsd)
 
@@ -2409,6 +2446,7 @@ cdef class Coffe:
     def has_lensing(self):
         """
         Returns whether the lensing contribution is taken into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.len)
 
@@ -2423,6 +2461,7 @@ cdef class Coffe:
     def has_d1(self):
         """
         Returns whether the Doppler 1 contribution is taken into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.d1)
 
@@ -2436,6 +2475,7 @@ cdef class Coffe:
     def has_d2(self):
         """
         Returns whether the Doppler 2 contribution is taken into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.d2)
 
@@ -2450,6 +2490,7 @@ cdef class Coffe:
         """
         Returns whether the relativistic non-integrated contribution 1 is taken
         into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.g1)
 
@@ -2464,6 +2505,7 @@ cdef class Coffe:
         """
         Returns whether the relativistic non-integrated contribution 2 is taken
         into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.g2)
 
@@ -2478,6 +2520,7 @@ cdef class Coffe:
         """
         Returns whether the relativistic non-integrated contribution 3 is taken
         into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.g3)
 
@@ -2492,6 +2535,7 @@ cdef class Coffe:
         """
         Returns whether the relativistic integrated contribution 1 is taken
         into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.g4)
 
@@ -2506,6 +2550,7 @@ cdef class Coffe:
         """
         Returns whether the relativistic integrated contribution 2 is taken
         into account.
+        Default: False
         """
         return bool(self._parameters.correlation_contrib.g5)
 
@@ -2528,6 +2573,7 @@ cdef class Coffe:
     def has_flatsky_local(self):
         """
         Whether the flat-sky approximation should be used for local terms (density, RSD).
+        Default: False
         """
         return bool(self._parameters.flatsky_local)
 
@@ -2544,6 +2590,7 @@ cdef class Coffe:
         """
         Whether the flat-sky approximation should be used for cross-terms
         between local and non-local terms (currently density-lensing and RSD-lensing only).
+        Default: False
         """
         return bool(self._parameters.flatsky_local_nonlocal)
 
@@ -2560,6 +2607,7 @@ cdef class Coffe:
         """
         Whether the flat-sky approximation should be used for integrated
         (non-local) terms (lensing only).
+        Default: False
         """
         return bool(self._parameters.flatsky_nonlocal)
 
@@ -2608,6 +2656,7 @@ cdef class Coffe:
         Returns the currently set power spectrum type (COFFE linear, CLASS linear,
         nonlinear halofit, nonlinear HMcode)
         Possible values: 'linear', 'linear_class', 'halofit', 'hmcode'
+        Default: 'linear'
         """
         return _allowed_pk_types[self._parameters.pk_type]
 
@@ -2706,6 +2755,7 @@ cdef class Coffe:
         r"""
         The minimum wavenumber (in $1/\mathrm{Mpc}$) for which the power
         spectrum should be computed.
+        Default: `1e-5 * h`
         """
         return self._parameters.k_min
 
@@ -2721,6 +2771,7 @@ cdef class Coffe:
         r"""
         The maximum wavenumber (in $1/\mathrm{Mpc}$) for which the power
         spectrum should be computed.
+        Default: `300 * h`
         """
         return self._parameters.k_max
 
