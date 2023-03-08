@@ -215,6 +215,9 @@
                                 <a class="function" href="#Coffe.compute_covariance_bulk">compute_covariance_bulk</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Coffe.verbose">verbose</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Coffe.has_only_cross_correlations">has_only_cross_correlations</a>
                         </li>
                         <li>
@@ -746,13 +749,14 @@ computing the standard FFTlog integrals</li>
 <li><code><a href="#Coffe.covariance_integration_method">covariance_integration_method</a></code>: which integration method to use for
 computing the covariance</li>
 <li><code><a href="#Coffe.covariance_integration_sampling">covariance_integration_sampling</a></code>: the number of integration samples used
-to compute the covariance when using the 2D FFTlog method *
-<code><a href="#Coffe.covariance_interpolation_method">covariance_interpolation_method</a></code>: the kind of interpolation to use when
-computing the covariance with the 2D FFTlog method * <code><a href="#Coffe.background_sampling">background_sampling</a></code>:
-how many points are sampled between redshifts 0 and 15 to compute the
-background quantities * <code><a href="#Coffe.k_min">k_min</a></code>: the minimum wavenumber (in
-$1/\mathrm{Mpc}$) used for computing the Fourier-Bessel transform *
-<code><a href="#Coffe.k_max">k_max</a></code>: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing
+to compute the covariance when using the 2D FFTlog method</li>
+<li><code><a href="#Coffe.covariance_interpolation_method">covariance_interpolation_method</a></code>: the kind of interpolation to use when
+computing the covariance with the 2D FFTlog method</li>
+<li><code><a href="#Coffe.background_sampling">background_sampling</a></code>: how many points are sampled between redshifts 0
+and 15 to compute the background quantities</li>
+<li><code><a href="#Coffe.k_min">k_min</a></code>: the minimum wavenumber (in $1/\mathrm{Mpc}$) used for computing
+the Fourier-Bessel transform</li>
+<li><code><a href="#Coffe.k_max">k_max</a></code>: the maximum wavenumber (in $1/\mathrm{Mpc}$) used for computing
 the Fourier-Bessel transform</li>
 </ul>
 </div>
@@ -1935,6 +1939,20 @@ purposes.</li>
 
 
                             </div>
+                            <div id="Coffe.verbose" class="classattr">
+                                <div class="attr variable">
+            <span class="name">verbose</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Coffe.verbose"></a>
+    
+            <div class="docstring"><p>Whether to be more verbose when performing computations.
+Default: False</p>
+</div>
+
+
+                            </div>
                             <div id="Coffe.has_only_cross_correlations" class="classattr">
                                 <div class="attr variable">
             <span class="name">has_only_cross_correlations</span>
@@ -1943,7 +1961,8 @@ purposes.</li>
     </div>
     <a class="headerlink" href="#Coffe.has_only_cross_correlations"></a>
     
-            <div class="docstring"><p>Whether or not we consider only cross-correlations.</p>
+            <div class="docstring"><p>Whether or not we consider only cross-correlations.
+Default: False</p>
 </div>
 
 
@@ -1970,7 +1989,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.omega_cdm"></a>
     
-            <div class="docstring"><p>Fraction of cold dark matter today.</p>
+            <div class="docstring"><p>Fraction of cold dark matter today.
+Default: 0.25</p>
 </div>
 
 
@@ -1983,7 +2003,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.omega_nu"></a>
     
-            <div class="docstring"><p>Returns the energy density fraction of massive neutrinos.</p>
+            <div class="docstring"><p>Returns the energy density fraction of massive neutrinos.
+Default: 0</p>
 </div>
 
 
@@ -2009,7 +2030,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.omega_baryon"></a>
     
-            <div class="docstring"><p>Fraction of baryonic matter today.</p>
+            <div class="docstring"><p>Fraction of baryonic matter today.
+Default: 0.05</p>
 </div>
 
 
@@ -2022,7 +2044,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.omega_gamma"></a>
     
-            <div class="docstring"><p>Fraction of relativistic species today.</p>
+            <div class="docstring"><p>Fraction of relativistic species today.
+Default: 9e-5</p>
 </div>
 
 
@@ -2035,7 +2058,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.omega_de"></a>
     
-            <div class="docstring"><p>Dark energy fraction today.</p>
+            <div class="docstring"><p>Dark energy fraction today.
+Default: 0.7</p>
 </div>
 
 
@@ -2048,7 +2072,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.h"></a>
     
-            <div class="docstring"><p>The 'little h' parameter (reduced Hubble rate).</p>
+            <div class="docstring"><p>The 'little h' parameter (reduced Hubble rate).
+Default: 0.67</p>
 </div>
 
 
@@ -2064,6 +2089,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
             <div class="docstring"><p>Dark energy is parametrized by the equation of state:</p>
 
 <p>$$w(z) = w_0 + (1 - a) w_a$$</p>
+
+<p>Default: -1</p>
 </div>
 
 
@@ -2079,6 +2106,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
             <div class="docstring"><p>Dark energy is parametrized by the equation of state:</p>
 
 <p>$$w(z) = w_0 + (1 - a) w_a$$</p>
+
+<p>Default: 0</p>
 </div>
 
 
@@ -2091,7 +2120,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.n_s"></a>
     
-            <div class="docstring"><p>Spectral index (tilt) of the primordial power spectrum.</p>
+            <div class="docstring"><p>Spectral index (tilt) of the primordial power spectrum.
+Default: 0.96</p>
 </div>
 
 
@@ -2104,7 +2134,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.sigma8"></a>
     
-            <div class="docstring"><p>Windowed density fluctuation at $r = 8\ \mathrm{Mpc}/h$</p>
+            <div class="docstring"><p>Windowed density fluctuation at $r = 8\ \mathrm{Mpc}/h$
+Default: 0.8156</p>
 </div>
 
 
@@ -2117,7 +2148,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.A_s"></a>
     
-            <div class="docstring"><p>The amplitude of the primordial power spectrum</p>
+            <div class="docstring"><p>The amplitude of the primordial power spectrum.
+Default: determined by <code><a href="#Coffe.sigma8">sigma8</a></code></p>
 </div>
 
 
@@ -2130,7 +2162,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.T_cmb"></a>
     
-            <div class="docstring"><p>The average temperature of the CMB.</p>
+            <div class="docstring"><p>The average temperature of the CMB.
+Default: 2.726</p>
 </div>
 
 
@@ -2143,7 +2176,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     </div>
     <a class="headerlink" href="#Coffe.N_ur"></a>
     
-            <div class="docstring"><p>The number of ultra-relativistic species.</p>
+            <div class="docstring"><p>The number of ultra-relativistic species.
+Default: 2.0328</p>
 </div>
 
 
@@ -2157,7 +2191,8 @@ re-used for <code><a href="#Coffe.set_parameters">set_parameters</a></code>).</p
     <a class="headerlink" href="#Coffe.m_ncdm"></a>
     
             <div class="docstring"><p>The sum of masses of non-CDM species (mostly for neutrinos), in units
-of eV.</p>
+of eV.
+Default: 0</p>
 </div>
 
 
@@ -2183,7 +2218,8 @@ of eV.</p>
     </div>
     <a class="headerlink" href="#Coffe.N_ncdm"></a>
     
-            <div class="docstring"><p>The number of (massive!) non-CDM species.</p>
+            <div class="docstring"><p>The number of (massive!) non-CDM species.
+Default: 1</p>
 </div>
 
 
@@ -2197,7 +2233,8 @@ of eV.</p>
     <a class="headerlink" href="#Coffe.sep"></a>
     
             <div class="docstring"><p>Returns the list of separations (in $\mathrm{Mpc}$) for which the
-2PCF/multipoles/covariance of multipoles should be computed.</p>
+2PCF/multipoles/covariance of multipoles should be computed.
+Must be given as a list.</p>
 </div>
 
 
@@ -2214,6 +2251,8 @@ of eV.</p>
 it is defined as:</p>
 
 <p>$$\mu = \frac{r_\parallel}{r} = \frac{\chi_2 - \chi_1}{r}$$</p>
+
+<p>Must be given as a list.</p>
 </div>
 
 
@@ -2244,7 +2283,8 @@ the integrals of the form:</p>
     </div>
     <a class="headerlink" href="#Coffe.l"></a>
     
-            <div class="docstring"><p>Returns the multipole moments for which the multipoles should be computed.</p>
+            <div class="docstring"><p>Returns the multipole moments for which the multipoles should be computed.
+Must be given as a list.</p>
 </div>
 
 
@@ -2258,7 +2298,8 @@ the integrals of the form:</p>
     <a class="headerlink" href="#Coffe.z_mean"></a>
     
             <div class="docstring"><p>The mean redshift for which the signal (2PCF/multipoles) or covariance
-should be computed.</p>
+should be computed.
+Must be given as a list.</p>
 </div>
 
 
@@ -2271,7 +2312,8 @@ should be computed.</p>
     </div>
     <a class="headerlink" href="#Coffe.number_density1"></a>
     
-            <div class="docstring"><p>Number density of first tracers (in $1/\mathrm{Mpc}^3$) at <code><a href="#Coffe.z_mean">z_mean</a></code>.</p>
+            <div class="docstring"><p>Number density of first tracers (in $1/\mathrm{Mpc}^3$) at <code><a href="#Coffe.z_mean">z_mean</a></code>.
+Must be given as a list.</p>
 </div>
 
 
@@ -2284,7 +2326,8 @@ should be computed.</p>
     </div>
     <a class="headerlink" href="#Coffe.number_density2"></a>
     
-            <div class="docstring"><p>Number density of second tracers (in $1/\mathrm{Mpc}^3$) at <code><a href="#Coffe.z_mean">z_mean</a></code>.</p>
+            <div class="docstring"><p>Number density of second tracers (in $1/\mathrm{Mpc}^3$) at <code><a href="#Coffe.z_mean">z_mean</a></code>.
+Must be given as a list.</p>
 </div>
 
 
@@ -2297,7 +2340,8 @@ should be computed.</p>
     </div>
     <a class="headerlink" href="#Coffe.covariance_populations"></a>
     
-            <div class="docstring"><p>Returns the populations used for the covariance matrix.</p>
+            <div class="docstring"><p>Returns the populations used for the covariance matrix.
+Must be given as a list.</p>
 </div>
 
 
@@ -2311,7 +2355,8 @@ should be computed.</p>
     <a class="headerlink" href="#Coffe.covariance_cosmic"></a>
     
             <div class="docstring"><p>Whether the CV-CV term should be taken into account when computing the
-covariance of multipoles</p>
+covariance of multipoles.
+Default: True</p>
 </div>
 
 
@@ -2324,8 +2369,9 @@ covariance of multipoles</p>
     </div>
     <a class="headerlink" href="#Coffe.covariance_mixed"></a>
     
-            <div class="docstring"><p>Whether the mixed (CV-Poisson + Poisson-CV) term should be taken into account when computing the
-covariance of multipoles</p>
+            <div class="docstring"><p>Whether the mixed (CV-Poisson + Poisson-CV) term should be taken into
+account when computing the covariance of multipoles.
+Default: True</p>
 </div>
 
 
@@ -2338,8 +2384,9 @@ covariance of multipoles</p>
     </div>
     <a class="headerlink" href="#Coffe.covariance_poisson"></a>
     
-            <div class="docstring"><p>Whether the Poisson-Poisson term should be taken into account when computing the
-covariance of multipoles</p>
+            <div class="docstring"><p>Whether the Poisson-Poisson term should be taken into account when
+computing the covariance of multipoles.
+Default: True</p>
 </div>
 
 
@@ -2353,12 +2400,14 @@ covariance of multipoles</p>
     <a class="headerlink" href="#Coffe.covariance_integration_method"></a>
     
             <div class="docstring"><p>Gets and sets the integration method for the covariance.
-Possible values: 'gsl' (use GSL integrator), 'fftlog' (use FFTlog).
-Default: 'gsl'</p>
+Possible values: 'standard' (use standard integration, as specified by
+<code><a href="#Coffe.integration_1d_type">integration_1d_type</a></code>), 'fftlog' (use FFTlog).
+Default: 'standard'</p>
 
 <h6 id="see-also">See also</h6>
 
-<p><code><a href="#Coffe.covariance_integration_sampling">covariance_integration_sampling</a></code> and <code><a href="#Coffe.covariance_interpolation_method">covariance_interpolation_method</a></code></p>
+<p><code><a href="#Coffe.integration_1d_type">integration_1d_type</a></code>, <code><a href="#Coffe.covariance_integration_sampling">covariance_integration_sampling</a></code> and
+<code><a href="#Coffe.covariance_interpolation_method">covariance_interpolation_method</a></code></p>
 </div>
 
 
@@ -2372,7 +2421,8 @@ Default: 'gsl'</p>
     <a class="headerlink" href="#Coffe.covariance_integration_sampling"></a>
     
             <div class="docstring"><p>Gets and sets the number of samples used for computing the covariance
-when using the FFTlog integration method (default: 8000).</p>
+when using the FFTlog integration method.
+Default: 8000</p>
 </div>
 
 
@@ -2406,7 +2456,8 @@ Default: 'bicubic'</p>
     <a class="headerlink" href="#Coffe.pixelsize"></a>
     
             <div class="docstring"><p>The pixel size of the covariance (roughly the resolution of the survey)
-in $\mathrm{Mpc}$.</p>
+in $\mathrm{Mpc}$.
+Must be given as a list.</p>
 </div>
 
 
@@ -2433,7 +2484,8 @@ Must be given as a list.</p>
     </div>
     <a class="headerlink" href="#Coffe.deltaz"></a>
     
-            <div class="docstring"><p>The half width of the redshift bin which is centered at <code><a href="#Coffe.z_mean">z_mean</a></code>.</p>
+            <div class="docstring"><p>The half width of the redshift bin which is centered at <code><a href="#Coffe.z_mean">z_mean</a></code>.
+Must be given as a list.</p>
 </div>
 
 
@@ -2476,8 +2528,9 @@ Default: 1e-5</p>
     </div>
     <a class="headerlink" href="#Coffe.integration_sampling"></a>
     
-            <div class="docstring"><p>Returns the maximum number of points to be sampled when using multidimensional
-integration.</p>
+            <div class="docstring"><p>Returns the maximum number of points to be sampled when using
+multidimensional integration.
+Default: 750000</p>
 </div>
 
 
@@ -2490,7 +2543,9 @@ integration.</p>
     </div>
     <a class="headerlink" href="#Coffe.background_sampling"></a>
     
-            <div class="docstring"><p>Returns the number of points we use to sample the background (from z = 0 to z = 15).</p>
+            <div class="docstring"><p>Returns the number of points we use to sample the background (from z =
+0 to z = 15).
+Default: 10000</p>
 </div>
 
 
@@ -2508,7 +2563,8 @@ integration.</p>
 that the parameter <code><a href="#Coffe.pixelsize">pixelsize</a></code> controls the bin width (in
 $\mathrm{Mpc}$) in each redshift bin. If set to False, the covariance
 will not be bin averaged, and eq. (2.52) from
-<a href="https://arxiv.org/abs/1806.11090">arXiv:1806.11090</a> will be used.</p>
+<a href="https://arxiv.org/abs/1806.11090">arXiv:1806.11090</a> will be used.
+Default: False</p>
 </div>
 
 
@@ -2521,7 +2577,8 @@ will not be bin averaged, and eq. (2.52) from
     </div>
     <a class="headerlink" href="#Coffe.has_density"></a>
     
-            <div class="docstring"><p>Returns whether the density contribution is taken into account.</p>
+            <div class="docstring"><p>Returns whether the density contribution is taken into account.
+Default: True</p>
 </div>
 
 
@@ -2534,7 +2591,8 @@ will not be bin averaged, and eq. (2.52) from
     </div>
     <a class="headerlink" href="#Coffe.has_rsd"></a>
     
-            <div class="docstring"><p>Returns whether the RSD contribution is taken into account.</p>
+            <div class="docstring"><p>Returns whether the RSD contribution is taken into account.
+Default: False</p>
 </div>
 
 
@@ -2547,7 +2605,8 @@ will not be bin averaged, and eq. (2.52) from
     </div>
     <a class="headerlink" href="#Coffe.has_lensing"></a>
     
-            <div class="docstring"><p>Returns whether the lensing contribution is taken into account.</p>
+            <div class="docstring"><p>Returns whether the lensing contribution is taken into account.
+Default: False</p>
 </div>
 
 
@@ -2560,7 +2619,8 @@ will not be bin averaged, and eq. (2.52) from
     </div>
     <a class="headerlink" href="#Coffe.has_d1"></a>
     
-            <div class="docstring"><p>Returns whether the Doppler 1 contribution is taken into account.</p>
+            <div class="docstring"><p>Returns whether the Doppler 1 contribution is taken into account.
+Default: False</p>
 </div>
 
 
@@ -2573,7 +2633,8 @@ will not be bin averaged, and eq. (2.52) from
     </div>
     <a class="headerlink" href="#Coffe.has_d2"></a>
     
-            <div class="docstring"><p>Returns whether the Doppler 2 contribution is taken into account.</p>
+            <div class="docstring"><p>Returns whether the Doppler 2 contribution is taken into account.
+Default: False</p>
 </div>
 
 
@@ -2587,7 +2648,8 @@ will not be bin averaged, and eq. (2.52) from
     <a class="headerlink" href="#Coffe.has_g1"></a>
     
             <div class="docstring"><p>Returns whether the relativistic non-integrated contribution 1 is taken
-into account.</p>
+into account.
+Default: False</p>
 </div>
 
 
@@ -2601,7 +2663,8 @@ into account.</p>
     <a class="headerlink" href="#Coffe.has_g2"></a>
     
             <div class="docstring"><p>Returns whether the relativistic non-integrated contribution 2 is taken
-into account.</p>
+into account.
+Default: False</p>
 </div>
 
 
@@ -2615,7 +2678,8 @@ into account.</p>
     <a class="headerlink" href="#Coffe.has_g3"></a>
     
             <div class="docstring"><p>Returns whether the relativistic non-integrated contribution 3 is taken
-into account.</p>
+into account.
+Default: False</p>
 </div>
 
 
@@ -2629,7 +2693,8 @@ into account.</p>
     <a class="headerlink" href="#Coffe.has_g4"></a>
     
             <div class="docstring"><p>Returns whether the relativistic integrated contribution 1 is taken
-into account.</p>
+into account.
+Default: False</p>
 </div>
 
 
@@ -2643,7 +2708,8 @@ into account.</p>
     <a class="headerlink" href="#Coffe.has_g5"></a>
     
             <div class="docstring"><p>Returns whether the relativistic integrated contribution 2 is taken
-into account.</p>
+into account.
+Default: False</p>
 </div>
 
 
@@ -2656,7 +2722,8 @@ into account.</p>
     </div>
     <a class="headerlink" href="#Coffe.has_flatsky_local"></a>
     
-            <div class="docstring"><p>Whether the flat-sky approximation should be used for local terms (density, RSD).</p>
+            <div class="docstring"><p>Whether the flat-sky approximation should be used for local terms (density, RSD).
+Default: False</p>
 </div>
 
 
@@ -2670,7 +2737,8 @@ into account.</p>
     <a class="headerlink" href="#Coffe.has_flatsky_local_nonlocal"></a>
     
             <div class="docstring"><p>Whether the flat-sky approximation should be used for cross-terms
-between local and non-local terms (currently density-lensing and RSD-lensing only).</p>
+between local and non-local terms (currently density-lensing and RSD-lensing only).
+Default: False</p>
 </div>
 
 
@@ -2684,7 +2752,8 @@ between local and non-local terms (currently density-lensing and RSD-lensing onl
     <a class="headerlink" href="#Coffe.has_flatsky_nonlocal"></a>
     
             <div class="docstring"><p>Whether the flat-sky approximation should be used for integrated
-(non-local) terms (lensing only).</p>
+(non-local) terms (lensing only).
+Default: False</p>
 </div>
 
 
@@ -2699,7 +2768,8 @@ between local and non-local terms (currently density-lensing and RSD-lensing onl
     
             <div class="docstring"><p>Returns the currently set power spectrum type (COFFE linear, CLASS linear,
 nonlinear halofit, nonlinear HMcode)
-Possible values: 'linear', 'linear_class', 'halofit', 'hmcode'</p>
+Possible values: 'linear', 'linear_class', 'halofit', 'hmcode'
+Default: 'linear'</p>
 </div>
 
 
@@ -2713,7 +2783,8 @@ Possible values: 'linear', 'linear_class', 'halofit', 'hmcode'</p>
     <a class="headerlink" href="#Coffe.k_min"></a>
     
             <div class="docstring"><p>The minimum wavenumber (in $1/\mathrm{Mpc}$) for which the power
-spectrum should be computed.</p>
+spectrum should be computed.
+Default: <code>1e-5 * h</code></p>
 </div>
 
 
@@ -2727,7 +2798,8 @@ spectrum should be computed.</p>
     <a class="headerlink" href="#Coffe.k_max"></a>
     
             <div class="docstring"><p>The maximum wavenumber (in $1/\mathrm{Mpc}$) for which the power
-spectrum should be computed.</p>
+spectrum should be computed.
+Default: <code>300 * h</code></p>
 </div>
 
 
