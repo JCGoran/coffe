@@ -345,7 +345,7 @@ cdef class Coffe:
     contains the 3-dimensional coordinates and the values of the output at
     those coordinates.
 
-    For instance, one element of the output of `compute_multipoles_bulk()` can
+    For instance, one element of the output of `compute_corrfunc_bulk()` can
     be:
 
     ```python
@@ -2400,6 +2400,10 @@ cdef class Coffe:
         will not be bin averaged, and eq. (2.52) from
         [arXiv:1806.11090](https://arxiv.org/abs/1806.11090) will be used.
         Default: False
+
+        Notes
+        -----
+        Has no effect if `covariance_integration_method` is set to `fftlog`
         """
         return bool(self._parameters.covariance_window)
 

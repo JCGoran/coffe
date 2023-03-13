@@ -713,6 +713,14 @@ int coffe_covariance_init(
                 }
                 /* here we do the 2DFFTlog */
 
+                if (par->covariance_window){
+                    fprintf(
+                        stderr,
+                        "WARNING: binned/windowed covariance using 2D FFTlog has not been implemented; "
+                        "using the unbinned one instead, proceed with caution!"
+                    );
+                }
+
                 /* first point of order: logarithmically sample k and P(k) */
                 const size_t sampling_points = par->covariance_integration_bins;
 
