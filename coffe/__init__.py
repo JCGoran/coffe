@@ -41,4 +41,4 @@ function, its multipoles, and the covariance of its multipoles, respectively.
 """
 
 from coffe.coffe import Coffe
-from coffe.representation import Corrfunc, Covariance, Multipoles
+from coffe.representation import Corrfunc, Covariance, Multipoles, AverageMultipoles, AverageCovariance

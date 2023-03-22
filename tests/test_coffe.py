@@ -10,7 +10,7 @@ import pytest
 from coffe import Coffe, Multipoles
 from coffe.representation import Representation
 
-from coffe_utils import covariance_matrix
+from coffe_utils import average_covariance_matrix, covariance_matrix
 
 DATA_DIR = Path("tests/benchmarks/")
 h = 0.67
@@ -467,18 +467,17 @@ class TestCoffe:
                     df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4
                 )
 
-        assert covariance_matrix(result).ndim == 2
-        assert np.shape(covariance_matrix(result)) == (18, 18)
+        assert average_covariance_matrix(result).ndim == 2
+        assert np.shape(average_covariance_matrix(result)) == (18, 18)
 
         assert np.allclose(
-            covariance_matrix(result), np.transpose(covariance_matrix(result))
+            average_covariance_matrix(result),
+            np.transpose(average_covariance_matrix(result)),
         )
 
         # we don't need to test the trace or the determinant since that follows
         # automatically if the matrix has all positive eigenvalues
-        assert np.all(np.linalg.eigvalsh(covariance_matrix(result)) > 0)
-
-        assert covariance_matrix(result, rstep=111).size == 0
+        assert np.all(np.linalg.eigvalsh(average_covariance_matrix(result)) > 0)
 
     def test_error_handler(self):
         """

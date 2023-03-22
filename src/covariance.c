@@ -823,7 +823,7 @@ int coffe_covariance_init(
                             par->zmin[k],
                             par->zmax[k],
                             par->integration_1d_prec
-                        );
+                        ) / pow(COFFE_H0 * par->h, 2);
                 }
                 else{
                     volume[k] = 4 * M_PI
@@ -834,7 +834,7 @@ int coffe_covariance_init(
                             par->zmin[k],
                             par->zmax[k],
                             par->integration_1d_prec
-                        );
+                        ) / pow(COFFE_H0 * par->h, 2);
                 }
             }
 

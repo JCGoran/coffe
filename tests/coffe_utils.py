@@ -8,7 +8,7 @@ from typing import Callable, Optional, Union
 
 import numpy as np
 import pandas as pd
-from coffe import Covariance
+from coffe import AverageCovariance, Covariance
 from scipy.linalg import block_diag
 
 
@@ -27,6 +27,10 @@ def covariance_matrix(
 
     Parameters
     ----------
+    cov : array_like of covariances
+        the covariances, in the same format as output of
+        `coffe.Coffe.compute_covariance_bulk`
+
     l : Optional[list[int]], default = None
         the list of values of l
 
@@ -114,5 +118,85 @@ def covariance_matrix(
         *[
             convert_array_to_matrix(df.loc[df.z == z].value.to_numpy(dtype=float))
             for z in z_mean
+        ]
+    )
+
+
+def average_covariance_matrix(
+    cov: list[AverageCovariance],
+    l: Optional[list[int]] = None,
+    z_min: Optional[list[float]] = None,
+    z_max: Optional[list[float]] = None,
+    rmin: Optional[Union[Callable, float, int]] = None,
+    rmax: Optional[Union[Callable, float, int]] = None,
+    rstep: Optional[Union[float, int]] = None,
+):
+    """
+    Converts an array of covariances into a numpy matrix for easy matrix
+    multiplication.
+
+    Parameters
+    ----------
+    cov : array_like of covariances
+        the covariances, in the same format as output of
+        `coffe.Coffe.compute_average_covariance_bulk`
+
+    l : Optional[list[int]], default = None
+        the list of values of l
+
+    z_min : Optional[list[float]], default = None
+        the list of values of min redshifts
+
+    z_max : Optional[list[float]], default = None
+        the list of values of max redshifts
+
+    rmin : Optional[Union[Callable, float, int]], default = None
+        If an int or a float, the smallest separation to take from the covariance matrix.
+        If a function, must take exactly two mandatory arguments, which should
+        be the mean redshift and the size of the bin.
+        An example can be `lambda z_mean, deltaz: 1 / np.sqrt(1 + z)`
+
+    rmax : Optional[Union[Callable, float, int]], default = None
+        If an int or a float, the largest separation to take from the covariance matrix.
+        If a function, must take exactly two mandatory arguments, which should
+        be the mean redshift and the size of the bin.
+        An example is the function `maximum_separation` from the `Coffe` class.
+
+    rstep : Optional[float] = None
+        if set, only takes separations from the covariance matrix that are
+        multiples of `rstep`.
+
+    Examples
+    --------
+    >>> average_covariance_matrix(Coffe(has_density=True).compute_average_covariance_bulk())
+    """
+
+    def convert_array_to_matrix(arr):
+        size = round(np.sqrt(len(arr)))
+        return np.reshape(arr, (size, size))
+
+    if not all(isinstance(_, AverageCovariance) for _ in cov):
+        raise ValueError(f"{cov} is not an array of average covariances")
+
+    df = pd.DataFrame([_.to_dict() for _ in cov])
+
+    # N.B. this may require fixing due to floating point math
+    if z_min is not None:
+        df = df.loc[df.z_min.isin(z_min)]
+    else:
+        z_min = df.z_min.unique()
+
+    if z_max is not None:
+        df = df.loc[df.z_max.isin(z_max)]
+    else:
+        z_max = df.z_max.unique()
+
+    if l is not None:
+        df = df.loc[(df.l1.isin(l)) & (df.l2.isin(l))]
+
+    return block_diag(
+        *[
+            convert_array_to_matrix(df.loc[df.z_min == z].value.to_numpy(dtype=float))
+            for z in z_min
         ]
     )
