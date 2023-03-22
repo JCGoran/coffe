@@ -4,9 +4,9 @@ This is the public repository for the code COFFE (COrrelation Function Full-sky 
 
 * full-sky and flat-sky 2-point correlation function (2PCF) of galaxy number counts, taking into account all of the effects (density, RSD, lensing, etc.)
 * full-sky and flat-sky multipoles of the 2PCF
-* redshift-averaged multipoles of the 2PCF (**not available in v3**)
+* redshift-averaged multipoles of the 2PCF
 * flat-sky Gaussian covariance matrix of the multipoles of the 2PCF
-* flat-sky Gaussian covariance matrix of the redshift-averaged multipoles of the 2PCF (**not available in v3**)
+* flat-sky Gaussian covariance matrix of the redshift-averaged multipoles of the 2PCF
 
 The relevant theoretical papers are:
 
@@ -37,7 +37,19 @@ If you would like to install the development version, you will need to first ins
 * [GSL](https://www.gnu.org/software/gsl/) (GNU Scientific Library) and the corresponding headers, version 2.1 or above (available as `libgsl-dev` on Debian-based, and as `gsl-devel` on RHEL/CentOS-based distros)
 * [FFTW](http://www.fftw.org/download.html) and the corresponding headers, version 3 or above (available as `libfftw3-dev` on Debian-based, and as `fftw-devel` on RHEL/CentOS-based distros)
 
-**NOTE**: if you are using Conda, you can install all of the above easily.
+Then clone this repository:
+
+```sh
+git clone https://github.com/JCGoran/coffe
+```
+
+then change directory to it:
+
+```sh
+cd coffe
+```
+
+**NOTE**: if you are using Conda, you can install the above dependencies easily.
 First, create a new environment:
 
 ```sh
@@ -56,13 +68,7 @@ Finally, run:
 conda install --channel conda-forge --file requirements.txt
 ```
 
-Once you have installed the above (either natively or using Conda), you can first clone this repository:
-
-```sh
-git clone https://github.com/JCGoran/coffe
-```
-
-Then after `cd`-ing to it, run:
+Once you have installed the above (either natively or using Conda), you can run:
 
 ```sh
 ./install
@@ -70,10 +76,9 @@ Then after `cd`-ing to it, run:
 
 to install all of the other dependencies which COFFE requires.
 
-
 ## Documentation
 
-The documentation for the latest version is available [here](https://jcgoran.github.io/coffe/index.html).
+The documentation for the latest version is available [here](https://jcgoran.github.io/coffe/).
 
 ## Bug reports and feature requests
 
