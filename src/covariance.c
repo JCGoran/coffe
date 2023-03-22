@@ -823,6 +823,7 @@ int coffe_covariance_init(
                             par->zmin[k],
                             par->zmax[k],
                             par->integration_1d_prec
+                        /* TODO figure out why this factor needs to be put here */
                         ) / pow(COFFE_H0 * par->h, 2);
                 }
                 else{
@@ -834,6 +835,7 @@ int coffe_covariance_init(
                             par->zmin[k],
                             par->zmax[k],
                             par->integration_1d_prec
+                        /* TODO figure out why this factor needs to be put here */
                         ) / pow(COFFE_H0 * par->h, 2);
                 }
             }
