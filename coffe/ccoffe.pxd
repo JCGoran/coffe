@@ -445,6 +445,8 @@ cdef extern from "signal.h":
         coffe_background_t *bg,
         coffe_integral_array_t *integral,
         double z_mean,
+        double z_min,
+        double z_max,
         double sep,
         double mu,
         int l,

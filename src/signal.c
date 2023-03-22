@@ -256,16 +256,18 @@ static double average_multipoles_nonintegrated_integrand(
     const coffe_background_t *bg = params->bg;
     const coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
+    const double z_min = params->z_min;
+    const double z_max = params->z_max;
 
     const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_min) + sep/2.
         );
     const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_max) - sep/2.
         );
 
     const double z = (z2 - z1)*var[0] + z1;
@@ -330,16 +332,18 @@ static double average_multipoles_single_integrated_integrand(
     const coffe_background_t *bg = params->bg;
     const coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
+    const double z_min = params->z_min;
+    const double z_max = params->z_max;
 
     const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_min) + sep/2.
         );
     const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_max) - sep/2.
         );
 
     const double z = (z2 - z1)*var[0] + z1;
@@ -403,16 +407,18 @@ static double average_multipoles_double_integrated_integrand(
     const coffe_background_t *bg = params->bg;
     const coffe_integral_array_t *integral = params->integral;
     const double sep = params->sep;
+    const double z_min = params->z_min;
+    const double z_max = params->z_max;
 
     const double z1 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_min) + sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_min) + sep/2.
         );
     const double z2 =
         coffe_interp_spline(
             &bg->z_as_chi,
-            coffe_interp_spline(&bg->comoving_distance, par->z_max) - sep/2.
+            coffe_interp_spline(&bg->comoving_distance, z_max) - sep/2.
         );
 
     const double z = (z2 - z1)*var[0] + z1;
@@ -468,6 +474,8 @@ double coffe_integrate(
     coffe_background_t *bg,
     coffe_integral_array_t *integral,
     const double z_mean,
+    const double z_min,
+    const double z_max,
     const double sep,
     const double mu,
     const int l,
@@ -480,6 +488,8 @@ double coffe_integrate(
     .bg = bg,
     .integral = integral,
     .z_mean = z_mean,
+    .z_min = z_min,
+    .z_max = z_max,
     .sep = sep,
     .mu = mu,
     .l = l

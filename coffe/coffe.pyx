@@ -575,8 +575,8 @@ cdef class Coffe:
             LegacyOption("covariance_fsky", "float_array", "fsky"),
             LegacyOption("covariance_pixelsize", "float_array", "pixelsize"),
             LegacyOption("covariance_step_size", "float"),
-            LegacyOption("covariance_zmin", "float", "z_min"),
-            LegacyOption("covariance_zmax", "float", "z_max"),
+            LegacyOption("covariance_zmin", "float_array", "z_min"),
+            LegacyOption("covariance_zmax", "float_array", "z_max"),
             LegacyOption("covariance_minimum_separation", "float"),
             LegacyOption("covariance_window", "int", "has_binned_covariance"),
             LegacyOption(
@@ -3196,21 +3196,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, mu, 0,
+            z, 0, 0, r, mu, 0,
             ccoffe.NONINTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, mu, 0,
+            z, 0, 0, r, mu, 0,
             ccoffe.SINGLE_INTEGRATED, ccoffe.CORRFUNC
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, mu, 0,
+            z, 0, 0, r, mu, 0,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.CORRFUNC
         )
 
@@ -3267,21 +3267,21 @@ cdef class Coffe:
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, 0, l,
+            z, 0, 0, r, 0, l,
             ccoffe.NONINTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, 0, l,
+            z, 0, 0, r, 0, l,
             ccoffe.SINGLE_INTEGRATED, ccoffe.MULTIPOLES
         ) + \
         ccoffe.coffe_integrate(
             &self._parameters,
             &self._background,
             &self._integral,
-            z, r, 0, l,
+            z, 0, 0, r, 0, l,
             ccoffe.DOUBLE_INTEGRATED, ccoffe.MULTIPOLES
         )
 

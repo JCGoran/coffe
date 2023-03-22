@@ -1000,8 +1000,12 @@ int coffe_parse_default_parameters(
     par->z_mean_len = 1;
     par->deltaz_len = 1;
 
-    par->z_min = 0.9;
-    par->z_max = 1.1;
+    par->zmin = (double *)coffe_malloc(sizeof(double));
+    par->zmax = (double *)coffe_malloc(sizeof(double));
+    par->zmin[0] = 0.9;
+    par->zmax[0] = 1.1;
+    par->zmin_len = 1;
+    par->zmax_len = 1;
 
     const int multipoles[] = {0, 2, 4};
     par->multipole_values = (int *)coffe_malloc(
@@ -1094,8 +1098,8 @@ int coffe_parser_init(
 
     /* range of integration for redshift averaged multipoles */
     if (par->output_type == AVERAGE_MULTIPOLES){
-        parse_double(conf, "z_min", &par->z_min, COFFE_TRUE);
-        parse_double(conf, "z_max", &par->z_max, COFFE_TRUE);
+        parse_double_array(conf, "z_min", &par->zmin, &par->zmin_len);
+        parse_double_array(conf, "z_max", &par->zmax, &par->zmax_len);
     }
 
     /* the interpolation method for GSL */

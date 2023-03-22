@@ -90,6 +90,7 @@ int coffe_multipoles_init(
         mp->array[i].value = coffe_integrate(
             par, bg, integral,
             mp->array[i].coords.z_mean,
+            0, 0,
             mp->array[i].coords.separation,
             0,
             mp->array[i].coords.l,
@@ -102,6 +103,7 @@ int coffe_multipoles_init(
         mp->array[i].value += coffe_integrate(
             par, bg, integral,
             mp->array[i].coords.z_mean,
+            0, 0,
             mp->array[i].coords.separation,
             0,
             mp->array[i].coords.l,
@@ -114,6 +116,7 @@ int coffe_multipoles_init(
         mp->array[i].value += coffe_integrate(
             par, bg, integral,
             mp->array[i].coords.z_mean,
+            0, 0,
             mp->array[i].coords.separation,
             0,
             mp->array[i].coords.l,

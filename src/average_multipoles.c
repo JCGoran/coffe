@@ -55,6 +55,8 @@ static double average_multipoles_compute(
     return coffe_integrate(
         par, bg, integral,
         (z_min + z_max) / 2.,
+        z_min,
+        z_max,
         separation,
         0,
         l,

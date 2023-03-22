@@ -95,6 +95,7 @@ int coffe_corrfunc_init(
         corrfunc->array[i].value = coffe_integrate(
             par, bg, integral,
             corrfunc->array[i].coords.z_mean,
+            0, 0,
             corrfunc->array[i].coords.separation,
             corrfunc->array[i].coords.mu,
             0,
@@ -107,6 +108,7 @@ int coffe_corrfunc_init(
         corrfunc->array[i].value += coffe_integrate(
             par, bg, integral,
             corrfunc->array[i].coords.z_mean,
+            0, 0,
             corrfunc->array[i].coords.separation,
             corrfunc->array[i].coords.mu,
             0,
@@ -119,6 +121,7 @@ int coffe_corrfunc_init(
         corrfunc->array[i].value += coffe_integrate(
             par, bg, integral,
             corrfunc->array[i].coords.z_mean,
+            0, 0,
             corrfunc->array[i].coords.separation,
             corrfunc->array[i].coords.mu,
             0,

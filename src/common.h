@@ -491,9 +491,6 @@ typedef struct coffe_parameters_t
 
     double window_size;
 
-    /* for redshift averaged multipoles */
-    double z_min, z_max;
-
     int flatsky_local;
 
     int flatsky_local_nonlocal;

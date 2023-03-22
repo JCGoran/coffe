@@ -873,7 +873,7 @@ int coffe_integrals_init(
                 /* dimensionless */
                 chi_max = coffe_interp_spline(
                     &bg->comoving_distance,
-                    par->z_max
+                    coffe_max_array_double(par->zmax, par->zmax_len)
                 );
             }
             double *chi_array = (double *)coffe_malloc(
