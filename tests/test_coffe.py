@@ -301,6 +301,29 @@ class TestCoffe:
                 assert np.allclose(df.loc[df.l == mp].r.values * h, x)
                 assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
 
+    def test_average_multipoles(self):
+        cosmo = Coffe(
+            # in Mpc
+            sep=np.array([10, 20, 40, 100, 150]) / h,
+            l=[0, 2, 4],
+            z_min=[0.9],
+            z_max=[1.1],
+        )
+
+        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = k * h, pk / h**3
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        cosmo.has_density = True
+        cosmo.has_rsd = True
+        result = cosmo.compute_average_multipoles_bulk()
+        df = pd.DataFrame([_.to_dict() for _ in result])
+        for mp in cosmo.l:
+            data = np.loadtxt(DATA_DIR / f"benchmark_avg_multipoles{mp}.dat")
+            x, y = np.transpose(data)
+            assert np.allclose(df.loc[df.l == mp].r.values * h, x)
+            assert np.allclose(df.loc[df.l == mp].value.values, y, rtol=5e-4)
+
     def test_multipoles_flat_lensing_lensing(self):
         cosmo = Coffe(
             # in Mpc

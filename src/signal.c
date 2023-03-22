@@ -277,7 +277,7 @@ static double average_multipoles_nonintegrated_integrand(
             par, bg, integral, z, mu, sep
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
     else{
@@ -286,7 +286,7 @@ static double average_multipoles_nonintegrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
 #else
@@ -295,7 +295,7 @@ static double average_multipoles_nonintegrated_integrand(
             par, bg, integral, z, mu, sep
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
     else{
         return functions_nonintegrated(
@@ -303,7 +303,7 @@ static double average_multipoles_nonintegrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
 #endif
 }
@@ -352,7 +352,7 @@ static double average_multipoles_single_integrated_integrand(
             par, bg, integral, z, mu, sep, x
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
     else{
@@ -361,7 +361,7 @@ static double average_multipoles_single_integrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
 #else
@@ -370,7 +370,7 @@ static double average_multipoles_single_integrated_integrand(
             par, bg, integral, z, mu, sep, x
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
     else{
         return functions_single_integrated(
@@ -378,7 +378,7 @@ static double average_multipoles_single_integrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
 #endif
 }
@@ -425,7 +425,7 @@ static double average_multipoles_double_integrated_integrand(
             par, bg, integral, z, mu, sep, x1, x2
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
     else{
@@ -434,7 +434,7 @@ static double average_multipoles_double_integrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
         return EXIT_SUCCESS;
     }
 #else
@@ -443,7 +443,7 @@ static double average_multipoles_double_integrated_integrand(
             par, bg, integral, z, mu, sep, x1, x2
         )
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
     else{
         return functions_double_integrated(
@@ -451,7 +451,7 @@ static double average_multipoles_double_integrated_integrand(
         )
        *gsl_sf_legendre_Pl(params->l, mu)
        /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
-       *COFFE_H0;
+       *(COFFE_H0 * par->h);
     }
 #endif
 }

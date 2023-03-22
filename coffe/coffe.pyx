@@ -521,6 +521,9 @@ cdef class Coffe:
         self._multipoles.size = 0
         self._multipoles.array = NULL
 
+        self._average_multipoles.size = 0
+        self._average_multipoles.array = NULL
+
         self._covariance_multipoles.size = 0
         self._covariance_multipoles.array = NULL
 
@@ -3344,7 +3347,7 @@ cdef class Coffe:
         -------
         an array of instances of `coffe.representation.Multipoles`.
         """
-        self._check_coords_multipoles()
+        self._check_coords_average_multipoles()
         self._check_contributions()
         recompute = bool(recompute)
         if not self._background.flag or recompute:
