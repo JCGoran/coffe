@@ -405,6 +405,58 @@ class TestCoffe:
 
         assert covariance_matrix(result, rstep=111).size == 0
 
+    def test_average_covariance_multipoles(self):
+        cosmo = Coffe()
+        cosmo.set_parameters(
+            has_density=True,
+            has_rsd=True,
+            number_density1=[1e-3 * h**3],
+            number_density2=[1e-3 * h**3],
+            z_mean=[1.0],
+            z_min=[0.9],
+            z_max=[1.1],
+            deltaz=[0.1],
+            fsky=[0.2],
+            pixelsize=[50 / h],
+            sep=np.arange(50, 350, 50) / h,
+            l=[0, 2, 4],
+        )
+
+        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = k * h, pk / h**3
+        cosmo.set_power_spectrum_linear(k, pk)
+
+        result = cosmo.compute_average_covariance_bulk()
+        df = pd.DataFrame([_.to_dict() for _ in result])
+        for mp1 in cosmo.l:
+            for mp2 in cosmo.l:
+                data = np.loadtxt(
+                    DATA_DIR / f"benchmark_avg_multipoles_covariance_{mp1}{mp2}.dat"
+                )
+                x, y, z = np.transpose(data)
+                assert np.allclose(
+                    df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r1.values * h, x
+                )
+                assert np.allclose(
+                    df.loc[(df.l1 == mp1) & (df.l2 == mp2)].r2.values * h, y
+                )
+                assert np.allclose(
+                    df.loc[(df.l1 == mp1) & (df.l2 == mp2)].value.values, z, rtol=5e-4
+                )
+
+        assert covariance_matrix(result).ndim == 2
+        assert np.shape(covariance_matrix(result)) == (18, 18)
+
+        assert np.allclose(
+            covariance_matrix(result), np.transpose(covariance_matrix(result))
+        )
+
+        # we don't need to test the trace or the determinant since that follows
+        # automatically if the matrix has all positive eigenvalues
+        assert np.all(np.linalg.eigvalsh(covariance_matrix(result)) > 0)
+
+        assert covariance_matrix(result, rstep=111).size == 0
+
     def test_error_handler(self):
         """
         Checks that the GSL error handler doesn't abort the computation
