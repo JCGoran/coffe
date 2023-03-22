@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     coffe_multipoles_array_t mp = {.array = NULL, .size = 0};
     coffe_average_multipoles_array_t ramp = {.array = NULL, .size = 0};
     coffe_covariance_array_t cov_mp = {.array = NULL, .size = 0};
-    coffe_covariance_array_t cov_ramp = {.array = NULL, .size = 0};
+    coffe_average_covariance_array_t cov_ramp = {.array = NULL, .size = 0};
 
     char settings_file[COFFE_MAX_STRLEN];
 
@@ -150,6 +150,9 @@ int main(int argc, char *argv[])
     if (par.output_type == MULTIPOLES)
         coffe_multipoles_init(&par, &bg, &integral, &mp);
 
+    if (par.output_type == AVERAGE_MULTIPOLES)
+        coffe_average_multipoles_init(&par, &bg, &integral, &ramp);
+
     if (
         par.output_type == COVARIANCE_MULTIPOLES ||
         par.output_type == COVARIANCE_AVERAGE_MULTIPOLES
@@ -178,7 +181,7 @@ int main(int argc, char *argv[])
 
     coffe_covariance_free(&cov_mp);
 
-    coffe_covariance_free(&cov_ramp);
+    coffe_average_covariance_free(&cov_ramp);
 
     coffe_parameters_free(&par);
 

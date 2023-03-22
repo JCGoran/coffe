@@ -330,7 +330,7 @@ int coffe_output_init(
     coffe_multipoles_array_t *mp,
     coffe_average_multipoles_array_t *ramp,
     coffe_covariance_array_t *cov_mp,
-    coffe_covariance_array_t *cov_ramp
+    coffe_average_covariance_array_t *cov_ramp
 )
 {
     clock_t start, end;
@@ -390,12 +390,13 @@ int coffe_output_init(
         for (size_t i = 0; i < cov_ramp->size; ++i){
             fprintf(
                 output,
-                "%.10e %.10e %d %d %.10e %.10e\n",
+                "%.10e %.10e %d %d %.10e %.10e %.10e\n",
                 cov_ramp->array[i].coords.separation1,
                 cov_ramp->array[i].coords.separation2,
                 cov_ramp->array[i].coords.l1,
                 cov_ramp->array[i].coords.l2,
-                cov_ramp->array[i].coords.z_mean,
+                cov_ramp->array[i].coords.z_min,
+                cov_ramp->array[i].coords.z_max,
                 cov_ramp->array[i].value
             );
         }

@@ -19,12 +19,12 @@
 #ifndef COFFE_AVERAGE_MULTIPOLES_H
 #define COFFE_AVERAGE_MULTIPOLES_H
 
+#include "common.h"
+
 typedef struct coffe_average_multipoles_t
 {
+    coffe_average_multipoles_coords_t coords;
     double value;
-    double l;
-    double z_min;
-    double z_max;
 } coffe_average_multipoles_t;
 
 typedef struct coffe_average_multipoles_array_t

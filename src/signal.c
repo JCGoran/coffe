@@ -276,7 +276,8 @@ static double average_multipoles_nonintegrated_integrand(
         value[0] = functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
     else{
@@ -284,7 +285,8 @@ static double average_multipoles_nonintegrated_integrand(
             par, bg, integral, z, mu, sep
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
 #else
@@ -292,14 +294,16 @@ static double average_multipoles_nonintegrated_integrand(
         return functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
     else{
         return functions_nonintegrated(
             par, bg, integral, z, mu, sep
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
 #endif
 }
@@ -347,7 +351,8 @@ static double average_multipoles_single_integrated_integrand(
         value[0] = functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
     else{
@@ -355,7 +360,8 @@ static double average_multipoles_single_integrated_integrand(
             par, bg, integral, z, mu, sep, x
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
 #else
@@ -363,14 +369,16 @@ static double average_multipoles_single_integrated_integrand(
         return functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
     else{
         return functions_single_integrated(
             par, bg, integral, z, mu, sep, x
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
 #endif
 }
@@ -416,7 +424,8 @@ static double average_multipoles_double_integrated_integrand(
         value[0] = functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
     else{
@@ -424,7 +433,8 @@ static double average_multipoles_double_integrated_integrand(
             par, bg, integral, z, mu, sep, x1, x2
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
         return EXIT_SUCCESS;
     }
 #else
@@ -432,14 +442,16 @@ static double average_multipoles_double_integrated_integrand(
         return functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
     else{
         return functions_double_integrated(
             par, bg, integral, z, mu, sep, x1, x2
         )
        *gsl_sf_legendre_Pl(params->l, mu)
-       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z);
+       /coffe_interp_spline(&bg->conformal_Hz, z)/(1 + z)
+       *COFFE_H0;
     }
 #endif
 }

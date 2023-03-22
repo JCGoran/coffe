@@ -65,6 +65,7 @@ setup(
                     "src/utils.c",
                     "src/twobessel.c",
                     "src/covariance.c",
+                    "src/average_multipoles.c",
                     "src/tanhsinh.c",
                 ],
                 include_dirs=[

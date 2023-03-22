@@ -335,8 +335,8 @@ int main(void)
 
     /* can't really integrate just one...*/
     coffe_covariance_array_t covariance = {.array = NULL, .size = 0};
-    coffe_covariance_array_t dummy = {.array = NULL, .size = 0};
-    coffe_covariance_init(&par, &bg, &covariance, &dummy);
+    coffe_average_covariance_array_t average_covariance = {.array = NULL, .size = 0};
+    coffe_covariance_init(&par, &bg, &covariance, &average_covariance);
 
     const int error_flag = coffe_test_covariance(&covariance);
 

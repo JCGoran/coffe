@@ -189,7 +189,7 @@ typedef struct coffe_multipoles_coords_t
 
 typedef struct coffe_average_multipoles_coords_t
 {
-    double z_mean;
+    double z_min, z_max;
     double separation;
     int l;
 } coffe_average_multipoles_coords_t;
@@ -205,6 +205,13 @@ typedef struct coffe_covariance_coords_t
     double separation1, separation2;
     double z_mean;
 } coffe_covariance_coords_t;
+
+typedef struct coffe_average_covariance_coords_t
+{
+    int l1, l2;
+    double separation1, separation2;
+    double z_min, z_max;
+} coffe_average_covariance_coords_t;
 
 
 /**

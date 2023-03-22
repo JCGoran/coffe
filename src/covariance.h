@@ -27,21 +27,37 @@ typedef struct coffe_covariance_t
     double value;
 } coffe_covariance_t;
 
+typedef struct coffe_average_covariance_t
+{
+    coffe_average_covariance_coords_t coords;
+    double value;
+} coffe_average_covariance_t;
+
 typedef struct coffe_covariance_array_t
 {
     coffe_covariance_t *array;
     size_t size;
 } coffe_covariance_array_t;
 
+typedef struct coffe_average_covariance_array_t
+{
+    coffe_average_covariance_t *array;
+    size_t size;
+} coffe_average_covariance_array_t;
+
 int coffe_covariance_init(
     coffe_parameters_t *par,
     coffe_background_t *bg,
     coffe_covariance_array_t *cov_mp,
-    coffe_covariance_array_t *cov_ramp
+    coffe_average_covariance_array_t *cov_ramp
 );
 
 int coffe_covariance_free(
     coffe_covariance_array_t *cov
+);
+
+int coffe_average_covariance_free(
+    coffe_average_covariance_array_t *cov
 );
 
 coffe_covariance_t coffe_covariance_find(

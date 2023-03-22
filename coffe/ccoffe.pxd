@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 # Bunch of declarations from C to python. The idea here is to
 # define only the quantities that will be used, for input, output
 # or intermediate manipulation, by the python wrapper.  If, for
@@ -70,10 +72,24 @@ cdef extern from "common.h":
         double separation
         int l
 
+    cdef struct coffe_average_multipoles_coords_t:
+        double z_min
+        double z_max
+        double separation
+        int l
+
     cdef struct coffe_covariance_coords_t:
         double separation1
         double separation2
         double z_mean
+        int l1
+        int l2
+
+    cdef struct coffe_average_covariance_coords_t:
+        double separation1
+        double separation2
+        double z_min
+        double z_max
         int l1
         int l2
 
@@ -100,7 +116,7 @@ cdef extern from "common.h":
         NONINTEGRATED, SINGLE_INTEGRATED, DOUBLE_INTEGRATED
 
     cdef enum coffe_output_type:
-        CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4
+        CORRFUNC = 1, MULTIPOLES = 2, AVERAGE_MULTIPOLES = 3, COVARIANCE_MULTIPOLES = 4, COVARIANCE_AVERAGE_MULTIPOLES = 5
 
     cdef enum coffe_integration_1d_type:
         COFFE_INTEGRATION_GSL = 1,
@@ -480,6 +496,10 @@ cdef extern from "multipoles.h":
 
 cdef extern from "covariance.h":
 
+    cdef struct coffe_average_covariance_t:
+        coffe_average_covariance_coords_t coords
+        double value
+
     cdef struct coffe_covariance_t:
         coffe_covariance_coords_t coords
         double value
@@ -488,15 +508,23 @@ cdef extern from "covariance.h":
         coffe_covariance_t *array
         size_t size
 
+    cdef struct coffe_average_covariance_array_t:
+        coffe_average_covariance_t *array
+        size_t size
+
     int coffe_covariance_init(
         coffe_parameters_t *,
         coffe_background_t *,
         coffe_covariance_array_t *,
-        coffe_covariance_array_t *
+        coffe_average_covariance_array_t *
     )
 
     int coffe_covariance_free(
         coffe_covariance_array_t *
+    )
+
+    int coffe_average_covariance_free(
+        coffe_average_covariance_array_t *
     )
 
     coffe_covariance_t coffe_covariance_find(
@@ -508,12 +536,19 @@ cdef extern from "covariance.h":
         const double sep2
     )
 
-#cdef from extern "average_multipoles.h":
-#
-#    cdef struct coffe_average_multipoles_t:
-#        double **result
-#        double *sep
-#        size_t sep_len
-#        int *l
-#        size_t l_len
-#        int flag
+cdef extern from "average_multipoles.h":
+
+    cdef struct coffe_average_multipoles_t:
+        coffe_average_multipoles_coords_t coords
+        double value
+
+    cdef struct coffe_average_multipoles_array_t:
+        coffe_average_multipoles_t *array
+        size_t size
+
+    int coffe_average_multipoles_init(
+        coffe_parameters_t *,
+        coffe_background_t *,
+        coffe_integral_array_t *,
+        coffe_average_multipoles_array_t *
+    )

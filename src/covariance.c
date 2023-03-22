@@ -478,7 +478,7 @@ int coffe_covariance_init(
     coffe_parameters_t *par,
     coffe_background_t *bg,
     coffe_covariance_array_t *cov_mp,
-    coffe_covariance_array_t *cov_ramp
+    coffe_average_covariance_array_t *cov_ramp
 )
 {
     if (
@@ -486,7 +486,7 @@ int coffe_covariance_init(
         par->output_type == COVARIANCE_AVERAGE_MULTIPOLES
     ){
         coffe_covariance_free(cov_mp);
-        coffe_covariance_free(cov_ramp);
+        coffe_average_covariance_free(cov_ramp);
         time_t start, end;
         start = clock();
 
@@ -514,8 +514,8 @@ int coffe_covariance_init(
               par->multipole_values_len * par->multipole_values_len
             * par->sep_len * par->sep_len
             * par->zmin_len;
-            cov_ramp->array = (coffe_covariance_t *)coffe_malloc(
-                sizeof(coffe_covariance_t) * cov_ramp->size
+            cov_ramp->array = (coffe_average_covariance_t *)coffe_malloc(
+                sizeof(coffe_average_covariance_t) * cov_ramp->size
             );
         }
 
@@ -809,21 +809,33 @@ int coffe_covariance_init(
                     );
             }
             else{
-/*
                 z_mean = (par->zmin[k] + par->zmax[k]) / 2.;
                 struct covariance_volume_params test;
                 test.conformal_Hz = &bg->conformal_Hz;
                 test.comoving_distance = &bg->comoving_distance;
 
-                volume[k] = 4 * M_PI
-                   *cov_ramp->fsky[k]
-                   /coffe_integrate_1d(
-                        &covariance_volume_integrand,
-                        &test,
-                        cov_ramp->zmin[k],
-                        cov_ramp->zmax[k]
-                    );
-*/
+                if (par->integration_1d_type == COFFE_INTEGRATION_GSL){
+                    volume[k] = 4 * M_PI
+                       *par->fsky[k]
+                       /coffe_integrate_1d_prec_gsl(
+                            &covariance_volume_integrand,
+                            &test,
+                            par->zmin[k],
+                            par->zmax[k],
+                            par->integration_1d_prec
+                        );
+                }
+                else{
+                    volume[k] = 4 * M_PI
+                       *par->fsky[k]
+                       /coffe_integrate_1d_prec_double_exponential(
+                            &covariance_volume_integrand,
+                            &test,
+                            par->zmin[k],
+                            par->zmax[k],
+                            par->integration_1d_prec
+                        );
+                }
             }
 
             double galaxy_bias1 = 0;
@@ -1028,7 +1040,8 @@ int coffe_covariance_init(
             }
             }
         }
-        {
+        /* case 1: regular multipoles */
+        if (par->output_type == COVARIANCE_MULTIPOLES){
         size_t counter = 0;
         for (size_t zi = 0; zi < par->z_mean_len; ++zi){
         for (size_t l1 = 0; l1 < par->multipole_values_len; ++l1){
@@ -1040,6 +1053,23 @@ int coffe_covariance_init(
             cov_mp->array[counter].coords.l2 = par->multipole_values[l2];
             cov_mp->array[counter].coords.separation1 = par->sep[r1];
             cov_mp->array[counter].coords.separation2 = par->sep[r2];
+            ++counter;
+        }}}}}
+        }
+        /* case 2: redshift-averaged multipoles */
+        else if (par->output_type == COVARIANCE_AVERAGE_MULTIPOLES){
+        size_t counter = 0;
+        for (size_t zi = 0; zi < par->zmin_len; ++zi){
+        for (size_t l1 = 0; l1 < par->multipole_values_len; ++l1){
+        for (size_t r1 = 0; r1 < par->sep_len; ++r1){
+        for (size_t l2 = 0; l2 < par->multipole_values_len; ++l2){
+        for (size_t r2 = 0; r2 < par->sep_len; ++r2){
+            cov_ramp->array[counter].coords.z_min = par->zmin[zi];
+            cov_ramp->array[counter].coords.z_max = par->zmax[zi];
+            cov_ramp->array[counter].coords.l1 = par->multipole_values[l1];
+            cov_ramp->array[counter].coords.l2 = par->multipole_values[l2];
+            cov_ramp->array[counter].coords.separation1 = par->sep[r1];
+            cov_ramp->array[counter].coords.separation2 = par->sep[r2];
             ++counter;
         }}}}}
         }
@@ -1072,6 +1102,17 @@ int coffe_covariance_init(
 
 int coffe_covariance_free(
     coffe_covariance_array_t *cov
+)
+{
+    if (cov->size)
+        free(cov->array);
+    cov->array = NULL;
+    cov->size = 0;
+    return EXIT_SUCCESS;
+}
+
+int coffe_average_covariance_free(
+    coffe_average_covariance_array_t *cov
 )
 {
     if (cov->size)

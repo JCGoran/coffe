@@ -12,7 +12,9 @@ from coffe cimport ccoffe
 from coffe.representation import (
     Corrfunc,
     Multipoles,
+    AverageMultipoles,
     Covariance,
+    AverageCovariance,
 )
 
 from cython.operator cimport dereference
@@ -338,12 +340,16 @@ cdef class Coffe:
     * `compute_corrfunc_bulk`: for the 2PCF
     * `compute_multipoles_bulk`: for the multipoles
     * `compute_covariance_bulk`: for the covariance of the multipoles
+    * `compute_average_multipoles_bulk`: for the redshift-averaged multipoles
+    * `compute_average_covariance_bulk`: for the covariance of the
+    redshift-averaged multipoles
 
     The output of those is an array of corresponding containers, and each
     container (`coffe.representation.Corrfunc`,
-    `coffe.representation.Multipoles`, and `coffe.representation.Covariance`)
-    contains the 3-dimensional coordinates and the values of the output at
-    those coordinates.
+    `coffe.representation.Multipoles`, `coffe.representation.Covariance`,
+    `coffe.representation.AverageCovariance`,
+    `coffe.representation.AverageMultipoles`) contains the n-dimensional
+    coordinates and the values of the output at those coordinates.
 
     For instance, one element of the output of `compute_corrfunc_bulk()` can
     be:
@@ -379,11 +385,22 @@ cdef class Coffe:
     points in the sky
     * `l`: the list of multipoles (can be any positive integer as COFFE can
     take into account 2 populations of galaxies)
-    * `z_mean`: the list of mean redshifts at which the 2PCF should be evaluated
+    * `z_mean`: the list of mean redshifts at which the multipoles should be
+    evaluated
     * `deltaz`: the list of half-widths of the redshift bins centered at `z_mean`
 
-    For the covariance of the multipoles, along with the above for the
-    multipoles, you can set the following coordinates:
+    For the redshift-averaged multipoles, you can set the following coordinates:
+    * `sep`: the list of comoving separations (in $\mathrm{Mpc}$) between the 2
+    points in the sky
+    * `l`: the list of multipoles (can be any positive integer as COFFE can
+    take into account 2 populations of galaxies)
+    * `z_min`: the list of minimum redshifts at which the redshift-averaged
+    multipoles should be evaluated
+    * `z_max`: the list of maximum redshifts at which the redshift-averaged
+    multipoles should be evaluated
+
+    For the covariance of the (normal or redshift-averaged) multipoles, along
+    with the above, you can set the following coordinates:
     * `pixelsize`: the list of limiting sizes (resolutions) (in $\mathrm{Mpc}$)
     for each redshift bin
     * `number_density1` and `number_density2`: the list of number densities (in
@@ -422,9 +439,9 @@ cdef class Coffe:
     * `has_flatsky_nonlocal`: -||- for non-local (integrated) terms (such as
     lensing-lensing)
 
-    For the covariance of the multipoles, only the `has_density` and `has_rsd`
-    contributions have an effect, as all of the other effects are not
-    implemented.
+    For the covariance of the (normal and redshift-averaged) multipoles, only
+    the `has_density` and `has_rsd` contributions have an effect, as all of the
+    other effects are not implemented.
 
     By default, COFFE computes all of the terms which contribute to the
     covariance; this can be controlled with the following options:
@@ -439,7 +456,8 @@ cdef class Coffe:
 
     Also note that you can specify whether or not the covariance should be
     averaged (binned) over the pixelsize or not using the
-    `has_binned_covariance` option.
+    `has_binned_covariance` option (note that this is *not* the same as the
+    redshift-averaged multipoles!).
 
     ### Setting precision parameters
 
@@ -469,8 +487,9 @@ cdef class Coffe:
     cdef ccoffe.coffe_integral_array_t _integral
     cdef ccoffe.coffe_corrfunc_array_t _corrfunc
     cdef ccoffe.coffe_multipoles_array_t _multipoles
+    cdef ccoffe.coffe_average_multipoles_array_t _average_multipoles
     cdef ccoffe.coffe_covariance_array_t _covariance_multipoles
-    cdef ccoffe.coffe_covariance_array_t __dummy
+    cdef ccoffe.coffe_average_covariance_array_t _average_covariance_multipoles
     cdef int _power_spectrum_flag
     # the max size allowed for setting the various *_sampling parameters
     cdef size_t _max_size
@@ -553,8 +572,8 @@ cdef class Coffe:
             LegacyOption("covariance_fsky", "float_array", "fsky"),
             LegacyOption("covariance_pixelsize", "float_array", "pixelsize"),
             LegacyOption("covariance_step_size", "float"),
-            LegacyOption("covariance_zmin", "float"),
-            LegacyOption("covariance_zmax", "float"),
+            LegacyOption("covariance_zmin", "float", "z_min"),
+            LegacyOption("covariance_zmax", "float", "z_max"),
             LegacyOption("covariance_minimum_separation", "float"),
             LegacyOption("covariance_window", "int", "has_binned_covariance"),
             LegacyOption(
@@ -622,6 +641,8 @@ cdef class Coffe:
             "sep",
             "z_mean",
             "deltaz",
+            "z_min",
+            "z_max",
             "mu",
             "number_density1",
             "number_density2",
@@ -949,6 +970,10 @@ cdef class Coffe:
         ccoffe.coffe_covariance_free(&self._covariance_multipoles)
 
 
+    def _free_average_covariance_multipoles(self):
+        ccoffe.coffe_average_covariance_free(&self._average_covariance_multipoles)
+
+
     def _free_except_parameters(self):
         self._free_background()
         self._free_power_spectrum()
@@ -956,6 +981,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     def __dealloc__(self):
@@ -1040,6 +1066,13 @@ cdef class Coffe:
         if not (len(self.l) and len(self.sep) and len(self.z_mean)):
             raise ValueError(
                 f'At least one of the following parameters is empty: l ({self.l}), sep ({self.sep}), z_mean ({self.z_mean})'
+            )
+
+
+    def _check_coords_average_multipoles(self):
+        if not (len(self.l) and len(self.sep) and len(self.z_min) and len(self.z_max)):
+            raise ValueError(
+                f'At least one of the following parameters is empty: l ({self.l}), sep ({self.sep}), z_min ({self.z_min}), z_max ({self.z_max})'
             )
 
 
@@ -1394,6 +1427,7 @@ cdef class Coffe:
             self._free_corrfunc()
             self._free_multipoles()
             self._free_covariance_multipoles()
+            self._free_average_covariance_multipoles()
 
 
     @property
@@ -1413,6 +1447,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -1921,6 +1956,7 @@ cdef class Coffe:
         # we need to free the integrals since the flat-sky ones may depend on them
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -1959,6 +1995,82 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
+
+    @property
+    def z_min(self):
+        """
+        The miniumum redshifts for which the signal (redshift-averaged
+        multipoles) or covariance should be computed. Must be given as a list.
+        """
+        return np.array(
+            [self._parameters.zmin[i] for i in range(self._parameters.zmin_len)]
+        )
+
+    @z_min.setter
+    def z_min(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_>= 0 and _ < 10 for _ in temp):
+            raise ValueError
+
+        if self._parameters.zmin_len:
+            free(self._parameters.zmin)
+
+        self._parameters.zmin_len = len(temp)
+        self._parameters.zmin = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.zmin_len):
+            self._parameters.zmin[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
+
+
+    @property
+    def z_max(self):
+        """
+        The max redshifts for which the signal (redshift-averaged multipoles) or
+        covariance should be computed. Must be given as a list.
+        """
+        return np.array(
+            [self._parameters.zmax[i] for i in range(self._parameters.zmax_len)]
+        )
+
+    @z_max.setter
+    def z_max(self, value):
+        try:
+            _ = iter(value)
+        except TypeError as err:
+            raise TypeError(f'The value {value} is not iterable') from err
+
+        try:
+            temp = [float(_) for _ in value]
+        except TypeError as err:
+            raise TypeError('Cannot convert all values to floats') from err
+
+        if not all(_>= 0 and _ < 10 for _ in temp):
+            raise ValueError
+
+        if self._parameters.zmax_len:
+            free(self._parameters.zmax)
+
+        self._parameters.zmax_len = len(temp)
+        self._parameters.zmax = <double *> malloc(sizeof(double) * len(temp))
+        for i in range(self._parameters.zmax_len):
+            self._parameters.zmax[i] = temp[i]
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -1996,6 +2108,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2033,6 +2146,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2068,6 +2182,7 @@ cdef class Coffe:
 
         self._parameters.covariance_pop1, self._parameters.covariance_pop2, self._parameters.covariance_pop3, self._parameters.covariance_pop4 = value
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2083,6 +2198,7 @@ cdef class Coffe:
     def covariance_cosmic(self, value):
         self._parameters.covariance_cosmic = int(bool(value))
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2098,6 +2214,7 @@ cdef class Coffe:
     def covariance_mixed(self, value):
         self._parameters.covariance_mixed = int(bool(value))
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
     @property
     def covariance_poisson(self):
@@ -2112,6 +2229,7 @@ cdef class Coffe:
     def covariance_poisson(self, value):
         self._parameters.covariance_poisson = int(bool(value))
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2143,6 +2261,7 @@ cdef class Coffe:
             self._parameters.covariance_integration_method = _invert_dict(_allowed_covariance_integration_methods)[value]
 
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2166,6 +2285,7 @@ cdef class Coffe:
 
         self._parameters.covariance_integration_bins = int(value)
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2195,6 +2315,7 @@ cdef class Coffe:
         else:
             self._parameters.covariance_interpolation_method = _invert_dict(_allowed_interpolation_2d_methods)[value]
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2233,6 +2354,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2270,6 +2392,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2307,6 +2430,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2411,6 +2535,7 @@ cdef class Coffe:
     def has_binned_covariance(self, value):
         self._parameters.covariance_window = int(bool(value))
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2427,6 +2552,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2444,6 +2570,7 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
+        self._free_average_covariance_multipoles()
 
 
     @property
@@ -3201,6 +3328,48 @@ cdef class Coffe:
         ])
 
 
+    def compute_average_multipoles_bulk(self, recompute : bool = False):
+        """
+        Computes the redshift-averaged multipoles in bulk for all currently set
+        separations, redshifts, and multipole moments.
+
+        Parameters
+        ----------
+        recompute : bool, default = False
+            if set to True, recomputes all of the other modules first to make
+            sure we haven't forgotten to refresh one of them. Mainly useful for debugging
+            purposes.
+
+        Returns
+        -------
+        an array of instances of `coffe.representation.Multipoles`.
+        """
+        self._check_coords_multipoles()
+        self._check_contributions()
+        recompute = bool(recompute)
+        if not self._background.flag or recompute:
+            self._background_init()
+
+        if not self._power_spectrum_flag or recompute:
+            self._power_spectrum_init()
+
+        if not self._integral.size or recompute:
+            self._integrals_init()
+
+        if not self._average_multipoles.size or recompute:
+            self._average_multipoles_init()
+
+        return np.array([
+            AverageMultipoles(
+                z_min=self._average_multipoles.array[i].coords.z_min,
+                z_max=self._average_multipoles.array[i].coords.z_max,
+                r=self._average_multipoles.array[i].coords.separation,
+                l=self._average_multipoles.array[i].coords.l,
+                value=self._average_multipoles.array[i].value,
+            ) for i in range(self._average_multipoles.size)
+        ])
+
+
     def compute_corrfunc_bulk(self, recompute : bool = False):
         """
         Computes the 2PCF in bulk for all currently set separations,
@@ -3297,6 +3466,61 @@ cdef class Coffe:
             ) for i in range(self._covariance_multipoles.size)
         ])
 
+    def compute_average_covariance_bulk(self, recompute : bool = False):
+        """
+        Computes the covariance of the redshift-averaged multipoles in bulk for
+        all currently set separations, redshifts, and multipole moments.
+
+        Parameters
+        ----------
+        recompute : bool, default = False
+            if set to True, recomputes all of the other modules first to make
+            sure we haven't forgotten to refresh one of them. Mainly useful for debugging
+            purposes.
+
+        Returns
+        -------
+        an array of instances of `coffe.representation.AverageCovariance`.
+        """
+        self._check_coords_multipoles()
+        self._check_contributions()
+        recompute = bool(recompute)
+
+        if not all(
+            len(self.z_min) == len(_)
+            for _ in (self.deltaz, self.z_max, self.number_density1, self.number_density2, self.pixelsize, self.fsky)
+        ):
+            raise ValueError('Mismatching lengths for average covariance parameters (`z_min`, `z_max`, `deltaz`, `number_density1`, `number_density2`, `pixelsize`, `fsky`')
+
+        if not self._power_spectrum_flag or recompute:
+            self._power_spectrum_init()
+
+        if not self._background.flag or recompute:
+            self._background_init()
+
+        try:
+            [self.maximum_separation((zimin + zimax) / 2, (zimax - zimin) / 2) for zimin, zimax in zip(self.z_min, self.z_max)]
+        except ValueError as err:
+            raise ValueError from err
+
+        temp = self._parameters.output_type
+        self._parameters.output_type = ccoffe.COVARIANCE_AVERAGE_MULTIPOLES
+        if not self._average_covariance_multipoles.size or recompute:
+            self._covariance_init()
+        self._parameters.output_type = temp
+
+        return np.array([
+            AverageCovariance(
+                z_min=self._average_covariance_multipoles.array[i].coords.z_min,
+                z_max=self._average_covariance_multipoles.array[i].coords.z_max,
+                r1=self._average_covariance_multipoles.array[i].coords.separation1,
+                r2=self._average_covariance_multipoles.array[i].coords.separation2,
+                l1=self._average_covariance_multipoles.array[i].coords.l1,
+                l2=self._average_covariance_multipoles.array[i].coords.l2,
+                value=self._average_covariance_multipoles.array[i].value,
+            ) for i in range(self._average_covariance_multipoles.size)
+        ])
+
 
     def _background_init(self):
         ccoffe.coffe_background_init(
@@ -3331,10 +3555,18 @@ cdef class Coffe:
             &self._multipoles
         )
 
+    def _average_multipoles_init(self):
+        ccoffe.coffe_average_multipoles_init(
+            &self._parameters,
+            &self._background,
+            &self._integral,
+            &self._average_multipoles
+        )
+
     def _covariance_init(self):
         ccoffe.coffe_covariance_init(
             &self._parameters,
             &self._background,
             &self._covariance_multipoles,
-            &self.__dummy
+            &self._average_covariance_multipoles
         )

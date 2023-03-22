@@ -29,7 +29,7 @@ int coffe_output_init(
     coffe_multipoles_array_t *mp,
     coffe_average_multipoles_array_t *ramp,
     coffe_covariance_array_t *cov_mp,
-    coffe_covariance_array_t *cov_ramp
+    coffe_average_covariance_array_t *cov_ramp
 );
 
 #endif

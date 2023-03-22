@@ -72,80 +72,84 @@ int coffe_average_multipoles_init(
 )
 {
     coffe_average_multipoles_free(ramp);
-/*
-    if (par->output_type == AVERAGE_MULTIPOLES){
 
-        clock_t start, end;
-        start = clock();
+    clock_t start, end;
+    start = clock();
 
-        if (par->verbose)
-            printf("Calculating the redshift averaged multipoles...\n");
+    if (par->verbose)
+        printf("Calculating the redshift averaged multipoles...\n");
 
-        gsl_error_handler_t *default_handler =
-            gsl_set_error_handler_off();
+    gsl_error_handler_t *default_handler =
+        gsl_set_error_handler_off();
 
-        ramp->size = par->average_multipoles_coords.size;
-        ramp->array = (coffe_average_multipoles_t *)coffe_malloc(
-            sizeof(coffe_average_multipoles_t) * ramp->size
-        );
+    ramp->size = par->multipole_values_len
+        * par->zmin_len
+        * par->sep_len;
 
-        for (size_t i = 0; i < mp->size; ++i){
-            ramp->array[i].coords.z_min = par->average_multipoles_coords.array[i].z_min;
-            ramp->array[i].coords.z_max = par->average_multipoles_coords.array[i].z_max;
-            ramp->array[i].coords.separation = par->average_multipoles_coords.array[i].separation;
-            ramp->array[i].coords.l = par->multipoles_coords.array[i].l;
-        }
+    ramp->array = (coffe_average_multipoles_t *)coffe_malloc(
+        sizeof(coffe_average_multipoles_t) * ramp->size
+    );
 
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < ramp->size; ++i){
-            ramp->array[i].value =
-                average_multipoles_compute(
-                    par, bg, integral,
-                    ramp->array[i].coords.z_min,
-                    ramp->array[i].coords.z_max,
-                    ramp->array[i].coords.separation,
-                    ramp->array[i].coords.l,
-                    NONINTEGRATED, AVERAGE_MULTIPOLES
-                );
-        }
-
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < ramp->size; ++i){
-            ramp->array[i].value +=
-                average_multipoles_compute(
-                    par, bg, integral,
-                    ramp->array[i].coords.z_min,
-                    ramp->array[i].coords.z_max,
-                    ramp->array[i].coords.separation,
-                    ramp->array[i].coords.l,
-                    SINGLE_INTEGRATED, AVERAGE_MULTIPOLES
-                );
-        }
-
-        #pragma omp parallel for num_threads(par->nthreads)
-        for (size_t i = 0; i < ramp->size; ++i){
-            ramp->array[i].value +=
-                average_multipoles_compute(
-                    par, bg, integral,
-                    ramp->array[i].coords.z_min,
-                    ramp->array[i].coords.z_max,
-                    ramp->array[i].coords.separation,
-                    ramp->array[i].coords.l,
-                    DOUBLE_INTEGRATED, AVERAGE_MULTIPOLES
-                );
-        }
-
-        end = clock();
-
-        if (par->verbose)
-            printf("Redshift averaged multipoles calculated in %.2f s\n",
-                (double)(end - start) / CLOCKS_PER_SEC);
-
-        gsl_set_error_handler(default_handler);
-
+    {
+    size_t counter = 0;
+    for (size_t i = 0; i < par->zmin_len; ++i){
+    for (size_t j = 0; j < par->multipole_values_len; ++j){
+    for (size_t k = 0; k < par->sep_len; ++k){
+        ramp->array[counter].coords.z_min = par->zmin[i];
+        ramp->array[counter].coords.z_max = par->zmax[i];
+        ramp->array[counter].coords.l = par->multipole_values[j];
+        ramp->array[counter].coords.separation = par->sep[k];
+        ++counter;
+    }}}
     }
 
-*/
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < ramp->size; ++i){
+        ramp->array[i].value =
+            average_multipoles_compute(
+                par, bg, integral,
+                ramp->array[i].coords.z_min,
+                ramp->array[i].coords.z_max,
+                ramp->array[i].coords.separation,
+                ramp->array[i].coords.l,
+                NONINTEGRATED, AVERAGE_MULTIPOLES
+            );
+    }
+
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < ramp->size; ++i){
+        ramp->array[i].value +=
+            average_multipoles_compute(
+                par, bg, integral,
+                ramp->array[i].coords.z_min,
+                ramp->array[i].coords.z_max,
+                ramp->array[i].coords.separation,
+                ramp->array[i].coords.l,
+                SINGLE_INTEGRATED, AVERAGE_MULTIPOLES
+            );
+    }
+
+    #pragma omp parallel for num_threads(par->nthreads)
+    for (size_t i = 0; i < ramp->size; ++i){
+        ramp->array[i].value +=
+            average_multipoles_compute(
+                par, bg, integral,
+                ramp->array[i].coords.z_min,
+                ramp->array[i].coords.z_max,
+                ramp->array[i].coords.separation,
+                ramp->array[i].coords.l,
+                DOUBLE_INTEGRATED, AVERAGE_MULTIPOLES
+            );
+    }
+
+    end = clock();
+
+    if (par->verbose)
+        printf("Redshift averaged multipoles calculated in %.2f s\n",
+            (double)(end - start) / CLOCKS_PER_SEC);
+
+    gsl_set_error_handler(default_handler);
+
     return EXIT_SUCCESS;
 }
 
