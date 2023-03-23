@@ -35,9 +35,10 @@ where `[SETTINGS_FILE]` is the path to the settings file (for a list of
 available settings, as well as defaults, have a look at the [default settings
 file](https://github.com/JCGoran/coffe/blob/master/DEFAULT_SETTINGS.cfg)),
 `[OUTPUT_FILE]` is the file where the output will be placed, and
-`[TYPE_OF_OUTPUT]` is one of `background`, `corrfunc`, `multipoles`, and
-`covariance`, for outputs of the background quantities, the 2-point correlation
-function, its multipoles, and the covariance of its multipoles, respectively.
+`[TYPE_OF_OUTPUT]` is one of `bg`, `cf`, `mp`, `avg_mp`, `cov`, and `avg_cov`,
+for outputs of the background quantities, the 2-point correlation function, its
+multipoles, the redshift-averaged multipoles, the covariance of the multipoles,
+and the covariance of the redshift-averaged multipoles, respectively.
 """
 
 from coffe.coffe import Coffe

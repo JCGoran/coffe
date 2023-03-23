@@ -43,7 +43,7 @@ def parse_args():
         "--kind",
         type=str,
         help="The kind of output to compute.",
-        choices=["background", "corrfunc", "multipoles", "covariance"],
+        choices=["bg", "cf", "mp", "cov", "avg_cov", "avg_mp"],
         required=True,
     )
 
@@ -61,7 +61,7 @@ def compute_output(args):
         "encoding": "utf-8",
     }
 
-    if args.kind == "background":
+    if args.kind == "bg":
         cosmo._background_init()
 
         output = np.transpose(
@@ -98,7 +98,7 @@ def compute_output(args):
             **savetxt_kwargs,
         )
 
-    elif args.kind == "corrfunc":
+    elif args.kind == "cf":
         result = cosmo.compute_corrfunc_bulk()
         np.savetxt(
             args.output,
@@ -107,7 +107,7 @@ def compute_output(args):
             **savetxt_kwargs,
         )
 
-    elif args.kind == "multipoles":
+    elif args.kind == "mp":
         result = cosmo.compute_multipoles_bulk()
         np.savetxt(
             args.output,
@@ -116,8 +116,17 @@ def compute_output(args):
             fmt=["%.10e", "%d", "%.10e", "%.10e"],
             **{key: value for key, value in savetxt_kwargs.items() if key != "fmt"},
         )
+    elif args.kind == "avg_mp":
+        result = cosmo.compute_average_multipoles_bulk()
+        np.savetxt(
+            args.output,
+            np.array([[_.r, _.l, _.z_min, _.z_max, _.value] for _ in result]),
+            header="\t".join(["r[Mpc]", "l", "z_min", "z_max", "avg_multipoles_value"]),
+            fmt=["%.10e", "%d", "%.10e", "%.10e", "%.10e"],
+            **{key: value for key, value in savetxt_kwargs.items() if key != "fmt"},
+        )
 
-    elif args.kind == "covariance":
+    elif args.kind == "cov":
         result = cosmo.compute_covariance_bulk()
         np.savetxt(
             args.output,
@@ -126,6 +135,28 @@ def compute_output(args):
                 ["r1[Mpc]", "r2[Mpc]", "l1", "l2", "z", "covariance_multipoles_value"]
             ),
             fmt=["%.10e", "%.10e", "%d", "%d", "%.10e", "%.10e"],
+            **{key: value for key, value in savetxt_kwargs.items() if key != "fmt"},
+        )
+
+    elif args.kind == "avg_cov":
+        result = cosmo.compute_average_covariance_bulk()
+        np.savetxt(
+            args.output,
+            np.array(
+                [[_.r1, _.r2, _.l1, _.l2, _.z_min, _.z_max, _.value] for _ in result]
+            ),
+            header="\t".join(
+                [
+                    "r1[Mpc]",
+                    "r2[Mpc]",
+                    "l1",
+                    "l2",
+                    "z_min",
+                    "z_max",
+                    "covariance_avg_multipoles_value",
+                ]
+            ),
+            fmt=["%.10e", "%.10e", "%d", "%d", "%.10e", "%.10e", "%.10e"],
             **{key: value for key, value in savetxt_kwargs.items() if key != "fmt"},
         )
 
