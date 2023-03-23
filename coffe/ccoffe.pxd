@@ -554,3 +554,7 @@ cdef extern from "average_multipoles.h":
         coffe_integral_array_t *,
         coffe_average_multipoles_array_t *
     )
+
+    int coffe_average_multipoles_free(
+        coffe_average_multipoles_array_t *
+    )

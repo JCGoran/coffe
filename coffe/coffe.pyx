@@ -969,6 +969,10 @@ cdef class Coffe:
         ccoffe.coffe_multipoles_free(&self._multipoles)
 
 
+    def _free_average_multipoles(self):
+        ccoffe.coffe_average_multipoles_free(&self._average_multipoles)
+
+
     def _free_covariance_multipoles(self):
         ccoffe.coffe_covariance_free(&self._covariance_multipoles)
 
@@ -983,6 +987,7 @@ cdef class Coffe:
         self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -1125,6 +1130,7 @@ cdef class Coffe:
         self._parameters.only_cross_correlations = int(bool(value))
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
 
 
     @property
@@ -1429,6 +1435,7 @@ cdef class Coffe:
             self._free_integrals()
             self._free_corrfunc()
             self._free_multipoles()
+            self._free_average_multipoles()
             self._free_covariance_multipoles()
             self._free_average_covariance_multipoles()
 
@@ -1449,6 +1456,7 @@ cdef class Coffe:
         self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -1958,6 +1966,7 @@ cdef class Coffe:
             self._parameters.multipole_values[i] = temp[i]
         # we need to free the integrals since the flat-sky ones may depend on them
         self._free_multipoles()
+        self._free_average_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -1998,7 +2007,6 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
-        self._free_average_covariance_multipoles()
 
     @property
     def z_min(self):
@@ -2108,8 +2116,6 @@ cdef class Coffe:
         self._parameters.density1 = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.density1_len):
             self._parameters.density1[i] = temp[i]
-        self._free_corrfunc()
-        self._free_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2146,8 +2152,6 @@ cdef class Coffe:
         self._parameters.density2 = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.density2_len):
             self._parameters.density2[i] = temp[i]
-        self._free_corrfunc()
-        self._free_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2354,8 +2358,6 @@ cdef class Coffe:
         self._parameters.pixelsize = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.pixelsize_len):
             self._parameters.pixelsize[i] = temp[i]
-        self._free_corrfunc()
-        self._free_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2392,8 +2394,6 @@ cdef class Coffe:
         self._parameters.fsky = <double *> malloc(sizeof(double) * len(temp))
         for i in range(self._parameters.fsky_len):
             self._parameters.fsky[i] = temp[i]
-        self._free_corrfunc()
-        self._free_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2433,7 +2433,6 @@ cdef class Coffe:
         self._free_corrfunc()
         self._free_multipoles()
         self._free_covariance_multipoles()
-        self._free_average_covariance_multipoles()
 
 
     @property
@@ -2498,6 +2497,9 @@ cdef class Coffe:
         _check_parameter('integration_sampling', value, int, 0, self._max_size)
 
         self._parameters.integration_bins = value
+        self._free_corrfunc()
+        self._free_multipoles()
+        self._free_average_multipoles()
 
 
     @property
@@ -2554,6 +2556,7 @@ cdef class Coffe:
         self._parameters.correlation_contrib.den = int(bool(value))
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2572,6 +2575,7 @@ cdef class Coffe:
         self._parameters.correlation_contrib.rsd = int(bool(value))
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
         self._free_covariance_multipoles()
         self._free_average_covariance_multipoles()
 
@@ -2589,6 +2593,7 @@ cdef class Coffe:
         self._parameters.correlation_contrib.len = int(bool(value))
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
 
 
     @property
@@ -2717,6 +2722,7 @@ cdef class Coffe:
         self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
 
 
     @property
@@ -2734,6 +2740,7 @@ cdef class Coffe:
         self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
 
 
     @property
@@ -2751,6 +2758,7 @@ cdef class Coffe:
         self._free_integrals()
         self._free_corrfunc()
         self._free_multipoles()
+        self._free_average_multipoles()
 
 
     def maximum_separation(self, z_mean : float, deltaz : float):
@@ -2898,6 +2906,7 @@ cdef class Coffe:
         _check_parameter('k_min', value, (int, float), 0, 1e-3)
         self._parameters.k_min = value
         self._parameters.k_min_norm = value
+        self._free_except_parameters()
 
 
     @property
@@ -2914,6 +2923,7 @@ cdef class Coffe:
         _check_parameter('k_max', value, (int, float), 0.1, 1e3)
         self._parameters.k_max = value
         self._parameters.k_max_norm = value
+        self._free_except_parameters()
 
 
     def set_power_spectrum_linear(self, k : List[float], pk : List[float], z : float = 0):
@@ -3345,7 +3355,7 @@ cdef class Coffe:
 
         Returns
         -------
-        an array of instances of `coffe.representation.Multipoles`.
+        an array of instances of `coffe.representation.AverageMultipoles`.
         """
         self._check_coords_average_multipoles()
         self._check_contributions()
