@@ -30,9 +30,9 @@ install_class(){
 
     cd "${class_dir}"
     make libclass.a
-    mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-    cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-    cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+    sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+    sudo cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+    sudo cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
     cd -
     printf 'CLASS installed\n'
 }
