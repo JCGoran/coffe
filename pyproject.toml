@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.19.5",
 ]
+optional-dependencies.test = ["pytest", "pandas", "scipy"]
 
 [project.scripts]
 coffe-cli = "coffe.__main__:main"
@@ -34,6 +35,8 @@ repository = "https://github.com/JCGoran/coffe"
 
 [tool.cibuildwheel]
 skip = ["cp36-*", "pp*", "pypy*", "*musllinux*"]
+test-extras = ["test"]
+test-command = ["pytest {package}/tests"]
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
@@ -42,4 +45,4 @@ archs = ["x86_64", "arm64"]
 archs = ["x86_64"]
 
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+requires = ["setuptools", "wheel", "Cython<3"]
