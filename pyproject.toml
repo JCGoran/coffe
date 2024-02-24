@@ -26,6 +26,17 @@ dependencies = [
     "numpy>=1.19.5",
 ]
 optional-dependencies.test = ["pytest", "pandas", "scipy"]
+optional-dependencies.docs = ["pdoc"]
+optional-dependencies.dev = [
+    "pylint",
+    "mypy",
+    "isort",
+    "reorder-python-imports",
+    "autoimport",
+    "black",
+    "cibuildwheel",
+    "twine",
+]
 
 [project.scripts]
 coffe-cli = "coffe.__main__:main"
@@ -35,15 +46,16 @@ repository = "https://github.com/JCGoran/coffe"
 
 [tool.cibuildwheel]
 skip = ["cp36-*", "pp*", "pypy*", "*musllinux*"]
-test-extras = ["test"]
-test-command = ["pytest {package}/tests"]
-
-[tool.cibuildwheel.macos]
+test-extras = ["test", "docs"]
+test-command = [
+    "pytest {package}/tests",
+    "bash {package}/scripts/generate_docs.sh",
+]
 
 [tool.cibuildwheel.linux]
 before-all = [
     # install CUBA, FFTW, GSL, and CLASS
-    "bash install_other.sh",
+    "bash scripts/install_other.sh",
 ]
 environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
 
