@@ -43,7 +43,7 @@ jobs:
 
       # if we're not doing a release version (manual!), only build one python version
       - name: Setup versions
-        if: !(github.event_name == 'workflow_dispatch' && github.event.inputs.version)
+        if: ! ${{ github.event_name == 'workflow_dispatch' }} && ${{ github.event.inputs.version }}
         run: echo "CIBW_BUILD='cp311-*'" >> "$GITHUB_ENV"
 
       - name: SCM
