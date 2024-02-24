@@ -46,12 +46,17 @@ jobs:
         if: !(github.event_name == 'workflow_dispatch' && github.event.inputs.version)
         run: echo "CIBW_BUILD='cp311-*'" >> "$GITHUB_ENV"
 
+      - name: SCM
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.version
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION='${{ github.event.input.version }}'" >> "$GITHUB_ENV"
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         env:
           # we skip tests in CI to save time
           CIBW_TEST_COMMAND: 'true'
+          CIBW_ENVIRONMENT_PASS_LINUX: 'SETUPTOOLS_SCM_PRETEND_VERSION'
           CIBW_ENVIRONMENT_MACOS: >
             CFLAGS="-I${BREW_PREFIX}/gsl/${GSL_VERSION}/include -I${BREW_PREFIX}/fftw/${FFTW_VERSION}/include -I${BREW_PREFIX}/cuba/${CUBA_VERSION}/include ${CFLAGS}"
             LDFLAGS="-L${BREW_PREFIX}/gsl/${GSL_VERSION}/lib -L${BREW_PREFIX}/fftw/${FFTW_VERSION}/lib -L${BREW_PREFIX}/cuba/${CUBA_VERSION}/lib ${LDFLAGS}"
