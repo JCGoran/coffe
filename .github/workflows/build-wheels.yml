@@ -44,11 +44,14 @@ jobs:
       # if we're not doing a release version (manual!), only build one python version
       - name: Setup versions
         if: ${{ ! (github.event_name == 'workflow_dispatch' && github.event.inputs.version) }}
-        run: echo "CIBW_BUILD=cp311-*" >> "$GITHUB_ENV"
+        run: |
+          echo "CIBW_BUILD=cp311-*" >> "$GITHUB_ENV"
+          # pretend version so setuptools doesn't fail
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0" >> "$GITHUB_ENV"
 
       - name: SCM
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.version
-        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION='${{ github.event.input.version }}'" >> "$GITHUB_ENV"
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.input.version }}" >> "$GITHUB_ENV"
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
@@ -57,9 +60,11 @@ jobs:
           # we skip tests in CI to save time
           CIBW_TEST_COMMAND: 'true'
           CIBW_ENVIRONMENT_PASS_LINUX: 'SETUPTOOLS_SCM_PRETEND_VERSION'
+          CIBW_BEFORE_ALL_MACOS: >
+            bash scripts/install_other.sh class
           CIBW_ENVIRONMENT_MACOS: >
-            CFLAGS="-I${BREW_PREFIX}/gsl/${GSL_VERSION}/include -I${BREW_PREFIX}/fftw/${FFTW_VERSION}/include -I${BREW_PREFIX}/cuba/${CUBA_VERSION}/include ${CFLAGS}"
-            LDFLAGS="-L${BREW_PREFIX}/gsl/${GSL_VERSION}/lib -L${BREW_PREFIX}/fftw/${FFTW_VERSION}/lib -L${BREW_PREFIX}/cuba/${CUBA_VERSION}/lib ${LDFLAGS}"
+            CFLAGS="-I${BREW_PREFIX}/gsl/${GSL_VERSION}/include -I${BREW_PREFIX}/fftw/${FFTW_VERSION}/include -I${BREW_PREFIX}/cuba/${CUBA_VERSION}/include -I/opt/class_public/include ${CFLAGS}"
+            LDFLAGS="-L${BREW_PREFIX}/gsl/${GSL_VERSION}/lib -L${BREW_PREFIX}/fftw/${FFTW_VERSION}/lib -L${BREW_PREFIX}/cuba/${CUBA_VERSION}/lib -L/opt/class_public/lib ${LDFLAGS}"
 
       - uses: actions/upload-artifact@v4
         with:

@@ -53,9 +53,24 @@ install_gsl(){
     cd -
 }
 
-install_gsl
-install_class
-install_fftw
-install_cuba
+for arg in $@
+do
+    case "${arg}" in
+        "gsl")
+            install_gsl
+            ;;
+        "cuba")
+            install_cuba
+            ;;
+        "class")
+            install_class
+            ;;
+        "fftw")
+            install_fftw
+            ;;
+        *)
+            ;;
+    esac
+done
 
 set +ex
