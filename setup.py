@@ -40,7 +40,6 @@ extra_compile_args = [
 
 setup(
     name="coffe",
-    version="3.0.0",
     url="https://github.com/JCGoran/coffe",
     author="Goran Jelic-Cizmek",
     author_email="goran.jelic-cizmek@unige.ch",

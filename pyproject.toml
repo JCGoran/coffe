@@ -1,6 +1,6 @@
 [project]
 name = "coffe"
-version = "3.0.0"
+dynamic = ["version"]
 description = "Python wrapper for the COrrelation Function Full-sky Estimator code"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -61,4 +61,6 @@ environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CF
 
 
 [build-system]
-requires = ["setuptools", "wheel", "Cython<3"]
+requires = ["setuptools", "wheel", "Cython<3", "setuptools_scm"]
+
+[tool.setuptools_scm]
