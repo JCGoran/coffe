@@ -1,52 +1,61 @@
 #!/usr/bin/env sh
 
-set -e
-# installer for CLASS when using a conda environment
-CLASS_DIR="class_public"
+set -ex
+
+CLASS_INSTALL_DIR="/opt/class_public"
 CLASS_REMOTE_URL="https://github.com/JCGoran/class_public"
 CLASS_BRANCH="feature/conda"
 
-CUBA_DIR="cuba"
+CUBA_INSTALL_DIR="/opt/cuba"
 CUBA_REMOTE_URL="https://github.com/JCGoran/libcuba"
 CUBA_BRANCH="master"
 
 install_cuba(){
-    if [ -z "${CONDA_PREFIX}" ]
-    then
-        printf 'You need to activate a conda environment using `conda activate [ENVIRONMENT]` before running this script\n'
-        return 1
-    fi
+    cuba_dir="$(mktemp -d)"
+    git clone --depth 1 --branch "${CUBA_BRANCH}" "${CUBA_REMOTE_URL}" "${cuba_dir}"
 
-    if [ ! -d "${CUBA_DIR}" ]
-    then
-        printf 'Attempting to install CUBA in the current environment (%s)...\n' "${CONDA_DEFAULT_ENV}"
-        printf 'Cloning to directory %s...\n' "${CUBA_DIR}"
-        git clone --branch "${CUBA_BRANCH}" "${CUBA_REMOTE_URL}" "${CUBA_DIR}"
-    fi
-
-    cd "${CUBA_DIR}" && autoreconf --install && ./configure --prefix="${CONDA_PREFIX}" CFLAGS=-fPIC && make install && cd -
-    printf 'CUBA successfully installed\n'
+    cd "${cuba_dir}"
+    autoreconf --install
+    ./configure --prefix="${CUBA_INSTALL_DIR}" CFLAGS=-fPIC
+    make install
+    cd -
+    printf 'CUBA installed\n'
 }
 
 
 
 install_class(){
-    if [ -z "${CONDA_PREFIX}" ]
-    then
-        printf 'You need to activate a conda environment using `conda activate [ENVIRONMENT]` before running this script\n'
-        return 1
-    fi
+    class_dir="$(mktemp -d)"
+    git clone --depth 1 --branch "${CLASS_BRANCH}" "${CLASS_REMOTE_URL}" "${class_dir}"
 
-    if [ ! -d "${CLASS_DIR}" ]
-    then
-        printf 'Attempting to install CLASS in the current environment (%s)...\n' "${CONDA_DEFAULT_ENV}"
-        printf 'Cloning to directory %s...\n' "${CLASS_DIR}"
-        git clone --branch "${CLASS_BRANCH}" "${CLASS_REMOTE_URL}" "${CLASS_DIR}"
-    fi
-
-    make -C "${CLASS_DIR}" libclass.a && cp -a "${CLASS_DIR}/libclass.a" "${CONDA_PREFIX}/lib/" && cp -a "${CLASS_DIR}/include/"*.h "${CONDA_PREFIX}/include/"
-    printf 'CLASS successfully installed\n'
+    cd "${class_dir}"
+    make libclass.a
+    mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+    cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+    cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+    cd -
+    printf 'CLASS installed\n'
 }
 
-install_cuba && install_class
-set +e
+install_fftw(){
+    yum install -y fftw-devel
+}
+
+install_gsl(){
+    GSL_VERSION='2.0'
+    curl -sL -vvv "https://ftp.gnu.org/gnu/gsl/gsl-${GSL_VERSION}.tar.gz" --output libgsl.tar.gz
+    tar xf libgsl.tar.gz
+    cd "gsl-${GSL_VERSION}"
+    ./autogen.sh
+    ./configure
+    make -j 2 all
+    make install
+    cd -
+}
+
+install_gsl
+install_class
+install_fftw
+install_cuba
+
+set +ex

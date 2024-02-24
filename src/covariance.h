@@ -19,6 +19,7 @@
 #ifndef COFFE_COVARIANCE
 #define COFFE_COVARIANCE
 
+#include "background.h"
 #include "common.h"
 
 typedef struct coffe_covariance_t

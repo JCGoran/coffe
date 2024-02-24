@@ -39,10 +39,14 @@ test-extras = ["test"]
 test-command = ["pytest {package}/tests"]
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.linux]
-archs = ["x86_64"]
+before-all = [
+    # install CUBA, FFTW, GSL, and CLASS
+    "bash install_other.sh",
+]
+environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+
 
 [build-system]
 requires = ["setuptools", "wheel", "Cython<3"]

@@ -19,6 +19,9 @@
 #ifndef COFFE_INTEGRALS_H
 #define COFFE_INTEGRALS_H
 
+#include "common.h"
+#include "background.h"
+
 /* for detection of half integers (spherical (int) vs. ordinary Bessel (half-int) functions) */
 enum coffe_integer_state {COFFE_INTEGER, COFFE_HALF_INTEGER};
 
