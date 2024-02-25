@@ -22,7 +22,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3 -m pip install .[docs]
+        python3 -m pip install cibuildwheel
+        export CIBW_BUILD='cp39-*'
+        export SETUPTOOLS_SCM_PRETEND_VERSION='3.0.1'
+        export CIBW_ENVIRONMENT_PASS_LINUX='SETUPTOOLS_SCM_PRETEND_VERSION'
+        python3 -m cibuildwheel --platform linux
+        python3 -m pip install wheelhouse/*.whl
 
     # Build the site
     - name: Build the site
