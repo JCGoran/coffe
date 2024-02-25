@@ -79,6 +79,7 @@ setup(
                     "cuba",
                     "class",
                 ],
+                library_dirs=get_library_dirs(),
                 extra_compile_args=extra_compile_args,
             ),
         ]
