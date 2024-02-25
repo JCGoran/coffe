@@ -30,16 +30,9 @@ install_class(){
 
     cd "${class_dir}"
     make libclass.a
-    if [ "$(python3.9 -c 'import sys;print(sys.platform)')" = 'darwin' ]
-    then
-        sudo_cmd="sudo"
-    else
-        # the manylinux container does not have sudo
-        sudo_cmd=''
-    fi
-    ${sudo_cmd} mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-    ${sudo_cmd} cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-    ${sudo_cmd} cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+    sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+    sudo cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+    sudo cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
     cd -
     printf 'CLASS installed\n'
 }
