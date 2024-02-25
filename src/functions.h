@@ -19,6 +19,10 @@
 #ifndef COFFE_FUNCTIONS_H
 #define COFFE_FUNCTIONS_H
 
+#include "common.h"
+#include "background.h"
+#include "integrals.h"
+
 double functions_nonintegrated(
     const coffe_parameters_t *par,
     const coffe_background_t *bg,

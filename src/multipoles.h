@@ -20,6 +20,8 @@
 #define COFFE_MULTIPOLES_H
 
 #include "common.h"
+#include "background.h"
+#include "integrals.h"
 
 /**
     contains the value of the multipole for one point, i.e. at (l, r, z)

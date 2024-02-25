@@ -1,6 +1,10 @@
 #ifndef COFFE_SIGNAL_H
 #define COFFE_SIGNAL_H
 
+#include "common.h"
+#include "background.h"
+#include "integrals.h"
+
 struct coffe_integration_parameters_t
 {
     struct coffe_parameters_t *par;

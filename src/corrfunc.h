@@ -20,6 +20,8 @@
 #define COFFE_CORRFUNC_H
 
 #include "common.h"
+#include "background.h"
+#include "integrals.h"
 
 typedef struct coffe_corrfunc_t
 {
