@@ -30,15 +30,19 @@ install_class(){
 
     cd "${class_dir}"
     make libclass.a
+
     if [ "$(uname)" = 'Darwin' ]
     then
-        sudo_cmd='sudo'
+        sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+        sudo cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+        sudo cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+
     else
-        sudo_cmd=''
+        mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+        cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+        cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
     fi
-    "${sudo_cmd}" mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-    "${sudo_cmd}" cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-    "${sudo_cmd}" cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+
     cd -
     printf 'CLASS installed\n'
 }
