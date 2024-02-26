@@ -27,7 +27,8 @@ jobs:
         export CIBW_ENVIRONMENT_PASS_LINUX='SETUPTOOLS_SCM_PRETEND_VERSION'
         export CIBW_TEST_COMMAND='true'
         CIBW_BUILD='cp39-manylinux_x86_64' python3 -m cibuildwheel --platform linux
-        python3 -m pip install wheelhouse/*.whl
+        # install with optional dependencies
+        find wheelhouse/ -name "*.whl" -exec python3 -m pip install '{}[docs]' \;
 
     # Build the site
     - name: Build the site
