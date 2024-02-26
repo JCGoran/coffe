@@ -20,19 +20,20 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-
     - name: Install dependencies
       run: |
-        python3 -m pip install coffe
-        python3 -m pip install -r pip-requirements-dev.txt
+        python3 -m pip install cibuildwheel
+        export SETUPTOOLS_SCM_PRETEND_VERSION='3.0.1'
+        export CIBW_ENVIRONMENT_PASS_LINUX='SETUPTOOLS_SCM_PRETEND_VERSION'
+        export CIBW_TEST_COMMAND='true'
+        CIBW_BUILD='cp39-manylinux_x86_64' python3 -m cibuildwheel --platform linux
+        # install with optional dependencies
+        find wheelhouse/ -name "*.whl" -exec python3 -m pip install '{}[docs]' \;
 
     # Build the site
     - name: Build the site
       run: |
-        rm -fr coffe/__init__.py
-        sh generate_docs.sh
+        bash scripts/generate_docs.sh
 
     # If we've pushed to master, push the book's HTML to github-pages
     - if: ${{ github.ref == 'refs/heads/master' }}

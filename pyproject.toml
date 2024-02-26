@@ -1,6 +1,6 @@
 [project]
 name = "coffe"
-version = "3.0.0"
+dynamic = ["version"]
 description = "Python wrapper for the COrrelation Function Full-sky Estimator code"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -25,6 +25,18 @@ classifiers = [
 dependencies = [
     "numpy>=1.19.5",
 ]
+optional-dependencies.test = ["pytest", "pandas", "scipy"]
+optional-dependencies.docs = ["pdoc"]
+optional-dependencies.dev = [
+    "pylint",
+    "mypy",
+    "isort",
+    "reorder-python-imports",
+    "autoimport",
+    "black",
+    "cibuildwheel",
+    "twine",
+]
 
 [project.scripts]
 coffe-cli = "coffe.__main__:main"
@@ -34,12 +46,21 @@ repository = "https://github.com/JCGoran/coffe"
 
 [tool.cibuildwheel]
 skip = ["cp36-*", "pp*", "pypy*", "*musllinux*"]
-
-[tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
+test-extras = ["test", "docs"]
+test-command = [
+    "pytest {package}/tests",
+    "bash {package}/scripts/generate_docs.sh",
+]
 
 [tool.cibuildwheel.linux]
-archs = ["x86_64"]
+before-all = [
+    # install CUBA, FFTW, GSL, and CLASS
+    "bash scripts/install_other.sh gsl cuba class fftw",
+]
+environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+
 
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+requires = ["setuptools", "wheel", "Cython<3", "setuptools_scm"]
+
+[tool.setuptools_scm]

@@ -19,6 +19,8 @@
 #ifndef COFFE_PARSER_H
 #define COFFE_PARSER_H
 
+#include "common.h"
+
 int coffe_parse_default_parameters(
     coffe_parameters_t *par
 );

@@ -1,8 +1,0 @@
-[submodule "class_public"]
-	path = class_public
-	url = https://github.com/JCGoran/class_public
-	branch = feature/conda
-[submodule "libcuba"]
-	path = libcuba
-	url = https://github.com/JCGoran/libcuba
-	branch = master

@@ -19,6 +19,7 @@
 #ifndef COFFE_BACKGROUND_H
 #define COFFE_BACKGROUND_H
 
+#include "common.h"
 
 typedef struct coffe_background_t
 {
