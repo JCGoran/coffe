@@ -140,4 +140,5 @@ sh build_wheels_linux.sh
 ```
 
 which should build all of the wheels for Python 3.7 and above on Linux.
-The building of wheels for other platforms is not implemented, however, contributions are certainly welcome.
+
+The building of wheels for other platforms is not implemented, however, contributions are certainly welcome and encouraged.
