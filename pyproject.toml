@@ -39,7 +39,13 @@ skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
 archs = ["x86_64", "arm64"]
 
 [tool.cibuildwheel.linux]
+manylinux-x86_64-image = "docker.io/library/coffe"
 archs = ["x86_64"]
+#before-all = [
+#    # install CUBA, FFTW, GSL, and CLASS
+#    "bash scripts/install_other.sh gsl cuba class fftw",
+#]
+environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
 
 [build-system]
 requires = ["scikit-build-core", "cython<3", "setuptools-scm>=8.0.0"]

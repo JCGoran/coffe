@@ -32,10 +32,10 @@ find_library(M_LIB m NAMES m libm REQUIRED)
 
 # Check for optional libraries
 if (COFFE_ENABLE_CUBA)
-    find_library(CUBA_LIB cuba NAMES cuba libcuba REQUIRED)
+    find_library(CUBA_LIB cuba NAMES cuba libcuba PATHS /opt/cuba/lib REQUIRED)
 endif()
 if (COFFE_ENABLE_CLASS)
-    find_library(CLASS_LIB class NAMES class libclass REQUIRED)
+    find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class/lib /opt/class_public/lib REQUIRED)
 endif()
 
 # OpenMP support
@@ -147,20 +147,22 @@ if(COFFE_ENABLE_PYTHON)
 endif()
 
 # Installation
-install(TARGETS coffe-cli COMPONENT Runtime DESTINATION bin)
+if (NOT SKBUILD)
+    install(TARGETS coffe-cli COMPONENT Runtime DESTINATION bin)
 
-# Install headers and other files
-install(FILES
-    ${COFFE_HEADERS}
-    DESTINATION include/coffe
-)
+    # Install headers and other files
+    install(FILES
+        ${COFFE_HEADERS}
+        DESTINATION include/coffe
+    )
 
-install(FILES
-    ${SRC_DIR}/WAVENUMBER_HEADER.dat
-    ${SRC_DIR}/POWER_SPECTRUM_HEADER.dat
-    ${CMAKE_SOURCE_DIR}/settings.cfg
-    ${CMAKE_SOURCE_DIR}/separations.dat
-    ${CMAKE_SOURCE_DIR}/PkL_CLASS.dat
-    ${CMAKE_SOURCE_DIR}/README.md
-    DESTINATION share/coffe
-)
+    install(FILES
+        ${SRC_DIR}/WAVENUMBER_HEADER.dat
+        ${SRC_DIR}/POWER_SPECTRUM_HEADER.dat
+        ${CMAKE_SOURCE_DIR}/settings.cfg
+        ${CMAKE_SOURCE_DIR}/separations.dat
+        ${CMAKE_SOURCE_DIR}/PkL_CLASS.dat
+        ${CMAKE_SOURCE_DIR}/README.md
+        DESTINATION share/coffe
+    )
+endif()
