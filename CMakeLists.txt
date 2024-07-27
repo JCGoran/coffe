@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(coffe VERSION 2.0.4 LANGUAGES C)
+project(coffe VERSION ${SKBUILD_PROJECT_VERSION} LANGUAGES C)
 
 # Default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -10,6 +10,11 @@ endif()
 option(DISABLE_SILENT_RULES "Disable silent rules" OFF)
 if(NOT DISABLE_SILENT_RULES)
     set(CMAKE_VERBOSE_MAKEFILE OFF)
+endif()
+
+if (COFFE_ENABLE_PYTHON)
+    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    include(cmake/FindCython.cmake)
 endif()
 
 # Define source directory
@@ -41,13 +46,15 @@ endif()
 
 # Optimization flags
 include(CheckCCompilerFlag)
-check_c_compiler_flag(-Ofast HAS_OFAST)
-if(HAS_OFAST)
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast")
+if(COFFE_ENABLE_MATHOPTS)
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        set(COFFE_MATHOPTS "-ffast-math")
+    else()
+        message("Unsupported compiler ${CMAKE_C_COMPILER_ID_STREQUAL}" FATAL_ERROR)
+    endif()
 else()
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+    set(COFFE_MATHOPTS "")
 endif()
-
 # Include directories
 include_directories(${SRC_DIR} ${CMAKE_SOURCE_DIR}/tests)
 
@@ -102,42 +109,45 @@ add_executable(coffe-cli
     ${SRC_DIR}/output.c
 )
 
-add_library(coffe
-    SHARED
-    ${COFFE_LIB_SOURCES}
-)
-target_link_libraries(coffe ${M_LIB} ${GSL_LIBRARIES} ${FFTW3_LIB} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
-
+# Add definition
 target_compile_definitions(coffe-cli PRIVATE PACKAGE_STRING="${VERSION}")
 
 # Link libraries
 target_link_libraries(coffe-cli ${M_LIB} ${GSL_LIBRARIES} ${FFTW3_LIB} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
 
-# Tests
-enable_testing()
+target_compile_options(coffe-cli PRIVATE ${COFFE_MATHOPTS})
 
-if (NOT DEFINED COFFE_TEST_DATADIR)
-    set(COFFE_TEST_DATADIR ${CMAKE_SOURCE_DIR})
+
+# Tests
+if (COFFE_ENABLE_TESTS)
+    enable_testing()
+
+    if (NOT DEFINED COFFE_TEST_DATADIR)
+        set(COFFE_TEST_DATADIR ${CMAKE_SOURCE_DIR})
+    endif()
+
+    set(COFFE_TESTS background integrals corrfunc multipoles covariance)
+    foreach(name IN LISTS COFFE_TESTS)
+        # Add the test executable
+        add_executable(test_${name}
+            ${CMAKE_SOURCE_DIR}/tests/test_${name}.c
+            ${COFFE_LIB_SOURCES}
+        )
+        # Add defines
+        target_compile_definitions(test_${name} PRIVATE COFFE_TEST_DATADIR="${COFFE_TEST_DATADIR}")
+        # Link libraries
+        target_link_libraries(test_${name} ${M_LIB} ${GSL_LIBRARIES} ${FFTW3_LIB} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
+        # Register tests
+        add_test(NAME test_${name} COMMAND test_${name})
+    endforeach()
 endif()
 
-set(COFFE_TESTS background integrals corrfunc multipoles covariance)
-foreach(name IN LISTS COFFE_TESTS)
-    # Add the test executable
-    add_executable(test_${name}
-        ${CMAKE_SOURCE_DIR}/tests/test_${name}.c
-    )
-    # Add defines
-    target_compile_definitions(test_${name} PRIVATE COFFE_TEST_DATADIR="${COFFE_TEST_DATADIR}")
-    # Link libraries
-    target_link_libraries(test_${name} coffe ${M_LIB} ${GSLCBLAS_LIB} ${GSL_LIB} ${FFTW3_LIB} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
-    # Register tests
-    add_test(NAME test_${name} COMMAND test_${name})
-endforeach()
-
+if(COFFE_ENABLE_PYTHON)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/python/coffe)
+endif()
 
 # Installation
 install(TARGETS coffe-cli COMPONENT Runtime DESTINATION bin)
-install(TARGETS coffe COMPONENT Runtime DESTINATION lib)
 
 # Install headers and other files
 install(FILES
