@@ -20,6 +20,8 @@
 #define COFFE_AVERAGE_MULTIPOLES_H
 
 #include "common.h"
+#include "background.h"
+#include "integrals.h"
 
 typedef struct coffe_average_multipoles_t
 {

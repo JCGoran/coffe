@@ -31,8 +31,7 @@ def get_library_dirs():
 
 
 extra_compile_args = [
-    "-fopenmp",
-    "-Ofast",
+    "-O3",
     "-DHAVE_CLASS",
     "-DHAVE_CUBA",
     "-DCOFFE_CYTHON",
@@ -41,7 +40,6 @@ extra_compile_args = [
 
 setup(
     name="coffe",
-    version="3.0.0",
     url="https://github.com/JCGoran/coffe",
     author="Goran Jelic-Cizmek",
     author_email="goran.jelic-cizmek@unige.ch",
@@ -83,7 +81,6 @@ setup(
                 ],
                 library_dirs=get_library_dirs(),
                 extra_compile_args=extra_compile_args,
-                extra_link_args=["-fopenmp"],
             ),
         ]
     ),
