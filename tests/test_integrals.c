@@ -16,7 +16,9 @@
 #define MAX_SEPARATION 10000
 #endif
 
+#ifndef COFFE_H0
 #define COFFE_H0 (1. / 2997.92458)
+#endif
 #define h (0.67)
 
 static int coffe_test_integrals(
@@ -38,7 +40,7 @@ static int coffe_test_integrals(
         snprintf(
             name,
             size_name,
-            DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
+            COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
             i
         );
         coffe_read_ncol(
@@ -103,7 +105,7 @@ static int coffe_test_integrals(
         snprintf(
             name,
             size_name,
-            DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
+            COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_integral%zu.dat",
             (size_t)9
         );
         double *x_array, *y_array;
@@ -156,7 +158,7 @@ static int coffe_test_integrals(
     size_t divergent_size;
 
     coffe_read_ncol(
-        DATADIR "/tests/benchmarks/benchmark_integral8.dat",
+        COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_integral8.dat",
         2,
         &divergent_size,
         &divergent_x,
@@ -203,7 +205,7 @@ static int coffe_test_integrals(
     size_t ren_size;
 
     coffe_read_ncol(
-        DATADIR "/tests/benchmarks/benchmark_integral8_renormalization.dat",
+        COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_integral8_renormalization.dat",
         3,
         &ren_size,
         &ren_x,

@@ -124,7 +124,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_%s_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_%s_multipoles%d.dat",
                 type,
                 l
             );
@@ -144,19 +144,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -218,7 +218,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_multipoles%d.dat",
                 l
             );
 
@@ -237,19 +237,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -279,7 +279,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_len_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_len_multipoles%d.dat",
                 l
             );
 
@@ -298,19 +298,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -340,7 +340,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_d1_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_d1_multipoles%d.dat",
                 l
             );
 
@@ -359,19 +359,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -400,7 +400,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_multipoles%d.dat",
                 l
             );
 
@@ -419,19 +419,19 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             NONINTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             DOUBLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -462,7 +462,7 @@ static int coffe_test_multipoles(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_flatsky_density_lensing_multipoles%d.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_flatsky_density_lensing_multipoles%d.dat",
                 l
             );
 
@@ -481,7 +481,7 @@ static int coffe_test_multipoles(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, 0, l,
+                            1.0, 0, 0, x, 0, l,
                             SINGLE_INTEGRATED, MULTIPOLES
                         );
 
@@ -524,19 +524,19 @@ static int coffe_test_multipoles(
                 const double y_expected = 0;
                 const double y_obtained = coffe_integrate(
                     par, bg, integral,
-                    1.0, x, 0, l,
+                    1.0, 0, 0, x, 0, l,
                     NONINTEGRATED, MULTIPOLES
                 )
                 +
                 coffe_integrate(
                     par, bg, integral,
-                    1.0, x, 0, l,
+                    1.0, 0, 0, x, 0, l,
                     SINGLE_INTEGRATED, MULTIPOLES
                 )
                 +
                 coffe_integrate(
                     par, bg, integral,
-                    1.0, x, 0, l,
+                    1.0, 0, 0, x, 0, l,
                     DOUBLE_INTEGRATED, MULTIPOLES
                 );
 

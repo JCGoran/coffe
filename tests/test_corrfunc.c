@@ -124,7 +124,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_%s_corrfunc%zu.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_%s_corrfunc%zu.dat",
                 type,
                 i
             );
@@ -144,19 +144,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -186,7 +186,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_corrfunc%zu.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_corrfunc%zu.dat",
                 i
             );
 
@@ -205,19 +205,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -247,7 +247,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_len_corrfunc%zu.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_len_corrfunc%zu.dat",
                 i
             );
 
@@ -266,19 +266,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -308,7 +308,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_std_d1_corrfunc%zu.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_std_d1_corrfunc%zu.dat",
                 i
             );
 
@@ -327,19 +327,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
@@ -368,7 +368,7 @@ static int coffe_test_corrfunc(
             snprintf(
                 name,
                 size_name,
-                DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_corrfunc%zu.dat",
+                COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_flatsky_lensing_lensing_corrfunc%zu.dat",
                 i
             );
 
@@ -387,19 +387,19 @@ static int coffe_test_corrfunc(
                 const double y_expected = yvalue[k];
                 const double y_obtained = coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             NONINTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             SINGLE_INTEGRATED, CORRFUNC
                         )
                         +
                         coffe_integrate(
                             par, bg, integral,
-                            1.0, x, m, 0,
+                            1.0, 0, 0, x, m, 0,
                             DOUBLE_INTEGRATED, CORRFUNC
                         );
 
