@@ -77,7 +77,7 @@ before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
     "bash scripts/install_other.sh gsl libconfig fftw cuba class",
 ]
-environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+environment = { LDFLAGS="-L/opt/cuba_x86_64/lib -L/opt/class_public_x86_64/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba_x86_64/include -I/opt/class_public_x86_64/include ${CFLAGS}" }
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 
 [build-system]

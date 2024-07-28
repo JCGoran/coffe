@@ -20,17 +20,13 @@ install_cuba(){
     then
         CFLAGS="-fPIC -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}"
     else
+
         CFLAGS="-fPIC"
     fi
     autoreconf --install
     ./configure --prefix="${CUBA_INSTALL_DIR}" CFLAGS="${CFLAGS}"
-    if [ -x "${CUBA_INSTALL_DIR}" ]
-    then
-        make install
-    else
-        printf 'Root access required to install CUBA to %s, please type in your password at the prompt below\n' "${CUBA_INSTALL_DIR}"
-        sudo make install
-    fi
+
+    make install
     cd -
     printf 'CUBA installed in %s\n' "${CUBA_INSTALL_DIR}"
 }
@@ -49,17 +45,9 @@ install_class(){
     git clean -xdf .
     make libclass.a
 
-    if [ -x "${CLASS_INSTALL_DIR}" ]
-    then
-        mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-        cp -a "${current_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-        cp -a "${current_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
-    else
-        printf 'Root access required to install CLASS to %s, please type in your password at the prompt below\n' "${CLASS_INSTALL_DIR}"
-        sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-        sudo cp -a "${current_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-        sudo cp -a "${current_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
-    fi
+    mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+    cp -a "${current_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+    cp -a "${current_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
     cd -
     printf 'CLASS installed in %s\n' "${CLASS_INSTALL_DIR}"
 }
