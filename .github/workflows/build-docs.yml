@@ -20,19 +20,15 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-
     - name: Install dependencies
       run: |
-        python3 -m pip install coffe
-        python3 -m pip install -r pip-requirements-dev.txt
+        python3 -m pip install cibuildwheel
+        SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0 python3 -m cibuildwheel --platform linux
 
     # Build the site
     - name: Build the site
       run: |
-        rm -fr coffe/__init__.py
-        sh generate_docs.sh
+        bash scripts/generate_docs.sh
 
     # If we've pushed to master, push the book's HTML to github-pages
     - if: ${{ github.ref == 'refs/heads/master' }}
