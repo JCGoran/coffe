@@ -37,18 +37,23 @@ skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
+before-all = [
+    # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "conan install . --output-folder=build_dependencies --build=missing",
+    "bash scripts/install_other.sh cuba class",
+]
 
 [tool.cibuildwheel.linux]
 manylinux-x86_64-image = "docker.io/library/coffe"
 archs = ["x86_64"]
-#before-all = [
-#    # install CUBA, FFTW, GSL, and CLASS
-#    "bash scripts/install_other.sh gsl cuba class fftw",
-#]
+before-all = [
+    # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "bash scripts/install_other.sh gsl libconfig fftw cuba class",
+]
 environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
 
 [build-system]
-requires = ["scikit-build-core", "cython<3", "setuptools-scm>=8.0.0"]
+requires = ["scikit-build-core", "cython<3", "setuptools-scm>=8.0.0", "conan; sys_platform='darwin'"]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
