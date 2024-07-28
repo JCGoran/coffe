@@ -53,6 +53,8 @@ jobs:
           # we skip tests in CI to save time
           CIBW_TEST_COMMAND: 'true'
           CIBW_ENVIRONMENT_PASS_LINUX: 'SETUPTOOLS_SCM_PRETEND_VERSION'
+          CUBA_INSTALL_DIR: ${{ github.workspace }}/cuba_install
+          CLASS_INSTALL_DIR: ${{ github.workspace }}/class_install
 
       - uses: actions/upload-artifact@v4
         with:
