@@ -110,13 +110,15 @@ Note that this may take a while as the packages are usually built from source.
 
 #### Installing CLASS and CUBA
 
-COFFE also depends on the CLASS and CUBA libraries, which are not available on Homebrew or Conan, or the default Linux package repositories. However, they can be built and installed by running:
+COFFE also depends on the CLASS and CUBA libraries, which are not available on Homebrew or Conan, or the default Linux package repositories.
+To install them, one needs to install `automake`, either via Homebrew (`brew install automake`) or via some other package manager.
+They can then be built and installed by running:
 
 ```sh
 bash scripts/install_other.sh class cuba
 ```
 
-This will install the two packages in the directories `/opt/cuba` and `/opt/class_public`.
+This will install the two packages in the directories `/opt/cuba_[ARCH]` and `/opt/class_public_[ARCH]`, where arch is either `x86_64` or `arm64` depending on your CPU architecture.
 
 #### Installing COFFE
 
@@ -178,7 +180,7 @@ python -m pytest tests/
 
 ### Testing with `cmake` (deprecated)
 
-If you do not want to build COFFE using `pip install`, you can instead use `cmake`. To do so, follow all of the above instructions, but instead of doing `pip install`, you can instead do:
+If you do not want to build COFFE using `pip install`, you can instead use `cmake`, which is installable via `pip install cmake`. To do so, follow all of the above instructions, but instead of doing `pip install .`, you can instead do:
 
 ```sh
 mkdir build
@@ -244,7 +246,7 @@ The wheels will then be available in the `wheelhouse` subdirectory, and can then
 brew unlink gsl fftw libconfig
 ```
 
-because otherwise `cibuildwheel` (or rather, `auditwheel`) may complain about mismatching versions.
+because otherwise `cibuildwheel` (or rather, `auditwheel`) may complain about mismatching OS versions.
 
 ### Releasing Python wheels
 
