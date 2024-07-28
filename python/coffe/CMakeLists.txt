@@ -4,7 +4,7 @@ Cython_transpile(${CMAKE_CURRENT_SOURCE_DIR}/coffe.pyx
 
 Python_add_library(
   coffe
-  MODULE ${_coffe_sources}
+  MODULE ${_coffe_sources} ${COFFE_LIB_SOURCES}
   WITH_SOABI
 )
 
