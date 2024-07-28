@@ -2,15 +2,28 @@
 
 set -ex
 
-CLASS_INSTALL_DIR="${CLASS_INSTALL_DIR:-/opt/class_public}"
-CUBA_INSTALL_DIR="${CUBA_INSTALL_DIR:-/opt/cuba}"
+CLASS_INSTALL_DIR="${CLASS_INSTALL_DIR:-/opt/class_public_$(uname -m)}"
+CUBA_INSTALL_DIR="${CUBA_INSTALL_DIR:-/opt/cuba_$(uname -m)}"
 # the abs dir where this script is located (so we can call it from wherever)
 script_dir="$(cd "$(dirname "$0")"; pwd -P)"
 
 install_cuba(){
+    if [ -e "${CUBA_INSTALL_DIR}/lib/libcuba.a" ]
+    then
+        printf "CUBA already installed at path %s\n" "${CUBA_INSTALL_DIR}"
+        return 0
+    fi
     cd "${script_dir}/../external/libcuba/"
+    export MACOSX_DEPLOYMENT_TARGET='11.0'
+    git clean -xdf .
+    if [ "$(uname -s)" = 'Darwin' ]
+    then
+        CFLAGS="-fPIC -mmacosx-version-min=${MACOSX_DEPLOYMENT_TARGET}"
+    else
+        CFLAGS="-fPIC"
+    fi
     autoreconf --install
-    ./configure --prefix="${CUBA_INSTALL_DIR}" CFLAGS=-fPIC
+    ./configure --prefix="${CUBA_INSTALL_DIR}" CFLAGS="${CFLAGS}"
     if [ -x "${CUBA_INSTALL_DIR}" ]
     then
         make install
@@ -25,8 +38,15 @@ install_cuba(){
 
 
 install_class(){
+    if [ -e "${CLASS_INSTALL_DIR}/lib/libclass.a" ]
+    then
+        printf "CLASS already installed at path %s\n" "${CLASS_INSTALL_DIR}"
+        return 0
+    fi
     current_dir="${script_dir}/../external/class_public/"
     cd "${current_dir}"
+    export MACOSX_DEPLOYMENT_TARGET='11.0'
+    git clean -xdf .
     make libclass.a
 
     if [ -x "${CLASS_INSTALL_DIR}" ]
@@ -45,14 +65,29 @@ install_class(){
 }
 
 install_fftw(){
+    if [ "$(uname -s)" = 'Darwin' ]
+    then
+        printf "Please use Conan to install FFTW\n"
+        return 1
+    fi
     yum install -y fftw-devel
 }
 
 install_gsl(){
+    if [ "$(uname -s)" = 'Darwin' ]
+    then
+        printf "Please use Conan to install GSL\n"
+        return 1
+    fi
     yum install -y gsl-devel
 }
 
 install_libconfig(){
+    if [ "$(uname -s)" = 'Darwin' ]
+    then
+        printf "Please use Conan to install libconfig\n"
+        return 1
+    fi
     yum install -y libconfig-devel
 }
 

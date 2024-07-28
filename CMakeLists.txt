@@ -12,8 +12,21 @@ if(NOT DISABLE_SILENT_RULES)
     set(CMAKE_VERBOSE_MAKEFILE OFF)
 endif()
 
+# Get the current arch (because MacOS can have both)
+EXECUTE_PROCESS(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE BUILD_ARCHITECTURE)
+
+# Check whether the user requested Python
 if (COFFE_ENABLE_PYTHON)
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        # For some reason, Conan does not find Python from the venv on MacOS,
+        # so we need to use this annoying hack.
+        # Note that this does not guarantee that the Python executable is the
+        # one from the venv, but at least it finds the one compatible with all
+        # of the packages from the venv
+        find_package(Python "3.${COFFE_PYTHON_MINOR_VERSION}" EXACT COMPONENTS Interpreter Development.Module REQUIRED)
+    else()
+        find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+    endif()
     include(cmake/FindCython.cmake)
 endif()
 
@@ -29,14 +42,35 @@ find_package(GSL 2.1 REQUIRED)
 find_library(FFTW3_LIB fftw3 NAMES fftw fftw3 libfftw libfftw3 REQUIRED)
 find_library(CONFIG_LIB config NAMES config config++ libconfig libconfig++ REQUIRED)
 find_library(M_LIB m NAMES m libm REQUIRED)
+set(CONFIG_INCLUDE_DIRS)
+set(FFTW3_INCLUDE_DIRS)
+set(CUBA_INCLUDE_DIRS)
+set(CLASS_INCLUDE_DIRS)
 
 # Check for optional libraries
 if (COFFE_ENABLE_CUBA)
-    find_library(CUBA_LIB cuba NAMES cuba libcuba PATHS /opt/cuba/lib $ENV{CUBA_INSTALL_DIR}/lib REQUIRED)
+    find_library(CUBA_LIB cuba NAMES cuba libcuba PATHS /opt/cuba_${BUILD_ARCHITECTURE}/lib $ENV{CUBA_INSTALL_DIR}/lib REQUIRED)
 endif()
 if (COFFE_ENABLE_CLASS)
-    find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class/lib /opt/class_public/lib $ENV{CLASS_INSTALL_DIR}/lib REQUIRED)
+    find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class_${BUILD_ARCHITECTURE}/lib /opt/class_public_${BUILD_ARCHITECTURE}/lib $ENV{CLASS_INSTALL_DIR}/lib REQUIRED)
 endif()
+
+# For some reason I need to manually find the include files, I don't know if
+# Conan is to blame but whatever I wasted enough time in this
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    get_filename_component(BASE_DIR ${CONFIG_LIB} DIRECTORY)
+    string(REGEX REPLACE "/lib$" "/include" CONFIG_INCLUDE_DIRS ${BASE_DIR})
+
+    get_filename_component(BASE_DIR ${FFTW3_LIB} DIRECTORY)
+    string(REGEX REPLACE "/lib$" "/include" FFTW3_INCLUDE_DIRS ${BASE_DIR})
+
+    get_filename_component(BASE_DIR ${CLASS_LIB} DIRECTORY)
+    string(REGEX REPLACE "/lib$" "/include" CLASS_INCLUDE_DIRS ${BASE_DIR})
+
+    get_filename_component(BASE_DIR ${CUBA_LIB} DIRECTORY)
+    string(REGEX REPLACE "/lib$" "/include" CUBA_INCLUDE_DIRS ${BASE_DIR})
+endif()
+
 
 # OpenMP support
 find_package(OpenMP)
@@ -49,25 +83,21 @@ include(CheckCCompilerFlag)
 if(COFFE_ENABLE_MATHOPTS)
     if (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
         set(COFFE_MATHOPTS "-ffast-math")
-    else()
-        message("Unsupported compiler ${CMAKE_C_COMPILER_ID_STREQUAL}" FATAL_ERROR)
     endif()
 else()
     set(COFFE_MATHOPTS)
 endif()
-# Include directories
-include_directories(${SRC_DIR} ${CMAKE_SOURCE_DIR}/tests)
-
 # Add definitions for conditional compilation
-if(CLASS_LIB)
+if(COFFE_ENABLE_CLASS)
     add_compile_definitions(-DHAVE_CLASS)
 endif()
-if(CUBA_LIB)
+if(COFFE_ENABLE_CUBA)
     add_compile_definitions(-DHAVE_CUBA)
 endif()
 
 message("COFFE configuration")
 message("============================")
+message("Build architecture: ${BUILD_ARCHITECTURE}")
 message("Math library: ${M_LIB}")
 message("GSL library: ${GSL_LIBRARIES}")
 message("FFTW library: ${FFTW3_LIB}")
@@ -128,11 +158,14 @@ add_executable(coffe-cli
     ${SRC_DIR}/output.c
 )
 
+# Include directories
+target_include_directories(coffe-cli PRIVATE ${CONFIG_INCLUDE_DIRS} ${FFTW3_INCLUDE_DIRS} ${CUBA_INCLUDE_DIRS} ${SRC_DIR} ${CLASS_INCLUDE_DIRS})
+
 # Add definition
 target_compile_definitions(coffe-cli PRIVATE PACKAGE_STRING="${VERSION}")
 
 # Link libraries
-target_link_libraries(coffe-cli ${M_LIB} ${GSL_LIBRARIES} ${FFTW3_LIB} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
+target_link_libraries(coffe-cli ${M_LIB} ${GSL_LIBRARIES} ${FFTW3_LIBRARIES} ${FFTW3_LIB} ${libconfig_LIBRARIES} ${CONFIG_LIB} ${CUBA_LIB} ${CLASS_LIB})
 
 target_compile_options(coffe-cli PRIVATE ${COFFE_MATHOPTS})
 
@@ -152,6 +185,7 @@ if (COFFE_ENABLE_TESTS)
             ${CMAKE_SOURCE_DIR}/tests/test_${name}.c
             ${COFFE_LIB_SOURCES}
         )
+        target_include_directories(test_${name} PRIVATE ${CONFIG_INCLUDE_DIRS} ${FFTW3_INCLUDE_DIRS} ${CUBA_INCLUDE_DIRS} ${SRC_DIR} ${CLASS_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/tests)
         # Add defines
         target_compile_definitions(test_${name} PRIVATE COFFE_TEST_DATADIR="${COFFE_TEST_DATADIR}")
         # Link libraries

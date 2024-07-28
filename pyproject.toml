@@ -36,30 +36,41 @@ repository = "https://github.com/JCGoran/coffe"
 skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
+archs = ["arm64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
-    "conan install . --output-folder=build_dependencies --build=missing",
+    "conan install . --output-folder=_build --build=missing",
     "bash scripts/install_other.sh cuba class",
 ]
+# `SKBUILD_CMAKE_ARGS` overrides everything, so our `cmake.define`s need to be placed here as well
+environment = { SKBUILD_CMAKE_ARGS = "-DCOFFE_ENABLE_CLASS=ON;-DCOFFE_ENABLE_CUBA=ON;-DCOFFE_ENABLE_MATHOPTS=ON;-DCOFFE_ENABLE_PYTHON=ON;-DCMAKE_TOOLCHAIN_FILE=_build/conan_toolchain.cmake;-DCOFFE_PYTHON_MINOR_VERSION=$(python -c 'import sys;print(sys.version_info.minor)')", MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 [tool.cibuildwheel.linux]
-manylinux-x86_64-image = "docker.io/library/coffe"
 archs = ["x86_64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
     "bash scripts/install_other.sh gsl libconfig fftw cuba class",
 ]
-environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+environment = { SKBUILD_CMAKE_ARGS = "-DCOFFE_ENABLE_CLASS=ON;-DCOFFE_ENABLE_CUBA=ON;-DCOFFE_ENABLE_MATHOPTS=ON;-DCOFFE_ENABLE_PYTHON=ON;-DCMAKE_TOOLCHAIN_FILE=_build_x86_64/conan_toolchain.cmake;-DCOFFE_PYTHON_MINOR_VERSION=$(python -c 'import sys;print(sys.version_info.minor)')", MACOSX_DEPLOYMENT_TARGET = "11.0", LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
 
 [build-system]
-requires = ["scikit-build-core", "cython<3", "setuptools-scm>=8.0.0", "conan; sys_platform=='darwin'"]
+requires = [
+    "scikit-build-core", "cython<3", "setuptools-scm>=8.0.0",
+    # why do we need Conan only on Darwin (i.e. MacOS)?
+    # because GSL, FFTW, etc. installed via `brew` always have the
+    # deployment target equal to the one of the build machine,
+    # while Linux does not care about this
+    "conan; sys_platform=='darwin'"
+]
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build]
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
 wheel.packages = ["python/coffe"]
 logging.level = "DEBUG"
+# we want the wheels to basically have 2 kinds of files:
+# - *.py sources
+# - *.so or *.dylib shared libraries built with Cython
 wheel.exclude = ["**.pyx", "CMakeLists.txt", "**.pxd"]
 
 [tool.scikit-build.cmake]
@@ -67,6 +78,8 @@ verbose = true
 version = ">=3.15.0"
 
 [tool.scikit-build.cmake.define]
+# on MacOS, this probably doesn't work;
+# to make a wheel, just use `cibuildwheel --platform macos`
 COFFE_ENABLE_CLASS = "ON"
 COFFE_ENABLE_PYTHON = "ON"
 COFFE_ENABLE_MATHOPTS = "ON"
