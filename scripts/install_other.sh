@@ -2,49 +2,46 @@
 
 set -ex
 
-CLASS_INSTALL_DIR="/opt/class_public"
-CLASS_REMOTE_URL="https://github.com/JCGoran/class_public"
-CLASS_BRANCH="feature/conda"
-
-CUBA_INSTALL_DIR="/opt/cuba"
-CUBA_REMOTE_URL="https://github.com/JCGoran/libcuba"
-CUBA_BRANCH="master"
+CLASS_INSTALL_DIR="${CLASS_INSTALL_DIR:-/opt/class_public}"
+CUBA_INSTALL_DIR="${CUBA_INSTALL_DIR:-/opt/cuba}"
+# the abs dir where this script is located (so we can call it from wherever)
+script_dir="$(cd "$(dirname "$0")"; pwd -P)"
 
 install_cuba(){
-    cuba_dir="$(mktemp -d)"
-    git clone --depth 1 --branch "${CUBA_BRANCH}" "${CUBA_REMOTE_URL}" "${cuba_dir}"
-
-    cd "${cuba_dir}"
+    cd "${script_dir}/../external/libcuba/"
     autoreconf --install
     ./configure --prefix="${CUBA_INSTALL_DIR}" CFLAGS=-fPIC
-    make install
+    if [ -x "${CUBA_INSTALL_DIR}" ]
+    then
+        make install
+    else
+        printf 'Root access required to install CUBA to %s, please type in your password at the prompt below\n' "${CUBA_INSTALL_DIR}"
+        sudo make install
+    fi
     cd -
-    printf 'CUBA installed\n'
+    printf 'CUBA installed in %s\n' "${CUBA_INSTALL_DIR}"
 }
 
 
 
 install_class(){
-    class_dir="$(mktemp -d)"
-    git clone --depth 1 --branch "${CLASS_BRANCH}" "${CLASS_REMOTE_URL}" "${class_dir}"
-
-    cd "${class_dir}"
+    current_dir="${script_dir}/../external/class_public/"
+    cd "${current_dir}"
     make libclass.a
 
-    if [ "$(uname)" = 'Darwin' ]
+    if [ -x "${CLASS_INSTALL_DIR}" ]
     then
-        sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-        sudo cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-        sudo cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
-
-    else
         mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
-        cp -a "${class_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
-        cp -a "${class_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+        cp -a "${current_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+        cp -a "${current_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
+    else
+        printf 'Root access required to install CLASS to %s, please type in your password at the prompt below\n' "${CLASS_INSTALL_DIR}"
+        sudo mkdir -p "${CLASS_INSTALL_DIR}/lib" "${CLASS_INSTALL_DIR}/include"
+        sudo cp -a "${current_dir}/libclass.a" "${CLASS_INSTALL_DIR}/lib/"
+        sudo cp -a "${current_dir}/include/"*.h "${CLASS_INSTALL_DIR}/include/"
     fi
-
     cd -
-    printf 'CLASS installed\n'
+    printf 'CLASS installed in %s\n' "${CLASS_INSTALL_DIR}"
 }
 
 install_fftw(){

@@ -32,10 +32,10 @@ find_library(M_LIB m NAMES m libm REQUIRED)
 
 # Check for optional libraries
 if (COFFE_ENABLE_CUBA)
-    find_library(CUBA_LIB cuba NAMES cuba libcuba PATHS /opt/cuba/lib REQUIRED)
+    find_library(CUBA_LIB cuba NAMES cuba libcuba PATHS /opt/cuba/lib $ENV{CUBA_INSTALL_DIR}/lib REQUIRED)
 endif()
 if (COFFE_ENABLE_CLASS)
-    find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class/lib /opt/class_public/lib REQUIRED)
+    find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class/lib /opt/class_public/lib $ENV{CLASS_INSTALL_DIR}/lib REQUIRED)
 endif()
 
 # OpenMP support
@@ -53,7 +53,7 @@ if(COFFE_ENABLE_MATHOPTS)
         message("Unsupported compiler ${CMAKE_C_COMPILER_ID_STREQUAL}" FATAL_ERROR)
     endif()
 else()
-    set(COFFE_MATHOPTS "")
+    set(COFFE_MATHOPTS)
 endif()
 # Include directories
 include_directories(${SRC_DIR} ${CMAKE_SOURCE_DIR}/tests)
@@ -65,6 +65,25 @@ endif()
 if(CUBA_LIB)
     add_compile_definitions(-DHAVE_CUBA)
 endif()
+
+message("COFFE configuration")
+message("============================")
+message("Math library: ${M_LIB}")
+message("GSL library: ${GSL_LIBRARIES}")
+message("FFTW library: ${FFTW3_LIB}")
+message("libconfig library: ${CONFIG_LIB}")
+if (COFFE_ENABLE_PYTHON)
+    message("Python path: ${Python_EXECUTABLE}")
+    message("Cython path: ${CYTHON_EXECUTABLE}")
+endif()
+if (COFFE_ENABLE_CLASS)
+    message("CLASS library: ${CLASS_LIB}")
+endif()
+if (COFFE_ENABLE_CUBA)
+    message("CUBA library: ${CUBA_LIB}")
+endif()
+message("OpenMP enabled: ${OpenMP_C_FOUND}")
+message("Additional optimizations: ${COFFE_MATHOPTS}")
 
 set(COFFE_HEADERS
     ${SRC_DIR}/common.h
