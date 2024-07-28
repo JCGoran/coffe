@@ -61,6 +61,7 @@ skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
 archs = ["arm64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "conan profile detect",
     "conan install . --output-folder=_build --build=missing",
     "bash scripts/install_other.sh cuba class",
 ]
@@ -73,7 +74,8 @@ before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
     "bash scripts/install_other.sh gsl libconfig fftw cuba class",
 ]
-environment = { MACOSX_DEPLOYMENT_TARGET = "11.0", LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+environment = { LDFLAGS="-L/opt/cuba/lib -L/opt/class_public/lib ${LDFLAGS}", CFLAGS="-I/opt/cuba/include -I/opt/class_public/include ${CFLAGS}" }
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 
 [build-system]
 requires = [
