@@ -61,7 +61,6 @@ test-requires = ["pytest", "scipy", "pandas"]
 test-command = ["python -c 'import coffe'", "pytest -vvv -k test_power_spectrum {package}/tests"]
 
 [tool.cibuildwheel.macos]
-archs = ["arm64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
     "conan profile detect --force",
