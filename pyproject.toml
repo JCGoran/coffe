@@ -71,6 +71,7 @@ before-all = [
 environment = { SKBUILD_CMAKE_ARGS = "-DCOFFE_ENABLE_CLASS=ON;-DCOFFE_ENABLE_CUBA=ON;-DCOFFE_ENABLE_MATHOPTS=ON;-DCOFFE_ENABLE_PYTHON=ON;-DCMAKE_TOOLCHAIN_FILE=_build/conan_toolchain.cmake;-DCOFFE_PYTHON_MINOR_VERSION=$(python -c 'import sys;print(sys.version_info.minor)')", MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 [tool.cibuildwheel.linux]
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 archs = ["x86_64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
