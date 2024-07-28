@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v3
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.16.5
+        run: python -m pip install cibuildwheel==2.16.5 conan
 
       # if we're not doing a release version (manual!), only build one python version
       - name: Setup versions
