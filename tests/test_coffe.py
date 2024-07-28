@@ -12,7 +12,7 @@ from coffe.representation import Representation
 
 from coffe_utils import average_covariance_matrix, covariance_matrix
 
-DATA_DIR = Path(__file__).parent / "/benchmarks/"
+DATA_DIR = Path(__file__).parent / "benchmarks"
 TOPLEVEL_DIR = Path(__file__).parent.parent
 h = 0.67
 COFFE_H0 = 1 / 2997.92458
