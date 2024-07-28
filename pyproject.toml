@@ -26,6 +26,26 @@ dependencies = [
     "numpy>=1.19.5,<2",
 ]
 
+optional-dependencies.test = [
+    "scipy",
+    "pandas",
+    "pytest",
+]
+
+optional-dependencies.docs = [
+    "pdoc",
+]
+
+optional-dependencies.dev = [
+    "pylint",
+    "mypy",
+    "isort",
+    "reorder-python-imports",
+    "autoimport",
+    "black",
+    "cibuildwheel",
+]
+
 [project.scripts]
 coffe-cli = "coffe.__main__:main"
 
