@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: true
 
     # Install dependencies
     - name: Set up Python 3.9
@@ -23,7 +25,8 @@ jobs:
     - name: Install dependencies
       run: |
         python3 -m pip install cibuildwheel
-        SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0 python3 -m cibuildwheel --platform linux
+        SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0 CIBW_BUILD='cp39*' python3 -m cibuildwheel --platform linux
+        python3 -m pip install wheelhouse/*.whl
 
     # Build the site
     - name: Build the site
