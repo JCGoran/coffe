@@ -56,12 +56,14 @@ repository = "https://github.com/JCGoran/coffe"
 
 [tool.cibuildwheel]
 skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
+test-requires = ["pytest", "scipy", "pandas"]
+test-command = ["python -c 'import coffe'", "pytest -vvv -k test_power_spectrum {package}/tests"]
 
 [tool.cibuildwheel.macos]
 archs = ["arm64"]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
-    "conan profile detect",
+    "conan profile detect --force",
     "conan install . --output-folder=_build --build=missing",
     "bash scripts/install_other.sh cuba class",
 ]

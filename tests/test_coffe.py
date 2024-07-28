@@ -12,7 +12,8 @@ from coffe.representation import Representation
 
 from coffe_utils import average_covariance_matrix, covariance_matrix
 
-DATA_DIR = Path("tests/benchmarks/")
+DATA_DIR = Path(__file__).parent / "/benchmarks/"
+TOPLEVEL_DIR = Path(__file__).parent.parent
 h = 0.67
 COFFE_H0 = 1 / 2997.92458
 
@@ -119,7 +120,7 @@ class TestCoffe:
 
     def test_power_spectrum(self):
         cosmo = Coffe()
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -130,7 +131,7 @@ class TestCoffe:
 
     def test_cross_spectrum(self):
         cosmo = Coffe()
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -195,7 +196,7 @@ class TestCoffe:
     def test_integrals(self):
         cosmo = Coffe()
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -238,7 +239,7 @@ class TestCoffe:
             mu=[0.0, 0.2, 0.5, 0.8, 0.95],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
 
         contributions = {
@@ -273,7 +274,7 @@ class TestCoffe:
             l=[0, 2, 4],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -310,7 +311,7 @@ class TestCoffe:
             z_max=[1.1],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -331,7 +332,7 @@ class TestCoffe:
             l=[0, 2, 4],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -357,7 +358,7 @@ class TestCoffe:
             l=[0, 2, 4],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -393,7 +394,7 @@ class TestCoffe:
             l=[0, 2, 4],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -445,7 +446,7 @@ class TestCoffe:
             l=[0, 2, 4],
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -513,7 +514,7 @@ class TestCoffe:
             covariance_poisson=False,
         )
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         k, pk = k * h, pk / h**3
         cosmo.set_power_spectrum_linear(k, pk)
 
@@ -524,7 +525,7 @@ class TestCoffe:
         # only Poisson contribution
         cosmo.covariance_poisson = True
 
-        k, pk = np.transpose(np.loadtxt("PkL_CLASS.dat"))
+        k, pk = np.transpose(np.loadtxt(TOPLEVEL_DIR / "PkL_CLASS.dat"))
         cosmo.set_power_spectrum_linear(k, pk)
 
         cov = covariance_matrix(cosmo.compute_covariance_bulk())
