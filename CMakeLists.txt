@@ -17,7 +17,7 @@ EXECUTE_PROCESS(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE BUILD_ARCHIT
 
 # Check whether the user requested Python
 if (COFFE_ENABLE_PYTHON)
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND (DEFINED CONAN_C_FLAGS OR DEFINED CONAN_CXX_FLAGS))
         # For some reason, Conan does not find Python from the venv on MacOS,
         # so we need to use this annoying hack.
         # Note that this does not guarantee that the Python executable is the
