@@ -225,6 +225,8 @@ Once one of those is installed, the wheels can be built using:
 cibuildwheel --platform linux
 ```
 
+The wheels will then be available in the `wheelhouse` subdirectory, and can then be uploaded to PyPI.
+
 #### MacOS
 
 The MacOS wheels require an [official Python installer](https://www.python.org/downloads/macos/); the ones from Homebrew, Conda, etc. will most likely not work.
@@ -234,7 +236,15 @@ To build the wheels, run:
 cibuildwheel --platform macos
 ```
 
-The wheels are available in the `wheelhouse` subdirectory, and can then be uploaded to PyPI.
+The wheels will then be available in the `wheelhouse` subdirectory, and can then be uploaded to PyPI.
+
+**IMPORTANT NOTE**: if you installed GSL, FFTW, or libconfig via Brew, make sure to unlink them first using:
+
+```sh
+brew unlink gsl fftw libconfig
+```
+
+because otherwise `cibuildwheel` (or rather, `auditwheel`) may complain about mismatching versions.
 
 ### Releasing Python wheels
 
