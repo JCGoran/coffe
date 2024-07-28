@@ -55,21 +55,17 @@ if (COFFE_ENABLE_CLASS)
     find_library(CLASS_LIB class NAMES class libclass PATHS /opt/class_${BUILD_ARCHITECTURE}/lib /opt/class_public_${BUILD_ARCHITECTURE}/lib $ENV{CLASS_INSTALL_DIR}/lib REQUIRED)
 endif()
 
-# For some reason I need to manually find the include files, I don't know if
-# Conan is to blame but whatever I wasted enough time in this
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    get_filename_component(BASE_DIR ${CONFIG_LIB} DIRECTORY)
-    string(REGEX REPLACE "/lib$" "/include" CONFIG_INCLUDE_DIRS ${BASE_DIR})
+get_filename_component(BASE_DIR ${CONFIG_LIB} DIRECTORY)
+string(REGEX REPLACE "/lib$" "/include" CONFIG_INCLUDE_DIRS ${BASE_DIR})
 
-    get_filename_component(BASE_DIR ${FFTW3_LIB} DIRECTORY)
-    string(REGEX REPLACE "/lib$" "/include" FFTW3_INCLUDE_DIRS ${BASE_DIR})
+get_filename_component(BASE_DIR ${FFTW3_LIB} DIRECTORY)
+string(REGEX REPLACE "/lib$" "/include" FFTW3_INCLUDE_DIRS ${BASE_DIR})
 
-    get_filename_component(BASE_DIR ${CLASS_LIB} DIRECTORY)
-    string(REGEX REPLACE "/lib$" "/include" CLASS_INCLUDE_DIRS ${BASE_DIR})
+get_filename_component(BASE_DIR ${CLASS_LIB} DIRECTORY)
+string(REGEX REPLACE "/lib$" "/include" CLASS_INCLUDE_DIRS ${BASE_DIR})
 
-    get_filename_component(BASE_DIR ${CUBA_LIB} DIRECTORY)
-    string(REGEX REPLACE "/lib$" "/include" CUBA_INCLUDE_DIRS ${BASE_DIR})
-endif()
+get_filename_component(BASE_DIR ${CUBA_LIB} DIRECTORY)
+string(REGEX REPLACE "/lib$" "/include" CUBA_INCLUDE_DIRS ${BASE_DIR})
 
 
 # OpenMP support
