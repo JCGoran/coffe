@@ -8,7 +8,7 @@ The main modules used for the Python version of the COFFE code
 # TODO figure out how to use OpenMP
 
 from libc.stdlib cimport malloc, free
-from coffe cimport ccoffe
+from coffe cimport coffe as ccoffe
 from coffe.representation import (
     Corrfunc,
     Multipoles,

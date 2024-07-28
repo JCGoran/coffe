@@ -231,7 +231,7 @@ static int coffe_test_covariance(
         snprintf(
             name,
             sizeof(name) / sizeof(*name),
-            DATADIR "/tests/benchmarks/benchmark_multipoles_covariance_%d%d.dat",
+            COFFE_TEST_DATADIR "/tests/benchmarks/benchmark_multipoles_covariance_%d%d.dat",
             multipoles[mp1],
             multipoles[mp2]
         );

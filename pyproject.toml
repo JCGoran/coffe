@@ -1,9 +1,9 @@
 [project]
 name = "coffe"
-version = "3.0.0"
+dynamic = ["version"]
 description = "Python wrapper for the COrrelation Function Full-sky Estimator code"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     {name = "Goran Jelic-Cizmek", email = "goran.jelic-cizmek@unige.ch"},
 ]
@@ -15,16 +15,39 @@ classifiers = [
     "Programming Language :: Cython",
     "Programming Language :: C",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "numpy>=1.19.5",
+    "numpy>=1.19.5,<2",
 ]
+
+optional-dependencies.test = [
+    "scipy",
+    "pandas",
+    "pytest",
+]
+
+optional-dependencies.docs = [
+    "pdoc",
+]
+
+optional-dependencies.dev = [
+    "pylint",
+    "mypy",
+    "isort",
+    "reorder-python-imports",
+    "autoimport",
+    "black",
+    "cibuildwheel",
+    "cmakelang",
+]
+
+optional-dependencies.all = ["coffe[test,docs,dev]"]
 
 [project.scripts]
 coffe-cli = "coffe.__main__:main"
@@ -33,13 +56,59 @@ coffe-cli = "coffe.__main__:main"
 repository = "https://github.com/JCGoran/coffe"
 
 [tool.cibuildwheel]
-skip = ["cp36-*", "pp*", "pypy*", "*musllinux*"]
+skip = ["cp36-*", "cp37-*", "pp*", "pypy*", "*musllinux*"]
+test-requires = ["pytest", "scipy", "pandas"]
+test-command = ["python -c 'import coffe'", "pytest -vvv -k test_power_spectrum {package}/tests"]
 
 [tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
+before-all = [
+    # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "conan profile detect --force",
+    "conan install . --output-folder=_build --build=missing",
+    "bash scripts/install_other.sh cuba class",
+]
+# `SKBUILD_CMAKE_ARGS` overrides everything, so our `cmake.define`s need to be placed here as well
+environment = { SKBUILD_CMAKE_ARGS = "-DCOFFE_ENABLE_CLASS=ON;-DCOFFE_ENABLE_CUBA=ON;-DCOFFE_ENABLE_MATHOPTS=ON;-DCOFFE_ENABLE_PYTHON=ON;-DCMAKE_TOOLCHAIN_FILE=_build/conan_toolchain.cmake;-DCOFFE_PYTHON_MINOR_VERSION=$(python -c 'import sys;print(sys.version_info.minor)')", MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 [tool.cibuildwheel.linux]
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 archs = ["x86_64"]
+before-all = [
+    # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "bash scripts/install_other.sh gsl libconfig fftw cuba class",
+]
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 
 [build-system]
-requires = ["setuptools", "wheel", "Cython"]
+requires = [
+    "scikit-build-core", "cython<3", "setuptools-scm>=8.0.0",
+    # why do we need Conan only on Darwin (i.e. MacOS)?
+    # because GSL, FFTW, etc. installed via `brew` always have the
+    # deployment target equal to the one of the build machine,
+    # while Linux does not care about this
+    "conan; sys_platform=='darwin'"
+]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+wheel.packages = ["python/coffe"]
+logging.level = "DEBUG"
+# we want the wheels to basically have 2 kinds of files:
+# - *.py sources
+# - *.so or *.dylib shared libraries built with Cython
+wheel.exclude = ["**.pyx", "CMakeLists.txt", "**.pxd"]
+
+[tool.scikit-build.cmake]
+verbose = true
+version = ">=3.15.0"
+
+[tool.scikit-build.cmake.define]
+# on MacOS, this probably doesn't work;
+# to make a wheel, just use `cibuildwheel --platform macos`
+COFFE_ENABLE_CLASS = "ON"
+COFFE_ENABLE_PYTHON = "ON"
+COFFE_ENABLE_MATHOPTS = "ON"
+COFFE_ENABLE_CUBA="ON"
+
+[tool.setuptools_scm]

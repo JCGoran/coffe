@@ -5,15 +5,11 @@ This is the Cython (Python) version of the COFFE code, version 3.
 
 ### Installation
 
-In brief, if you are on Linux, you can install COFFE using:
+In brief, if you are on Linux or MacOS, you can install COFFE using:
 
 ```sh
 pip install coffe
 ```
-
-Refer to the installation section of the
-[README](https://github.com/JCGoran/coffe/) for installation instructions on
-various other platforms.
 
 ### Running
 
