@@ -137,7 +137,7 @@ pip install '.[all]'
 ## Documentation
 
 The documentation for the latest version is available [here](https://jcgoran.github.io/coffe/).
-To build the documentation, you can run `bash scripts/generate_docs.sh`.
+To build the documentation, you can run `bash scripts/generate_docs.sh`, after which the documentation will be available under `docs/`.
 
 ## Bug reports and feature requests
 
