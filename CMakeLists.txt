@@ -29,6 +29,12 @@ if(COFFE_ENABLE_PYTHON)
     # need to use this annoying hack. Note that this does not guarantee that the
     # Python executable is the one from the venv, but at least it finds the one
     # compatible with all of the packages from the venv
+    if(NOT COFFE_PYTHON_MINOR_VERSION)
+      execute_process(
+        COMMAND python -c "import sys;print(sys.version_info.minor)"
+        OUTPUT_VARIABLE COFFE_PYTHON_MINOR_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
     find_package(
       Python "3.${COFFE_PYTHON_MINOR_VERSION}" EXACT
       COMPONENTS Interpreter Development.Module

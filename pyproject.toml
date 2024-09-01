@@ -3,7 +3,7 @@ name = "coffe"
 dynamic = ["version"]
 description = "Python wrapper for the COrrelation Function Full-sky Estimator code"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.13"
 authors = [
     {name = "Goran Jelic-Cizmek", email = "goran.jelic-cizmek@unige.ch"},
 ]
@@ -63,6 +63,7 @@ test-command = ["python -c 'import coffe'", "pytest -vvv -k test_power_spectrum 
 [tool.cibuildwheel.macos]
 before-all = [
     # install CUBA, FFTW, GSL, libconfig, and CLASS
+    "python -m pip install conan",
     "conan profile detect --force",
     "conan install . --output-folder=_build --build=missing",
     "bash scripts/install_other.sh cuba class",
@@ -82,11 +83,6 @@ environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 [build-system]
 requires = [
     "scikit-build-core", "cython<3", "setuptools-scm>=8.0.0",
-    # why do we need Conan only on Darwin (i.e. MacOS)?
-    # because GSL, FFTW, etc. installed via `brew` always have the
-    # deployment target equal to the one of the build machine,
-    # while Linux does not care about this
-    "conan; sys_platform=='darwin'"
 ]
 build-backend = "scikit_build_core.build"
 
@@ -104,11 +100,9 @@ verbose = true
 version = ">=3.15.0"
 
 [tool.scikit-build.cmake.define]
-# on MacOS, this probably doesn't work;
-# to make a wheel, just use `cibuildwheel --platform macos`
 COFFE_ENABLE_CLASS = "ON"
 COFFE_ENABLE_PYTHON = "ON"
 COFFE_ENABLE_MATHOPTS = "ON"
-COFFE_ENABLE_CUBA="ON"
+COFFE_ENABLE_CUBA = "ON"
 
 [tool.setuptools_scm]
