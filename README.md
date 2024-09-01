@@ -95,7 +95,7 @@ pip install conan
 Then, generate a profile:
 
 ```sh
-conan profile detect
+conan profile detect --force
 ```
 
 Finally, install all of the dependencies in the `_build` directory:
@@ -132,6 +132,12 @@ If you would additionally like to install all of the various tools for testing, 
 
 ```sh
 pip install '.[all]'
+```
+
+**NOTE**: if using Conan to install some of the dependencies, you will need to specify the toolchain file using:
+
+```sh
+pip install '.[all]' --config-settings=cmake.define.CMAKE_TOOLCHAIN_FILE="_build/conan_toolchain.cmake"
 ```
 
 ## Documentation

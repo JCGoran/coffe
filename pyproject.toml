@@ -100,11 +100,9 @@ verbose = true
 version = ">=3.15.0"
 
 [tool.scikit-build.cmake.define]
-# on MacOS, this probably doesn't work;
-# to make a wheel, just use `cibuildwheel --platform macos`
 COFFE_ENABLE_CLASS = "ON"
 COFFE_ENABLE_PYTHON = "ON"
 COFFE_ENABLE_MATHOPTS = "ON"
-COFFE_ENABLE_CUBA="ON"
+COFFE_ENABLE_CUBA = "ON"
 
 [tool.setuptools_scm]
