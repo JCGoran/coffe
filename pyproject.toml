@@ -105,4 +105,12 @@ COFFE_ENABLE_PYTHON = "ON"
 COFFE_ENABLE_MATHOPTS = "ON"
 COFFE_ENABLE_CUBA = "ON"
 
+[[tool.scikit-build.overrides]]
+if.platform-system = "darwin"
+cmake.define.CMAKE_TOOLCHAIN_FILE="_build/conan_toolchain.cmake"
+cmake.define.COFFE_ENABLE_CLASS = "ON"
+cmake.define.COFFE_ENABLE_PYTHON = "ON"
+cmake.define.COFFE_ENABLE_MATHOPTS = "ON"
+cmake.define.COFFE_ENABLE_CUBA = "ON"
+
 [tool.setuptools_scm]
