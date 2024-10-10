@@ -45,7 +45,7 @@ If you would like to install the development version, you will need to first hav
 Then clone this repository:
 
 ```sh
-git clone https://github.com/JCGoran/coffe
+git clone --recurse-submodules https://github.com/JCGoran/coffe
 ```
 
 then change directory to it:
@@ -132,12 +132,6 @@ If you would additionally like to install all of the various tools for testing, 
 
 ```sh
 pip install '.[all]'
-```
-
-**NOTE**: if using Conan to install some of the dependencies, you will need to specify the toolchain file using:
-
-```sh
-pip install '.[all]' --config-settings=cmake.define.CMAKE_TOOLCHAIN_FILE="_build/conan_toolchain.cmake"
 ```
 
 ## Documentation
@@ -247,7 +241,15 @@ cibuildwheel --platform macos
 
 The wheels will then be available in the `wheelhouse` subdirectory, and can then be uploaded to PyPI.
 
-**IMPORTANT NOTE**: if you installed GSL, FFTW, or libconfig via Brew, make sure to unlink them first using:
+**IMPORTANT NOTE**: when building a wheel using `cibuildwheel`, the version of COFFE in the output can be surprising; to avoid any issues, it is best to specify the explicit version using:
+
+```sh
+export SETUPTOOLS_SCM_PRETEND_VERSION=[VERSION]
+```
+
+where `[VERSION]` is the version number you want to tag this version of COFFE (for instance, `3.0.2`).
+
+**IMPORTANT NOTE 2**: if you installed GSL, FFTW, or libconfig via Brew, make sure to unlink them first using:
 
 ```sh
 brew unlink gsl fftw libconfig
