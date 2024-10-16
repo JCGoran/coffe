@@ -31,8 +31,6 @@ install_cuba(){
     printf 'CUBA installed in %s\n' "${CUBA_INSTALL_DIR}"
 }
 
-
-
 install_class(){
     if [ -e "${CLASS_INSTALL_DIR}/lib/libclass.a" ]
     then
@@ -63,8 +61,7 @@ install_fftw(){
 
 install_gsl(){
     if [ "$(uname -s)" = 'Darwin' ]
-    then
-        printf "Please use Conan to install GSL\n"
+    then        printf "Please use Conan to install GSL\n"
         return 1
     fi
     yum install -y gsl-devel
